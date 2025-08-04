@@ -44,7 +44,7 @@ mypy_path = ["src"]
 plugins = ["mypy_django_plugin.main"]
 
 [[tool.mypy.overrides]]
-module = ["environ.*"]
+module = ["environ.*", "mozilla_django_oidc.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

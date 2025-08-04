@@ -15,6 +15,13 @@ Support | [IATI Support Website](https://iatistandard.org/en/guidance/get-suppor
 
 * Python 3.12.11
 
+## Overview
+
+This application currently is a skeleton that will form the basis of IATI Account Web.  At the moment the application supports single sign on to Asgardeo and displaying the resulting
+user model and claims that have been obtained from the identity service.
+
+Running this application locally and opening `https://localhost:8000` allows the user to login to Asgardeo using one of our development accounts.
+
 ## Development
 
 ### Running locally
