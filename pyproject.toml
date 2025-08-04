@@ -10,6 +10,7 @@ description = "Web application for user account self-service and to make write c
 dependencies = [
     "mozilla-django-oidc",
     "django",
+    "django-environ",
     "django-stubs[compatible-mypy]",
     "prometheus-client>=0.22.1",
     "requests==2.32.4",
@@ -38,6 +39,10 @@ django_settings_module = "iati_account_web.settings"
 strict = true
 mypy_path = ["src"]
 plugins = ["mypy_django_plugin.main"]
+
+[[tool.mypy.overrides]]
+module = ["environ.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit"]

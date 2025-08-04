@@ -22,6 +22,8 @@ django==5.2.4
     #   django-stubs-ext
     #   iati-account-web (pyproject.toml)
     #   mozilla-django-oidc
+django-environ==0.12.0
+    # via iati-account-web (pyproject.toml)
 django-stubs==5.2.2
     # via iati-account-web (pyproject.toml)
 django-stubs-ext==5.2.2
