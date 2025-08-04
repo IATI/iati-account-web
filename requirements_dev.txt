@@ -28,8 +28,14 @@ cryptography==45.0.5
     #   mozilla-django-oidc
 django==5.2.4
     # via
+    #   django-stubs
+    #   django-stubs-ext
     #   iati-account-web (pyproject.toml)
     #   mozilla-django-oidc
+django-stubs==5.2.2
+    # via iati-account-web (pyproject.toml)
+django-stubs-ext==5.2.2
+    # via django-stubs
 flake8==7.3.0
     # via
     #   flake8-pyproject
@@ -57,7 +63,9 @@ mdurl==0.1.2
 mozilla-django-oidc==4.0.1
     # via iati-account-web (pyproject.toml)
 mypy==1.17.1
-    # via iati-account-web (pyproject.toml)
+    # via
+    #   django-stubs
+    #   iati-account-web (pyproject.toml)
 mypy-extensions==1.1.0
     # via
     #   black
@@ -111,10 +119,15 @@ sqlparse==0.5.3
     # via django
 stevedore==5.4.1
     # via bandit
+types-pyyaml==6.0.12.20250516
+    # via django-stubs
 types-requests==2.32.4.20250611
     # via iati-account-web (pyproject.toml)
 typing-extensions==4.14.1
-    # via mypy
+    # via
+    #   django-stubs
+    #   django-stubs-ext
+    #   mypy
 urllib3==2.5.0
     # via
     #   requests

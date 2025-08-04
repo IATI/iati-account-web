@@ -18,14 +18,26 @@ cryptography==45.0.5
     #   mozilla-django-oidc
 django==5.2.4
     # via
+    #   django-stubs
+    #   django-stubs-ext
     #   iati-account-web (pyproject.toml)
     #   mozilla-django-oidc
+django-stubs==5.2.2
+    # via iati-account-web (pyproject.toml)
+django-stubs-ext==5.2.2
+    # via django-stubs
 idna==3.10
     # via requests
 josepy==2.1.0
     # via mozilla-django-oidc
 mozilla-django-oidc==4.0.1
     # via iati-account-web (pyproject.toml)
+mypy==1.17.1
+    # via django-stubs
+mypy-extensions==1.1.0
+    # via mypy
+pathspec==0.12.1
+    # via mypy
 prometheus-client==0.22.1
     # via iati-account-web (pyproject.toml)
 pycparser==2.22
@@ -36,8 +48,15 @@ requests==2.32.4
     #   mozilla-django-oidc
 sqlparse==0.5.3
     # via django
+types-pyyaml==6.0.12.20250516
+    # via django-stubs
 types-requests==2.32.4.20250611
     # via iati-account-web (pyproject.toml)
+typing-extensions==4.14.1
+    # via
+    #   django-stubs
+    #   django-stubs-ext
+    #   mypy
 urllib3==2.5.0
     # via
     #   requests

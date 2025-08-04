@@ -10,6 +10,7 @@ description = "Web application for user account self-service and to make write c
 dependencies = [
     "mozilla-django-oidc",
     "django",
+    "django-stubs[compatible-mypy]",
     "prometheus-client>=0.22.1",
     "requests==2.32.4",
     "types-requests==2.32.4.20250611"
@@ -30,9 +31,13 @@ dev = [
 [tool.bandit.assert_used]
 skips = ["*/tests/unit/test_*.py"]
 
+[tool.django-stubs]
+django_settings_module = "iati_account_web.settings"
+
 [tool.mypy]
 strict = true
 mypy_path = ["src"]
+plugins = ["mypy_django_plugin.main"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests/unit"]
