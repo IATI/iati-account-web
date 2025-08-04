@@ -1,0 +1,66 @@
+[project]
+name = "iati-account-web"
+version = "0.1.0"
+requires-python = ">= 3.12.11"
+readme = "README.md"
+authors = [{name="IATI Secretariat", email="support@iatistandard.org"}]
+license = {file = "LICENSE"}
+description = "Web application for user account self-service and to make write changes into the new IATI Registry via the Register Your Data API"
+
+dependencies = [
+    "mozilla-django-oidc",
+    "django",
+    "prometheus-client>=0.22.1",
+    "requests==2.32.4",
+    "types-requests==2.32.4.20250611"
+]
+
+[project.optional-dependencies]
+dev = [
+    "bandit[baseline]",
+    "black",
+    "flake8",
+    "flake8-pyproject",
+    "isort",
+    "mypy",
+    "pip-tools",
+    "pytest"
+]
+
+[tool.bandit.assert_used]
+skips = ["*/tests/unit/test_*.py"]
+
+[tool.mypy]
+strict = true
+mypy_path = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+addopts = [
+    "--import-mode=importlib"
+]
+pythonpath = [
+  "src", "tests"
+]
+
+[tool.pip-tools]
+strip-extras = true
+
+[tool.isort]
+py_version=312
+extend_skip = ['__pycache__']
+skip_gitignore = true
+src_paths = ['src', 'tests']
+line_length = 119
+profile = "black"
+
+[tool.flake8]
+max-line-length = 119
+extend_ignore = ['E203', 'W503', 'E275']
+exclude = ['__pycache__', '.pytest_cache']
+max_complexity = 7
+
+[tool.black]
+line-length = 119
+target-version = ['py312']
+include='''/.*/*.py$'''
