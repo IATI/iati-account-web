@@ -21,12 +21,15 @@ dependencies = [
 dev = [
     "bandit[baseline]",
     "black",
+    "django-extensions",
     "flake8",
     "flake8-pyproject",
     "isort",
     "mypy",
     "pip-tools",
-    "pytest"
+    "pyopenssl",
+    "pytest",
+    "werkzeug"
 ]
 
 [tool.bandit.assert_used]

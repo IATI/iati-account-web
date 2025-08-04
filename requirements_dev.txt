@@ -26,13 +26,17 @@ cryptography==45.0.5
     # via
     #   josepy
     #   mozilla-django-oidc
+    #   pyopenssl
 django==5.2.4
     # via
+    #   django-extensions
     #   django-stubs
     #   django-stubs-ext
     #   iati-account-web (pyproject.toml)
     #   mozilla-django-oidc
 django-environ==0.12.0
+    # via iati-account-web (pyproject.toml)
+django-extensions==4.1
     # via iati-account-web (pyproject.toml)
 django-stubs==5.2.2
     # via iati-account-web (pyproject.toml)
@@ -58,6 +62,8 @@ josepy==2.1.0
     # via mozilla-django-oidc
 markdown-it-py==3.0.0
     # via rich
+markupsafe==3.0.2
+    # via werkzeug
 mccabe==0.7.0
     # via flake8
 mdurl==0.1.2
@@ -101,6 +107,8 @@ pygments==2.19.2
     # via
     #   pytest
     #   rich
+pyopenssl==25.1.0
+    # via iati-account-web (pyproject.toml)
 pyproject-hooks==1.2.0
     # via
     #   build
@@ -130,10 +138,13 @@ typing-extensions==4.14.1
     #   django-stubs
     #   django-stubs-ext
     #   mypy
+    #   pyopenssl
 urllib3==2.5.0
     # via
     #   requests
     #   types-requests
+werkzeug==3.1.3
+    # via iati-account-web (pyproject.toml)
 wheel==0.45.1
     # via pip-tools
 

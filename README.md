@@ -17,6 +17,25 @@ Support | [IATI Support Website](https://iatistandard.org/en/guidance/get-suppor
 
 ## Development
 
+### Running locally
+
+Running this application locally and logging in to Asgardeo should not be done under HTTP as client secrets and user details will be passed via easily intercepted communications.  Local development should be done using SSL/TLS.
+
+The development dependencies include `django_extensions` and `werkzeug` that together with using `runserver_plus` can launch a local server with SSL.  To do this, we first need to generate a certificate and private key.
+
+This can be done using `openssl`:
+
+```
+openssl req -x509 -newkey rsa:4096 -keyout private-key.pem -out certificate.pem -sha256 -days 365 -nodes -subj "/C=GB/O=Open Data Services Co-operative Ltd./CN=api.eu.asgar
+deo.io"
+```
+
+The Django can be run over HTTPS using
+
+```
+python manage.py runserver_plus --cert-file certificate.pem --key-file private-key.pem
+```
+
 ### Adding new dependencies
 
 New dependencies are added to `pyproject.toml`.  Once these have been added `requirements.txt` and/or `requirements_dev.txt` need to be regenerated.  With:
