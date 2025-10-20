@@ -1,0 +1,262 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link href="https://cdn.jsdelivr.net/npm/iati-design-system@4.4.0/dist/css/iati.min.css" rel="stylesheet" />
+    <link href="{% static 'iati-account.css' %}" rel="stylesheet" />
+
+    <script src="https://cdn.jsdelivr.net/npm/iati-design-system@4.4.0/dist/js/iati.js"></script>
+    <link rel="icon" href="{% static 'img/favicon-32x32.png' %}" sizes="32x32" type="image/png" />
+    <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/ico" />
+
+    <title>
+      {% block title %}
+      {% endblock %}
+    </title>
+  </head>
+  <body class="iati-design-system--enabled">
+    <div class="iati-mobile-nav js-iati-mobile-nav">
+      <div class="iati-mobile-nav__overlay js-iati-mobile-overlay"></div>
+      <nav class="iati-mobile-nav__menu">
+        <div class="iati-mobile-nav__header">
+          <h2 class="iati-mobile-nav__label">Menu</h2>
+
+          <button class="iati-menu-toggle iati-menu-toggle--close js-iati-menu-toggle-close"><span>Close</span></button>
+        </div>
+        <ul class="">
+          <li class="iati-mobile-nav__item">
+            <a href="#" class="iati-mobile-nav__link">IATI Account</a>
+          </li>
+          <li class="iati-mobile-nav__item">
+            <a href="#" class="iati-mobile-nav__link">About</a>
+          </li>
+        </ul>
+        <ul class="">
+          <li class="iati-mobile-nav__item">
+            <a href="https://iatistandard.org/en/about/" class="iati-mobile-nav__link">About IATI</a>
+          </li>
+          <li class="iati-mobile-nav__item">
+            <a href="https://iatistandard.org/en/using-data/" class="iati-mobile-nav__link">Use Data</a>
+          </li>
+          <li class="iati-mobile-nav__item">
+            <a href="https://iatistandard.org/en/guidance/publishing-data/" class="iati-mobile-nav__link">Publish Data</a>
+          </li>
+          <li class="iati-mobile-nav__item">
+            <a href="https://iatistandard.org/guidance/get-support/" class="iati-mobile-nav__link">Contact</a>
+          </li>
+          <li class="iati-mobile-nav__item">
+            {% if user.is_authenticated %}
+              <form method="post" action="{% url 'oidc_logout' %}">
+                {% csrf_token %}
+                <a class="iati-mobile-nav__link" onclick="this.parentNode.submit();">Logout</a>
+              </form>
+            {% else %}
+              <a href="{% url 'oidc_authentication_init' %}" class="iati-mobile-nav__link">Login</a>
+            {% endif %}
+          </li>
+          <li class="iati-mobile-nav__item">
+            <a href="#" class="iati-mobile-nav__link">Help Docs</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <header class="iati-header">
+      <div class="iati-header__section iati-header__section--first">
+        <div class="iati-header__container">
+          <a href="https://iatistandard.org/" aria-label="Go to IATI homepage"><img class="iati-header__logo" alt="" src="https://iati.github.io/design-system/assets/logo-colour-Bag5CeA4.svg" /></a>
+
+          <nav class="iati-header__general-nav">
+            <ul class="iati-piped-list">
+              <li>
+                <a href="https://iatistandard.org/en/about/">About IATI</a>
+              </li>
+              <li>
+                <a href="https://iatistandard.org/en/using-data/">Use Data</a>
+              </li>
+              <li>
+                <a href="https://iatistandard.org/en/guidance/publishing-data/">Publish Data</a>
+              </li>
+              <li>
+                <a href="https://iatistandard.org/guidance/get-support/">Contact</a>
+              </li>
+              <li>
+                {% if user.is_authenticated %}
+                  <form action="{% url 'oidc_logout' %}" method="post">
+                    {% csrf_token %}
+                    <button class="iati-button iati-button--submit iati-button--compact" type="submit">Logout</button>
+                  </form>
+                {% else %}
+                  <form>
+                    {% csrf_token %}
+                    <button formaction="{% url 'oidc_authentication_init' %}" class="iati-button iati-button--submit iati-button--compact" type="submit">Login</button>
+                  </form>
+                {% endif %}
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+      <div class="iati-header__section iati-header__section--last iati-brand-background">
+        <div class="iati-header__container iati-brand-background__content">
+          <div class="iati-header__actions">
+            <div class="iati-country-switcher">
+              <label for="iati-country-switcher" class="iati-country-switcher__label">Choose your language</label>
+              <select name="language" id="iati-country-switcher" class="iati-country-switcher__control">
+                <option value="en">English</option>
+                <option value="fr">French</option>
+              </select>
+            </div>
+            <button class="iati-button iati-button--light hide--mobile-nav">
+              <span>Help Docs</span>
+              <i class="iati-icon iati-icon--info"></i>
+            </button>
+            <button class="iati-button iati-button--light">
+              <span>Search</span>
+              <i class="iati-icon iati-icon--search"></i>
+            </button>
+
+            <button class="iati-menu-toggle iati-menu-toggle--open js-iati-menu-toggle-open"><span class="iati-menu-toggle__label">Menu</span></button>
+          </div>
+
+          <div class="iati-header-title">
+            <p class="iati-header-title__eyebrow">IATI Tools</p>
+            <p class="iati-header-title__heading">IATI Account</p>
+          </div>
+
+          <div class="iati-header__nav">
+            <nav>
+              <ul class="iati-tool-nav">
+                <li>
+                  <a href="#" class="iati-tool-nav-link">Home</a>
+                </li>
+                <li>
+                  <a href="#" class="iati-tool-nav-link">About</a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </header>
+
+
+    <main class="iati-main">
+
+      {% block breadcrumbs %}
+      {% endblock %}
+      {% block body %}
+      {% endblock %}
+
+    </main>
+    <footer class="iati-footer iati-brand-background">
+    <div class="iati-brand-background__content">
+  <div class="iati-footer__section iati-footer__section--first">
+    <div class="iati-footer__container">
+      <div class="iati-footer-block">
+        <h2 class="iati-footer-block__title">Useful Links</h2>
+        <div class="iati-footer-block__content">
+          <ul>
+            <li><a href="#">Useful link</a></li>
+            <li><a href="#">Translation FAQs</a></li>
+            <li><a href="#">Another useful link</a></li>
+            <li><a href="#">Another even more useful longer link</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="iati-footer-block">
+          <h2 class="iati-footer-block__title iati-footer-block__title--centered">
+            Sign Up to Our Newsletter
+          </h2>
+          <div class="iati-footer-block__content">
+            <form class="iati-newsletter-form">
+              <div class="iati-newsletter-form__item">
+                <label for="newsletter-email" class="iati-newsletter-form__label">Email</label>
+                <input id="newsletter-email" type="text" class="iati-newsletter-form__input">
+              </div>
+              <div class="iati-newsletter-form__item">
+                <label for="newsletter-firstname" class="iati-newsletter-form__label">First name</label>
+                <input id="newsletter-firstname" type="text" class="iati-newsletter-form__input">
+              </div>
+              <div class="iati-newsletter-form__item">
+                <label for="newsletter-surname" class="iati-newsletter-form__label">Surname</label>
+                <input id="newsletter-surname" type="text" class="iati-newsletter-form__input">
+              </div>
+              <div class="iati-newsletter-form__item">
+                <button class="iati-newsletter-form__submit iati-button iati-button--submit">
+                  Subscribe
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+  <div class="iati-footer__section">
+    <div class="iati-footer__container">
+      <div class="iati-footer-block">
+        <h2 class="iati-footer-block__title">Additional Information</h2>
+        <div class="iati-footer-block__content iati-footer-block__content--columns">
+          <div>
+            <p>Part of the IATI Unified Platform.</p>
+            <p>
+              Code licensed under
+              <a href="https://www.gnu.org/licenses/agpl-3.0.en.html">GNU AGPL</a>.
+            </p>
+            <p>
+              Documentation licensed under
+              <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 3.0</a>.
+            </p>
+          </div>
+          <div>
+            <ul>
+              <li><a href="#">Web vX.Y.Z</a></li>
+              <li><a href="#">API vX.Y.Z</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="iati-footer__section iati-footer__section--last">
+    <div class="iati-footer__container">
+      <nav>
+        <ul class="iati-piped-list iati-footer__legal-nav">
+          <li><a href="https://web-terms.iatistandard.org/en/latest/privacy-policy/">Privacy</a></li><li><a href="https://web-terms.iatistandard.org/en/latest/cookie-policy/">Cookies</a></li><li><a href="https://web-terms.iatistandard.org/en/latest/copyright/">Copyright</a></li><li><a href="https://web-terms.iatistandard.org/en/latest/data-removal/">Data Removal</a></li>
+        </ul>
+      </nav>
+          <div class="iati-country-switcher">
+      <label for="iati-country-switcher" class="iati-country-switcher__label">Choose your language</label>
+              <select name="language" id="iati-country-switcher" class="iati-country-switcher__control">
+                <option value="en">English</option>
+                <option value="fr">French</option>
+              </select>
+    </div>
+
+      <div class="iati-footer__social">
+        <a href="https://www.linkedin.com/company/international-aid-transparency-initiative/" aria-label="LinkedIn">
+          <i class="iati-icon iati-icon--linkedin"></i>
+        </a>
+        <a href="https://x.com/IATI_aid" aria-label="X">
+          <i class="iati-icon iati-icon--x"></i>
+        </a>
+        <a href="https://www.youtube.com/channel/UCAVH1gcgJXElsj8ENC-bDQQ" aria-label="YouTube">
+          <i class="iati-icon iati-icon--youtube"></i>
+        </a>
+        <a href="https://www.facebook.com/IATIaid/" aria-label="Facebook">
+          <i class="iati-icon iati-icon--facebook"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+  </footer>
+  </body>
+</html>

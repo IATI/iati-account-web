@@ -1,80 +1,38 @@
-<html>
-<head>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h1>IATI Account App Skeleton</h1>
+{% block title %}
+IATI Account
+{% endblock %}
 
-{% if user.is_authenticated %}
-  <h2>User</h2>
-  <table>
-    <tr>
-      <td>username</td>
-      <td>{{ user.username }}</td>
-    </tr>
-    <tr>
-      <td>first_name</td>
-      <td>{{ user.first_name }}</td>
-    </tr>
-    <tr>
-      <td>last_name</td>
-      <td>{{ user.last_name }}</td>
-    </tr>
-    <tr>
-      <td>email</td>
-      <td>{{ user.email }}</td>
-    </tr>
-    <tr>
-      <td>password</td>
-      <td>{{ user.password }}</td>
-    </tr>
-    <tr>
-      <td>groups</td>
-      <td>{{ user.groups }}</td>
-    </tr>
-    <tr>
-      <td>user_permissions</td>
-      <td>{{ user.user_permissions }}</td>
-    </tr>
-    <tr>
-      <td>is_staff</td>
-      <td>{{ user.is_staff }}</td>
-    </tr>
-    <tr>
-      <td>is_active</td>
-      <td>{{ user.is_active }}</td>
-    </tr>
-    <tr>
-      <td>is_superuser</td>
-      <td>{{ user.is_superuser }}</td>
-    </tr>
-    <tr>
-      <td>last_login</td>
-      <td>{{ user.last_login }}</td>
-    </tr>
-    <tr>
-      <td>date_joined</td>
-      <td>{{ user.date_joined }}</td>
-    </tr>
-  </table>
+{% block body %}
 
-  <h2>Claims</h2>
-  <table>
-    {% for key, value in claims.items %}
-      <tr>
-        <td>{{ key }}</td>
-        <td>{{ value }}</td>
-      </tr>
-    {% endfor %}
-  </table>
+<div class="iati-callout iati-callout--red">
+  <p>Your old IATI Registry account username and password will not work with this new tool but should have been migrated. You will have received an email with instructions on what this means.</p>
+</div>
 
-  <form action="{% url 'oidc_logout' %}" method="post">
-    {% csrf_token %}
-    <input type="submit" value="logout">
-  </form>
-{% else %}
-  <a href="{% url 'oidc_authentication_init' %}">Login</a>
-{% endif %}
 
-</body>
-</html>
+<div style="display:flex;flex-direction: row; align-items: center;">
+  <div style="flex: 1;">
+    <h1>Welcome to your IATI Account</h1>
+    <p>This is a new IATI tool which replaces the accounts you used to access IATI Publisher and the IATI Registry. To continue your publishing journey with IATI you will need an IATI account.</p>
+    <p>If you have published IATI data before then your IATI Registry account should have been migrated but your old username and password will not work with this tool. You will have received an email with instructions on what this means.</p>
+  </div>
+
+  <div style="display:flex;flex-direction: column; align-items: center;flex: 1;">
+    <div style="margin: 10px; background-color: var(--color-teal-90); padding:10px;">
+      <div style="display:flex;flex-direction: column; align-items: center;">
+        <h1 style="color: white;">Sign in to your IATI Account</h1>
+        <form style="display:flex;flex-direction: column; align-items: center;">
+          <button class="iati-button iati-button--submit" type="submit"
+            formaction="{% url 'oidc_authentication_init' %}">Sign in with
+            IATI</button>
+          <p style="color: white;">Don't have an IATI account? <a href="#" style="color: white;">Find out more</a> and
+            create an account.</p>
+          <button class="iati-button iati-button--light" type="submit" formaction="#">Create account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
