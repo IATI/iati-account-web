@@ -7,10 +7,14 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link href="https://cdn.jsdelivr.net/npm/iati-design-system@4.4.0/dist/css/iati.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/iati-design-system@4.5.1/dist/css/iati.min.css" rel="stylesheet" />
     <link href="{% static 'iati-account.css' %}" rel="stylesheet" />
 
-    <script src="https://cdn.jsdelivr.net/npm/iati-design-system@4.4.0/dist/js/iati.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iati-design-system@4.5.1/dist/js/iati.js"></script>
+
+    {% block extra_head %}
+    {% endblock %}
+
     <link rel="icon" href="{% static 'img/favicon-32x32.png' %}" sizes="32x32" type="image/png" />
     <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/ico" />
 
@@ -30,11 +34,16 @@
         </div>
         <ul class="">
           <li class="iati-mobile-nav__item">
-            <a href="#" class="iati-mobile-nav__link">IATI Account</a>
+            <a href="{% url 'welcome:home' %}" class="iati-mobile-nav__link">Home</a>
+          </li>
+          {% if user.is_authenticated %}
+          <li class="iati-mobile-nav__item">
+            <a href="{% url 'account:home' %}" class="iati-mobile-nav__link">My Account</a>
           </li>
           <li class="iati-mobile-nav__item">
-            <a href="#" class="iati-mobile-nav__link">About</a>
+            <a href="{% url 'data:home' %}" class="iati-mobile-nav__link">My Data</a>
           </li>
+          {% endif %}
         </ul>
         <ul class="">
           <li class="iati-mobile-nav__item">
@@ -133,11 +142,16 @@
             <nav>
               <ul class="iati-tool-nav">
                 <li>
-                  <a href="#" class="iati-tool-nav-link">Home</a>
+                  <a href="{% url 'welcome:home' %}" class="iati-tool-nav-link">Home</a>
+                </li>
+                {% if user.is_authenticated %}
+                <li>
+                  <a href="{% url 'account:home' %}" class="iati-tool-nav-link">My Account</a>
                 </li>
                 <li>
-                  <a href="#" class="iati-tool-nav-link">About</a>
+                  <a href="{% url 'data:home' %}" class="iati-tool-nav-link">My Data</a>
                 </li>
+                {% endif %}
               </ul>
             </nav>
           </div>

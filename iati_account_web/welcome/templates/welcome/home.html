@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}
+IATI Account: Home
+{% endblock %}
+
+{% block body %}
+
+<h2>Welcome to IATI Account</h2>
+{% if user.is_authenticated %}
+  <h3>User</h3>
+  <table>
+    <tr>
+      <td>username</td>
+      <td>{{ user.username }}</td>
+    </tr>
+    <tr>
+      <td>first_name</td>
+      <td>{{ user.first_name }}</td>
+    </tr>
+    <tr>
+      <td>last_name</td>
+      <td>{{ user.last_name }}</td>
+    </tr>
+    <tr>
+      <td>email</td>
+      <td>{{ user.email }}</td>
+    </tr>
+    <tr>
+      <td>password</td>
+      <td>{{ user.password }}</td>
+    </tr>
+    <tr>
+      <td>groups</td>
+      <td>{{ user.groups }}</td>
+    </tr>
+    <tr>
+      <td>user_permissions</td>
+      <td>{{ user.user_permissions }}</td>
+    </tr>
+    <tr>
+      <td>is_staff</td>
+      <td>{{ user.is_staff }}</td>
+    </tr>
+    <tr>
+      <td>is_active</td>
+      <td>{{ user.is_active }}</td>
+    </tr>
+    <tr>
+      <td>is_superuser</td>
+      <td>{{ user.is_superuser }}</td>
+    </tr>
+    <tr>
+      <td>last_login</td>
+      <td>{{ user.last_login }}</td>
+    </tr>
+    <tr>
+      <td>date_joined</td>
+      <td>{{ user.date_joined }}</td>
+    </tr>
+  </table>
+
+  <h3>Claims</h3>
+  <table>
+    {% for key, value in claims.items %}
+      <tr>
+        <td>{{ key }}</td>
+        <td>{{ value }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+
+  <form action="{% url 'oidc_logout' %}" method="post">
+    {% csrf_token %}
+    <input type="submit" value="logout">
+  </form>
+
+{% endif %}
+
+
+
+{% endblock %}

@@ -23,6 +23,8 @@ from . import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("oidc/", include("mozilla_django_oidc.urls")),
-    path("", views.index, name="index"),
+    path("", include("iati_account_web.welcome.urls")),
+    path("account/", include("iati_account_web.account.urls")),
+    path("data/", include("iati_account_web.data.urls")),
     path("logout", views.logout, name="logout"),
 ]

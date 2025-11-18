@@ -66,6 +66,9 @@ ALLOWED_HOSTS: list[str] = []
 # Application definition
 
 INSTALLED_APPS = [
+    "iati_account_web.welcome.apps.WelcomeConfig",
+    "iati_account_web.account.apps.AccountConfig",
+    "iati_account_web.data.apps.DataConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "mozilla_django_oidc",

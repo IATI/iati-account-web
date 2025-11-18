@@ -23,12 +23,3 @@ def logout(request: HttpRequest) -> HttpResponseRedirect:
     # for k in request.session.keys():
     #     print(f"    {k}: {request.session[k]}")
     return redirect("/")
-
-
-def index(request: HttpRequest) -> HttpResponse:
-    template = loader.get_template("index.html")
-
-    print(f"OIDC Access Token: {request.session.get("oidc_access_token", None)}")
-
-    context = {"claims": request.session.get("claims", {})}
-    return HttpResponse(template.render(context, request))

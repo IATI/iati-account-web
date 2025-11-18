@@ -26,9 +26,8 @@ IATI Account
           <button class="iati-button iati-button--submit" type="submit"
             formaction="{% url 'oidc_authentication_init' %}">Sign in with
             IATI</button>
-          <p style="color: white;">Don't have an IATI account? <a href="#" style="color: white;">Find out more</a> and
-            create an account.</p>
-          <button class="iati-button iati-button--light" type="submit" formaction="#">Create account</button>
+          <p style="color: white;">Don't have an IATI account?  Click below and follow the link to Register.</p>
+          <button class="iati-button iati-button--light" type="submit" formaction="{% url 'oidc_authentication_init' %}">Create account</button>
         </form>
       </div>
     </div>
