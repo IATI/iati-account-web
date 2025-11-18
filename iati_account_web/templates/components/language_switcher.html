@@ -1,0 +1,12 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<form method="post" action="{% url 'set_language' %}">
+    {% csrf_token %}
+    <div class="iati-country-switcher">
+        <label for="iati-country-switcher" class="iati-country-switcher__label">Choose your language</label>
+        <select name="language" id="iati-country-switcher" class="iati-country-switcher__control"
+            onchange="this.form.submit()">
+            <option {% if LANGUAGE_CODE == "en" %}selected{% endif %} value="en">English</option>
+        </select>
+    </div>
+</form>

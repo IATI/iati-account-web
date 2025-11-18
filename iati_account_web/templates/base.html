@@ -114,13 +114,7 @@
       <div class="iati-header__section iati-header__section--last iati-brand-background">
         <div class="iati-header__container iati-brand-background__content">
           <div class="iati-header__actions">
-            <div class="iati-country-switcher">
-              <label for="iati-country-switcher" class="iati-country-switcher__label">Choose your language</label>
-              <select name="language" id="iati-country-switcher" class="iati-country-switcher__control">
-                <option value="en">English</option>
-                <option value="fr">French</option>
-              </select>
-            </div>
+            {% include 'components/language_switcher.html' %}
             <button class="iati-button iati-button--light hide--mobile-nav">
               <span>Help Docs</span>
               <i class="iati-icon iati-icon--info"></i>
@@ -246,14 +240,7 @@
           <li><a href="https://web-terms.iatistandard.org/en/latest/privacy-policy/">Privacy</a></li><li><a href="https://web-terms.iatistandard.org/en/latest/cookie-policy/">Cookies</a></li><li><a href="https://web-terms.iatistandard.org/en/latest/copyright/">Copyright</a></li><li><a href="https://web-terms.iatistandard.org/en/latest/data-removal/">Data Removal</a></li>
         </ul>
       </nav>
-          <div class="iati-country-switcher">
-      <label for="iati-country-switcher" class="iati-country-switcher__label">Choose your language</label>
-              <select name="language" id="iati-country-switcher" class="iati-country-switcher__control">
-                <option value="en">English</option>
-                <option value="fr">French</option>
-              </select>
-    </div>
-
+      {% include 'components/language_switcher.html' %}
       <div class="iati-footer__social">
         <a href="https://www.linkedin.com/company/international-aid-transparency-initiative/" aria-label="LinkedIn">
           <i class="iati-icon iati-icon--linkedin"></i>
