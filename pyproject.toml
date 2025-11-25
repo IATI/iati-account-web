@@ -12,8 +12,10 @@ dependencies = [
     "django",
     "django-environ",
     "django-stubs[compatible-mypy]",
+    "oauthlib",
     "prometheus-client>=0.22.1",
     "requests==2.32.4",
+    "requests_oauthlib",
     "types-requests==2.32.4.20250611"
 ]
 

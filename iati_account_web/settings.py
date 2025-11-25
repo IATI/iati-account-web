@@ -32,7 +32,10 @@ env = environ.Env(
     OIDC_RP_CLIENT_SECRET=(str, None),
     SERVER_URL_BASE=(str, None),
     IDENTITY_SERVICE_BASE_URL=(str, None),
+    IDENTITY_SERVICE_CLIENT_ID=(str, None),
+    IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
 )
+
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -188,3 +191,14 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# These are the SCIM2 scopes that we use when making internal calls
+# to the identity service.
+IDENTITY_SERVICE_SCIM2_SCOPES = " ".join(
+    [
+        "internal_user_mgt_create",
+        "internal_user_mgt_update",
+        "internal_user_mgt_view",
+        "internal_role_mgt_users_update",
+    ]
+)

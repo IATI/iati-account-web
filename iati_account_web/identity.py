@@ -149,3 +149,115 @@ def logout(request: HttpRequest) -> HttpResponseRedirect:
     if "oidc_access_token" in request.session:
         del request.session["oidc_access_token"]
     return redirect("/")
+
+
+def connect_to_identity_service(scope: str = IDENTITY_SERVICE_SCIM2_SCOPES) -> str | None:
+    """Connect to and get an access token from the identity service
+
+    Parameters
+    ----------
+    scope : str, optional
+        List of scopes to request from the identity service, default is IDENTITY_SERVICE_SCIM2_SCOPES.
+
+    Returns
+    -------
+    str | None
+        Access token or None.
+    """
+    # Get an access token from Asgardeo.
+    client = oauthlib.oauth2.BackendApplicationClient(
+        client_id=env("IDENTITY_SERVICE_CLIENT_ID"),
+        scope=scope,
+    )
+    session = requests_oauthlib.OAuth2Session(client=client)
+
+    access_token = session.fetch_token(
+        token_url=env("IDENTITY_SERVICE_BASE_URL") + "oauth2/token",
+        client_id=env("IDENTITY_SERVICE_CLIENT_ID"),
+        client_secret=env("IDENTITY_SERVICE_CLIENT_SECRET"),
+    ).get("access_token", None)
+
+    return {"client": client, "session": session, "access_token": access_token}
+
+
+def patch_user_in_identity_service(user: IATIUser) -> bool:
+    """Patches a user record in the Identity Service
+
+    Parameters
+    ----------
+    user : IATIUser
+        Django user object.
+
+    Returns
+    -------
+    bool
+        True on success, False on failure.
+    """
+
+    idp = connect_to_identity_service()
+    if idp["access_token"] is None:
+        return False
+
+    # Construct patch payload.
+    payload = {
+        "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+        "Operations": [
+            {
+                "op": "replace",
+                "path": "name",
+                "value": {"familyName": user.unformatted_name, "formatted": user.unformatted_name},
+            },
+            {
+                "op": "replace",
+                "path": "urn:scim:schemas:extension:custom:User:iatiInPersonName",
+                "value": user.inperson_name,
+            },
+            {
+                "op": "replace",
+                "path": "urn:scim:schemas:extension:custom:User:iatiOnlineName",
+                "value": user.online_name,
+            },
+            {
+                "op": "replace",
+                "path": "urn:scim:schemas:extension:custom:User:iatiMailingList",
+                "value": "true" if user.mailinglist_subscriber else "false",
+            },
+            {
+                "op": "replace",
+                "path": "urn:scim:schemas:extension:custom:User:iatiPreferredLanguage",
+                "value": user.languages,
+            },
+            {"op": "replace", "path": "urn:scim:schemas:extension:custom:User:iatiCountry", "value": user.country},
+            {"op": "replace", "path": "urn:scim:schemas:extension:custom:User:iatiTimeZone", "value": user.timezone},
+            {
+                "op": "replace",
+                "path": "urn:scim:schemas:extension:custom:User:iatiHasBeenOnboarded",
+                "value": "true" if user.mailinglist_subscriber else "false",
+            },
+            {
+                "op": "replace",
+                "path": "urn:scim:schemas:extension:custom:User:iatiHasBeenOnboarded",
+                "value": "true" if user.mailinglist_subscriber else "false",
+            },
+            {
+                "op": "replace",
+                "path": "urn:scim:schemas:extension:custom:User:iatiFirstRegistrationUseCases",
+                "value": user.first_registration_use_cases,
+            },
+        ],
+    }
+
+    # Do the patch operation.
+    response = idp["session"].patch(
+        env("IDENTITY_SERVICE_BASE_URL") + f"scim2/Users/{user.oidc_sub}",
+        json=payload,
+        headers={"Content-Type": "application/scim+json"},
+    )
+
+    if response.status_code != 200:
+        print(response.status_code)
+        print(response.content)
+        # TODO: add logging
+        return False
+
+    return True
