@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block extra_head %}
+    <script src="{% static 'js/account.js' %}"></script>
+{% endblock %}
+
+{% block title %}
+IATI Account: My Account
+{% endblock %}
+
+{% block body %}
+<h2>My Account</h2>
+
+{% if detail_update %}
+<div id="detailUpdateCallout" class="iati-callout {% if detail_update_ok %} iati-callout--green {% else %} iati-callout--red {% endif %}">
+  <p class="iati-callout__title">{{ detail_update_text }}</p>
+</div><br/>
+{% endif %}
+
+<form class="iati-form" method="post" action="{% url 'account:home' %}" onchange="accountDetailsChanged()" id="accountDetailsForm">
+
+    {% csrf_token %}
+    <div class="iati-form__inner">
+        <div class="iati-form__item">
+            <label for="userEmail" class="iati-form__label">Email address: {{ user.email }}</label>
+        </div>
+    </div><br/>
+    <div class="iati-form__inner">
+        <h3>Your name</h3>
+        <p>We would like to know what to call you when we interact with you.  You can give us a full name, in whatever format you prefer, and then how we should (if you wish) call you in person or online.</p>
+        <p style="font-size: 0.8rem;">For example, your full name could be Dr. Zinhle Mhlongwane, but in everyday informal work you may prefer people to call you Zee.  In this case you could set your in-person and online names to Zee.</p>
+        <div class="iati-form__item">
+            <label for="{{ form.unformatted_name.id_for_label }}" class="iati-form__label">{{ form.unformatted_name.label }}:</label>
+            {{ form.unformatted_name }}
+        </div>
+        <div class="iati-form__item">
+            <label for="{{ form.inperson_name.id_for_label }}" class="iati-form__label">{{ form.inperson_name.label }}</label>
+            {{ form.inperson_name }}
+        </div>
+        <div class="iati-form__item">
+            <label for="{{ form.online_name.id_for_label }}" class="iati-form__label">{{ form.online_name.label }}</label>
+            {{ form.online_name }}
+        </div>
+    </div><br/>
+
+    <div class="iati-form__inner">
+        <h3>Mailing list subscriptions</h3>
+        <div class="iati-form__item">
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+                <div>
+                    {{ form.mailinglist_subscriber }}
+                </div>
+                <div>
+                    <label for="{{ form.mailinglist_subscriber.id_for_label }}" class="iati-form__label">{{ form.mailinglist_subscriber.label }}</label>
+                </div>
+            </div>
+        </div>
+    </div><br/>
+
+    <div class="iati-form__inner">
+        <h3>Preferred languages</h3>
+        <div class="iati-form__item">
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+                <div>
+                    {{ form.language_en }}
+                </div>
+                <div>
+                    <label for="{{ form.language_en.id_for_label }}" class="iati-form__label">{{ form.language_en.label }}</label>
+                </div>
+            </div>
+        </div>
+        <div class="iati-form__item">
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+                <div>
+                    {{ form.language_fr }}
+                </div>
+                <div>
+                    <label for="{{ form.language_fr.id_for_label }}" class="iati-form__label">{{ form.language_fr.label }}</label>
+                </div>
+            </div>
+        </div>
+        <div class="iati-form__item">
+            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+                <div>
+                    {{ form.language_es }}
+                </div>
+                <div>
+                    <label for="{{ form.language_es.id_for_label }}" class="iati-form__label">{{ form.language_es.label }}</label>
+                </div>
+            </div>
+        </div>
+    </div><br/>
+    <div class="iati-form__inner">
+        <h3>Where are you located in the world?</h3>
+        <div class="iati-form__item">
+            <div class="iati-select">
+                <label for="{{ form.country.id_for_label }}" class="iati-select__label">
+                    {{ form.country.label  }}
+                </label>
+                <div class="iati-select__control-wrapper">
+                    {{ form.country}}
+                </div> 
+            </div>
+        </div>
+        <div class="iati-form__item">
+            <div class="iati-select">
+                <label for="{{ form.timezone.id_for_label }}" class="iati-select__label">
+                    {{ form.timezone.label }}
+                </label>
+                <div class="iati-select__control-wrapper">
+                    {{ form.timezone}}
+                </div> 
+            </div>
+        </div>
+    </div><br/>
+
+    <div id="actionButtons" class="iati-form__inner" style="display: none;">
+        <button class="iati-form__submit iati-button iati-button--submit" type="button" onclick="submitAccountChanges()">Save</button>
+        <button id="discardChanges" class="iati-button" type="button" onclick="discardAccountChanges()">Discard changes</button>
+    </div>
+</form>
+
+
+{% endblock %}

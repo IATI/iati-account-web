@@ -78,6 +78,10 @@ mypy-extensions==1.1.0
     # via
     #   black
     #   mypy
+oauthlib==3.3.1
+    # via
+    #   iati-account-web (pyproject.toml)
+    #   requests-oauthlib
 packaging==25.0
     # via
     #   black
@@ -115,12 +119,17 @@ pyproject-hooks==1.2.0
     #   pip-tools
 pytest==8.4.1
     # via iati-account-web (pyproject.toml)
+pytz==2025.2
+    # via iati-account-web (pyproject.toml)
 pyyaml==6.0.2
     # via bandit
 requests==2.32.4
     # via
     #   iati-account-web (pyproject.toml)
     #   mozilla-django-oidc
+    #   requests-oauthlib
+requests-oauthlib==2.0.0
+    # via iati-account-web (pyproject.toml)
 rich==14.1.0
     # via bandit
 smmap==5.0.2

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}
+IATI Account
+{% endblock %}
+
+{% block body %}
+
+<div class="iati-callout iati-callout--red">
+{% comment %}Translators: short warning to users that they need to check their email for new account settings{% endcomment %}
+  <p>{% blocktranslate %}Your old IATI Registry account username and password will not work with this new tool but should have been migrated. You will have received an email with instructions on what this means.{% endblocktranslate %}</p>
+</div>
+
+
+<div style="display:flex;flex-direction: row; align-items: center;">
+  <div style="flex: 1;">
+{% comment %}Translators: Welcome text to the tool {% endcomment %}
+    <h1>{% blocktranslate %}Welcome to your IATI Account{% endblocktranslate %}</h1>
+    <p>{% blocktranslate %}This is a new IATI tool which replaces the accounts you used to access IATI Publisher and the IATI Registry. To continue your publishing journey with IATI you will need an IATI account.{% endblocktranslate %}</p>
+    <p>{% blocktranslate %}If you have published IATI data before then your IATI Registry account should have been migrated but your old username and password will not work with this tool. You will have received an email with instructions on what this means.{% endblocktranslate %}</p>
+  </div>
+
+  <div style="display:flex;flex-direction: column; align-items: center;flex: 1;">
+    <div style="margin: 10px; background-color: var(--color-teal-90); padding:10px;">
+      <div style="display:flex;flex-direction: column; align-items: center;">
+        <h1 style="color: white;">Sign in to your IATI Account</h1>
+        <form style="display:flex;flex-direction: column; align-items: center;">
+          <button class="iati-button iati-button--submit" type="submit"
+            formaction="{% url 'oidc_authentication_init' %}">Sign in with
+            IATI</button>
+          <p style="color: white;">Don't have an IATI account?  Click below and follow the link to Register.</p>
+          <button class="iati-button iati-button--light" type="submit" formaction="{% url 'oidc_authentication_init' %}">Create account</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

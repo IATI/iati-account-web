@@ -1,12 +1,15 @@
-<html>
-<head>
-</head>
-<body>
+{% extends 'base.html' %}
+{% load i18n %}
 
-<h1>IATI Account App Skeleton</h1>
+{% block title %}
+IATI Account: Home
+{% endblock %}
 
+{% block body %}
+
+<h2>Welcome to IATI Account</h2>
 {% if user.is_authenticated %}
-  <h2>User</h2>
+  <h3>User</h3>
   <table>
     <tr>
       <td>username</td>
@@ -58,7 +61,7 @@
     </tr>
   </table>
 
-  <h2>Claims</h2>
+  <h3>Claims</h3>
   <table>
     {% for key, value in claims.items %}
       <tr>
@@ -72,9 +75,9 @@
     {% csrf_token %}
     <input type="submit" value="logout">
   </form>
-{% else %}
-  <a href="{% url 'oidc_authentication_init' %}">Login</a>
+
 {% endif %}
 
-</body>
-</html>
+
+
+{% endblock %}

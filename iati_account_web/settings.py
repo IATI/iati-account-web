@@ -10,11 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import json
 import os.path
 import secrets
 from pathlib import Path
 
 import environ
+import pytz
+from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,12 +32,36 @@ env = environ.Env(
     OIDC_OP_JWKS_ENDPOINT=(str, "https://api.eu.asgardeo.io/t/iati/oauth2/jwks"),
     OIDC_RP_CLIENT_ID=(str, None),
     OIDC_RP_CLIENT_SECRET=(str, None),
+    SERVER_URL_BASE=(str, None),
+    IDENTITY_SERVICE_BASE_URL=(str, None),
+    IDENTITY_SERVICE_CLIENT_ID=(str, None),
+    IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
+    COUNTRY_CODELIST_JSON=(str, None),
 )
+
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
+
+# Setup logging.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG" if DEBUG else "WARNING",
+    },
+    "loggers": {
+        "mozilla_django_oidc": {"handlers": ["console"], "level": "DEBUG"},
+    },
+}
 
 # OIDC settings for communicating with the identity server.
 OIDC_OP_AUTHORIZATION_ENDPOINT = env("OIDC_OP_AUTHORIZATION_ENDPOINT")
@@ -43,17 +70,17 @@ OIDC_OP_USER_ENDPOINT = env("OIDC_OP_USER_ENDPOINT")
 OIDC_OP_JWKS_ENDPOINT = env("OIDC_OP_JWKS_ENDPOINT")
 OIDC_RP_CLIENT_ID = env("OIDC_RP_CLIENT_ID")
 OIDC_RP_CLIENT_SECRET = env("OIDC_RP_CLIENT_SECRET")
-OIDC_USERNAME_ALGO = "iati_account_web.auth.generate_username"
+OIDC_USERNAME_ALGO = "iati_account_web.identity.generate_username"
 OIDC_STORE_ACCESS_TOKEN = True
 OIDC_STORE_ID_TOKEN = True
 OIDC_CREATE_USER = True
-OIDC_RP_SCOPES = "openid email iati_account profile roles"
+OIDC_RP_SCOPES = "openid email iati_account profile roles ryd"
 OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_VERIFY_SSL = False
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
-OIDC_OP_LOGOUT_URL_METHOD = "iati_account_web.auth.logout_uri"
-AUTHENTICATION_BACKENDS = ("iati_account_web.auth.IATIAccountOIDCAuthBackend",)
+OIDC_OP_LOGOUT_URL_METHOD = "iati_account_web.identity.logout_uri"
+AUTHENTICATION_BACKENDS = ("iati_account_web.identity.IATIAccountOIDCAuthBackend",)
 
 SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -66,8 +93,11 @@ ALLOWED_HOSTS: list[str] = []
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
+    "iati_account_web.welcome.apps.WelcomeConfig",
+    "iati_account_web.account.apps.AccountConfig",
+    "iati_account_web.data.apps.DataConfig",
     "django.contrib.auth",
+    "django.contrib.admin",
     "mozilla_django_oidc",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -79,6 +109,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -138,6 +169,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = "account.IATIUser"
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -150,13 +183,57 @@ USE_I18N = True
 
 USE_TZ = True
 
+LANGUAGES = [
+    #    ("fr", _("French")),
+    ("en", _("English")),
+]
+
+LOCALE_PATHS = (BASE_DIR / "iati_account_web" / "locale",)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-
+STATICFILES_DIRS = [
+    BASE_DIR / "iati_account_web" / "static",
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# These are the SCIM2 scopes that we use when making internal calls
+# to the identity service.
+IDENTITY_SERVICE_SCIM2_SCOPES = " ".join(
+    [
+        "internal_user_mgt_create",
+        "internal_user_mgt_update",
+        "internal_user_mgt_view",
+        "internal_role_mgt_users_update",
+    ]
+)
+
+# Format a list of countries using the country codelist.  These
+# are used to allow end users to select their country.
+COUNTRY_LIST = [("", "--")]
+if env("COUNTRY_CODELIST_JSON") is not None:
+    with open(env("COUNTRY_CODELIST_JSON"), "r") as fh:
+        country_data = json.load(fh)
+        COUNTRY_LIST += [(country["code"], country["name"]) for country in country_data.get("data", [])]
+        COUNTRY_LIST = sorted(COUNTRY_LIST, key=lambda country: country[1])
+
+# Format a list of timezones using the internal list in pytz.  These
+# are used to allow end users to select their timezone.
+TIMEZONE_LIST = [("", "--")]
+for tz in pytz.common_timezones:
+    tz_parts = tz.replace("_", " ").split("/")
+    if len(tz_parts) == 1:
+        TIMEZONE_LIST.append((tz, f"{tz}"))
+    elif len(tz_parts) == 2:
+        region, city = tz_parts[0], tz_parts[1]
+        TIMEZONE_LIST.append((tz, f"{city} - {region}"))
+    elif len(tz_parts) == 3:
+        region, country, city = tz_parts[0], tz_parts[1], tz_parts[2]
+        TIMEZONE_LIST.append((tz, f"{city} - {country}/{region}"))
+    else:
+        raise ValueError()
