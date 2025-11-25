@@ -119,6 +119,8 @@ pyproject-hooks==1.2.0
     #   pip-tools
 pytest==8.4.1
     # via iati-account-web (pyproject.toml)
+pytz==2025.2
+    # via iati-account-web (pyproject.toml)
 pyyaml==6.0.2
     # via bandit
 requests==2.32.4

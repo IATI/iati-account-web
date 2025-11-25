@@ -48,6 +48,8 @@ prometheus-client==0.22.1
     # via iati-account-web (pyproject.toml)
 pycparser==2.22
     # via cffi
+pytz==2025.2
+    # via iati-account-web (pyproject.toml)
 requests==2.32.4
     # via
     #   iati-account-web (pyproject.toml)

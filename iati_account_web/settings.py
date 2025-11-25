@@ -16,6 +16,7 @@ import secrets
 from pathlib import Path
 
 import environ
+import pytz
 from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -35,6 +36,7 @@ env = environ.Env(
     IDENTITY_SERVICE_BASE_URL=(str, None),
     IDENTITY_SERVICE_CLIENT_ID=(str, None),
     IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
+    COUNTRY_CODELIST_JSON=(str, None),
 )
 
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
@@ -210,3 +212,28 @@ IDENTITY_SERVICE_SCIM2_SCOPES = " ".join(
         "internal_role_mgt_users_update",
     ]
 )
+
+# Format a list of countries using the country codelist.  These
+# are used to allow end users to select their country.
+COUNTRY_LIST = [("", "--")]
+if env("COUNTRY_CODELIST_JSON") is not None:
+    with open(env("COUNTRY_CODELIST_JSON"), "r") as fh:
+        country_data = json.load(fh)
+        COUNTRY_LIST += [(country["code"], country["name"]) for country in country_data.get("data", [])]
+        COUNTRY_LIST = sorted(COUNTRY_LIST, key=lambda country: country[1])
+
+# Format a list of timezones using the internal list in pytz.  These
+# are used to allow end users to select their timezone.
+TIMEZONE_LIST = [("", "--")]
+for tz in pytz.common_timezones:
+    tz_parts = tz.replace("_", " ").split("/")
+    if len(tz_parts) == 1:
+        TIMEZONE_LIST.append((tz, f"{tz}"))
+    elif len(tz_parts) == 2:
+        region, city = tz_parts[0], tz_parts[1]
+        TIMEZONE_LIST.append((tz, f"{city} - {region}"))
+    elif len(tz_parts) == 3:
+        region, country, city = tz_parts[0], tz_parts[1], tz_parts[2]
+        TIMEZONE_LIST.append((tz, f"{city} - {country}/{region}"))
+    else:
+        raise ValueError()
