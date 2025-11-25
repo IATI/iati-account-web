@@ -70,7 +70,7 @@ profile = "black"
 [tool.flake8]
 max-line-length = 119
 extend_ignore = ['E203', 'W503', 'E275']
-exclude = ['__pycache__', '.pytest_cache']
+exclude = ['__pycache__', '.pytest_cache', 'iati_account_web/account/migrations']
 max_complexity = 7
 
 [tool.black]

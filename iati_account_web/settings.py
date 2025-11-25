@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import json
 import os.path
 import secrets
 from pathlib import Path
@@ -29,12 +30,32 @@ env = environ.Env(
     OIDC_OP_JWKS_ENDPOINT=(str, "https://api.eu.asgardeo.io/t/iati/oauth2/jwks"),
     OIDC_RP_CLIENT_ID=(str, None),
     OIDC_RP_CLIENT_SECRET=(str, None),
+    SERVER_URL_BASE=(str, None),
+    IDENTITY_SERVICE_BASE_URL=(str, None),
 )
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
+
+# Setup logging.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG" if DEBUG else "WARNING",
+    },
+    "loggers": {
+        "mozilla_django_oidc": {"handlers": ["console"], "level": "DEBUG"},
+    },
+}
 
 # OIDC settings for communicating with the identity server.
 OIDC_OP_AUTHORIZATION_ENDPOINT = env("OIDC_OP_AUTHORIZATION_ENDPOINT")
@@ -43,17 +64,17 @@ OIDC_OP_USER_ENDPOINT = env("OIDC_OP_USER_ENDPOINT")
 OIDC_OP_JWKS_ENDPOINT = env("OIDC_OP_JWKS_ENDPOINT")
 OIDC_RP_CLIENT_ID = env("OIDC_RP_CLIENT_ID")
 OIDC_RP_CLIENT_SECRET = env("OIDC_RP_CLIENT_SECRET")
-OIDC_USERNAME_ALGO = "iati_account_web.auth.generate_username"
+OIDC_USERNAME_ALGO = "iati_account_web.identity.generate_username"
 OIDC_STORE_ACCESS_TOKEN = True
 OIDC_STORE_ID_TOKEN = True
 OIDC_CREATE_USER = True
-OIDC_RP_SCOPES = "openid email iati_account profile roles"
+OIDC_RP_SCOPES = "openid email iati_account profile roles ryd"
 OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_VERIFY_SSL = False
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
-OIDC_OP_LOGOUT_URL_METHOD = "iati_account_web.auth.logout_uri"
-AUTHENTICATION_BACKENDS = ("iati_account_web.auth.IATIAccountOIDCAuthBackend",)
+OIDC_OP_LOGOUT_URL_METHOD = "iati_account_web.identity.logout_uri"
+AUTHENTICATION_BACKENDS = ("iati_account_web.identity.IATIAccountOIDCAuthBackend",)
 
 SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -69,8 +90,8 @@ INSTALLED_APPS = [
     "iati_account_web.welcome.apps.WelcomeConfig",
     "iati_account_web.account.apps.AccountConfig",
     "iati_account_web.data.apps.DataConfig",
-    "django.contrib.admin",
     "django.contrib.auth",
+    "django.contrib.admin",
     "mozilla_django_oidc",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -140,6 +161,8 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+AUTH_USER_MODEL = "account.IATIUser"
 
 
 # Internationalization

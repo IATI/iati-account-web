@@ -18,13 +18,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from . import views
+from .identity import logout
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("oidc/", include("mozilla_django_oidc.urls")),
+    path("identity/oidc/", include("mozilla_django_oidc.urls")),
+    path("identity/logout", logout, name="logout"),
     path("", include("iati_account_web.welcome.urls")),
     path("account/", include("iati_account_web.account.urls")),
     path("data/", include("iati_account_web.data.urls")),
-    path("logout", views.logout, name="logout"),
 ]
