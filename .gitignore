@@ -7,3 +7,9 @@ __pycache__/
 # Python distribution/packaging
 *.egg
 *.egg-info/
+
+# Local setup and development
+db.sqlite3
+.env
+local-private-key.pem
+local-certificate.pem
