@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-import json
 import os.path
 import secrets
 from pathlib import Path
@@ -18,6 +17,7 @@ from pathlib import Path
 import environ
 import pytz
 from django.utils.translation import gettext_lazy as _
+from iati_account_web.helpers import _codelist_helper
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,8 +36,11 @@ env = environ.Env(
     IDENTITY_SERVICE_BASE_URL=(str, None),
     IDENTITY_SERVICE_CLIENT_ID=(str, None),
     IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
-    REGISTER_YOUR_DATA_BASE_URL=(str, None),
     COUNTRY_CODELIST_JSON=(str, None),
+    ORGANISATION_TYPE_CODELIST_JSON=(str, None),
+    REGION_CODELIST_JSON=(str, None),
+    LICENCE_JSON=(str, None),
+    REGISTER_YOUR_DATA_BASE_URL=(str, None),
     STATIC_ROOT=(str, None),
     POSTGRES_NAME=(str, None),
     POSTGRES_USER=(str, None),
@@ -241,14 +244,13 @@ IDENTITY_SERVICE_SCIM2_SCOPES = " ".join(
     ]
 )
 
-# Format a list of countries using the country codelist.  These
-# are used to allow end users to select their country.
-COUNTRY_LIST = [("", "--")]
-if env("COUNTRY_CODELIST_JSON") is not None:
-    with open(env("COUNTRY_CODELIST_JSON"), "r") as fh:
-        country_data = json.load(fh)
-        COUNTRY_LIST += [(country["code"], country["name"]) for country in country_data.get("data", [])]
-        COUNTRY_LIST = sorted(COUNTRY_LIST, key=lambda country: country[1])
+# Format codelists into lists and lookups.
+# NOTE: for the moment, this does not worry about the activity state of
+# the codelist entry.
+COUNTRY_LIST, COUNTRY_CODE_LOOKUP = _codelist_helper(env("COUNTRY_CODELIST_JSON"))
+ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = _codelist_helper(env("ORGANISATION_TYPE_CODELIST_JSON"))
+REGION_LIST, REGION_LOOKUP = _codelist_helper(env("REGION_CODELIST_JSON"))
+LICENCE_LIST, LICENCE_LOOKUP = _codelist_helper(env("LICENCE_JSON"))
 
 # Format a list of timezones using the internal list in pytz.  These
 # are used to allow end users to select their timezone.
