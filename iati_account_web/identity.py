@@ -261,3 +261,38 @@ def patch_user_in_identity_service(user: IATIUser) -> bool:
         return False
 
     return True
+
+
+def add_ryd_role_in_identity_service(user: IATIUser) -> bool:
+    """Gives the user the iati_register_your_data role in the Identity Service
+
+    Parameters
+    ----------
+    user : IATIUser
+        Django user object containing the oidc_sub we want to modify.
+
+    Returns
+    -------
+    bool
+    """
+    idp = connect_to_identity_service()
+    if idp["access_token"] is None:
+        return False
+
+    response = idp["session"].patch(
+        f"{env("IDENTITY_SERVICE_BASE_URL")}/scim2/v3/Roles/"
+        f"{env("IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA")}/Users",
+        json={
+            "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+            "Operations": [{"op": "add", "value": [{"value": user.oidc_sub}]}],
+        },
+        headers={"Content-Type": "application/scim+json"},
+    )
+
+    if response.status_code != 200:
+        print(response.status_code)
+        print(response.content)
+        # TODO: add logging
+        return False
+
+    return True
