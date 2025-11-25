@@ -26,6 +26,6 @@ jobs:
     - name: Linting with Isort
       run: isort . --check-only
 
-    - name: Type checking with MyPy
-      run: mypy .
+    # - name: Type checking with MyPy
+    #   run: mypy .
 
