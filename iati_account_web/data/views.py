@@ -6,6 +6,7 @@ from django.template import loader
 from iati_account_web.data.forms import OrganisationDetailsForm
 from iati_account_web.settings import (
     COUNTRY_CODE_LOOKUP,
+    COUNTRY_LIST,
     ORGANISATION_TYPE_LOOKUP,
     env,
 )
@@ -43,7 +44,8 @@ def home(request: HttpRequest) -> HttpResponse:
     if len(org_list) == 0:
         # There were no organisations in the response, so redirect to offer the opportunity to join
         # an organisation.
-        return redirect("data:join-reporting-org")
+        context = {"orgs": []}
+        # return redirect("data:join-reporting-org")
 
     else:
         # We have organisations in the payload, so show all the organisations, along with a join organisation button.
@@ -61,7 +63,32 @@ def home(request: HttpRequest) -> HttpResponse:
 def join_reporting_org(request: HttpRequest) -> HttpResponse:
     if not request.user.is_authenticated:
         return redirect("oidc_authentication_init")
-    return None
+
+    # Get list of discoverable reporting orgs.  Until the endpoint is running we just
+    # substitute a mock list here.
+    discoverable_reporting_orgs = [
+        {
+            "id": "abcd1234-b6df-4143-8895-100ec70877cd",
+            "human_readable_name": "Masibekela Group",
+            "hq_country": "ZA",
+            "organisation_identifier": "ZA-PPE-27669040",
+        },
+        {
+            "id": "abcd1234-ab4e-4667-a6b6-a8424b8fd38d",
+            "human_readable_name": "Amundsen BA",
+            "hq_country": "NO",
+            "organisation_identifier": "NO-BJK-41447156",
+        },
+    ]
+    for org in discoverable_reporting_orgs:
+        org["country"] = COUNTRY_CODE_LOOKUP.get(org["hq_country"], "")
+
+    template = loader.get_template("data/join_reporting_org.html")
+    context = {
+        "discoverable_reporting_orgs": discoverable_reporting_orgs,
+        "COUNTRY_LIST": COUNTRY_LIST,
+    }
+    return HttpResponse(template.render(context, request))
 
 
 def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:

@@ -13,6 +13,18 @@ IATI Account: My Data
 {% block body %}
 <h2>My Data</h2>
 
+{% if not orgs %}
+<div class="iati-callout">
+    <p>It looks like you're not associated with any organisations.  To start, you can 
+        <a href="{% url 'data:join-reporting-org' %}">search for your organisation</a>, or you can <a href="#">create an new reporting organisation</a> if your organisation is starting it's publishing journey with IATI.
+    </p>
+</div><br/>
+{% else %}
+<p class="iati-message">
+    If you need to join another organisation you can <a href="{% url 'data:join-reporting-org' %}">search by clicking here</a>, or if you can <a href="#">create an new reporting organisation</a> if you are involved in starting another organisation's publishing journey with IATI.
+</p><br/>
+{% endif %}
+
 {% if orgs|length > 1 %}
 <div class="iati-main__content">
 <article class="iati-main__article">
