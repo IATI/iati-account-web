@@ -101,6 +101,10 @@ pluggy==1.6.0
     # via pytest
 prometheus-client==0.22.1
     # via iati-account-web (pyproject.toml)
+psycopg==3.2.13
+    # via iati-account-web (pyproject.toml)
+psycopg-binary==3.2.13
+    # via psycopg
 pycodestyle==2.14.0
     # via flake8
 pycparser==2.22
@@ -147,6 +151,7 @@ typing-extensions==4.14.1
     #   django-stubs
     #   django-stubs-ext
     #   mypy
+    #   psycopg
     #   pyopenssl
 urllib3==2.5.0
     # via

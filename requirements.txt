@@ -18,11 +18,14 @@ cryptography==45.0.5
     #   mozilla-django-oidc
 django==5.2.4
     # via
+    #   django-extensions
     #   django-stubs
     #   django-stubs-ext
     #   iati-account-web (pyproject.toml)
     #   mozilla-django-oidc
 django-environ==0.12.0
+    # via iati-account-web (pyproject.toml)
+django-extensions==4.1
     # via iati-account-web (pyproject.toml)
 django-stubs==5.2.2
     # via iati-account-web (pyproject.toml)
@@ -46,6 +49,10 @@ pathspec==0.12.1
     # via mypy
 prometheus-client==0.22.1
     # via iati-account-web (pyproject.toml)
+psycopg==3.2.13
+    # via iati-account-web (pyproject.toml)
+psycopg-binary==3.2.13
+    # via psycopg
 pycparser==2.22
     # via cffi
 pytz==2025.2
@@ -68,6 +75,7 @@ typing-extensions==4.14.1
     #   django-stubs
     #   django-stubs-ext
     #   mypy
+    #   psycopg
 urllib3==2.5.0
     # via
     #   requests
