@@ -37,6 +37,13 @@ env = environ.Env(
     IDENTITY_SERVICE_CLIENT_ID=(str, None),
     IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
     COUNTRY_CODELIST_JSON=(str, None),
+    STATIC_ROOT=(str, None),
+    POSTGRES_NAME=(str, None),
+    POSTGRES_USER=(str, None),
+    POSTGRES_PASSWORD=(str, None),
+    POSTGRES_HOST=(str, None),
+    POSTGRES_PORT=(str, None),
+    ALLOWED_HOSTS=(list, []),
 )
 
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
@@ -87,7 +94,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
-ALLOWED_HOSTS: list[str] = []
+ALLOWED_HOSTS: list[str] = env("ALLOWED_HOSTS")
 
 
 # Application definition
@@ -143,12 +150,24 @@ WSGI_APPLICATION = "iati_account_web.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+if env("POSTGRES_NAME"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": env("POSTGRES_NAME"),
+            "USER": env("POSTGRES_USER"),
+            "PASSWORD": env("POSTGRES_PASSWORD"),
+            "HOST": env("POSTGRES_HOST"),
+            "PORT": env("POSTGRES_PORT"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -197,6 +216,9 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     BASE_DIR / "iati_account_web" / "static",
 ]
+if env("STATIC_ROOT"):
+    STATIC_ROOT = env("STATIC_ROOT")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
