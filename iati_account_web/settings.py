@@ -36,6 +36,7 @@ env = environ.Env(
     IDENTITY_SERVICE_BASE_URL=(str, None),
     IDENTITY_SERVICE_CLIENT_ID=(str, None),
     IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
+    REGISTER_YOUR_DATA_BASE_URL=(str, None),
     COUNTRY_CODELIST_JSON=(str, None),
     STATIC_ROOT=(str, None),
     POSTGRES_NAME=(str, None),
@@ -81,7 +82,12 @@ OIDC_USERNAME_ALGO = "iati_account_web.identity.generate_username"
 OIDC_STORE_ACCESS_TOKEN = True
 OIDC_STORE_ID_TOKEN = True
 OIDC_CREATE_USER = True
-OIDC_RP_SCOPES = "openid email iati_account profile roles ryd"
+OIDC_RP_SCOPES = (
+    "openid email iati_account profile roles ryd "
+    "ryd:reporting_org ryd:reporting_org:create ryd:reporting_org:update ryd:reporting_org:delete "
+    "ryd:dataset ryd:dataset:update ryd:dataset:delete "
+    "ryd:reporting_org:user ryd:reporting_org:user:update"
+)
 OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_VERIFY_SSL = False
 LOGIN_REDIRECT_URL = "/"
