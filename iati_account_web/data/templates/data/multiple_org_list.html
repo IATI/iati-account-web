@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block extra_head %}
+<script>
+
+</script>
+{% endblock %}
+{% block title %}
+IATI Account: My Data
+{% endblock %}
+
+{% block body %}
+<h2>My Data</h2>
+
+{% if not orgs %}
+<div class="iati-callout">
+    <p>It looks like you're not associated with any organisations.  To start, you can 
+        <a href="{% url 'data:join-reporting-org' %}">search for your organisation</a>, or you can <a href="#">create an new reporting organisation</a> if your organisation is starting it's publishing journey with IATI.
+    </p>
+</div><br/>
+{% else %}
+<p class="iati-message">
+    If you need to join another organisation you can <a href="{% url 'data:join-reporting-org' %}">search by clicking here</a>, or if you can <a href="#">create an new reporting organisation</a> if you are involved in starting another organisation's publishing journey with IATI.
+</p><br/>
+{% endif %}
+
+{% if orgs|length > 1 %}
+<div class="iati-main__content">
+<article class="iati-main__article">
+{% endif %}
+
+{% for org in orgs %}
+<div id="org_{{ org.id }}" class="iati-section iati-section--fill">
+    <h2 class="iati-section__title" id="org_{{ org.id }}">
+        {{ org.human_readable_name }}
+        <span style="float: right;">Role: {{ org.user_role }}</span>
+    </h2>
+    <div class="iati-section__content">
+        <div style="display: flex;">
+            <div style="flex: 8;">
+                <table>
+                    <tbody>
+                        <tr>
+                            <th scope="row" style="background-color: var(--color-green-30);">Organisation short name
+                            </th>
+                            <td><code>{{org.short_name}}</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" style="background-color: var(--color-green-30);">Contact email address</th>
+                            <td><a
+                                    href="mailto:{{org.contact_email}}?subject=Link from IATI Account">{{org.contact_email}}</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" style="background-color: var(--color-green-30);">Country</th>
+                            <td>{{org.hq_country}}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" style="background-color: var(--color-green-30);">Region</th>
+                            <td>{{org.region}}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row" style="background-color: var(--color-green-30);">Organisation identifier
+                            </th>
+                            <td><code>{{org.organisation_identifier}}</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" style="background-color: var(--color-green-30);">Organisation type</th>
+                            <td>{{org.organisation_type}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="flex: 4;">
+                <p style="float:right; font-size: 0.9rem; font-weight:800;">{% if org.registry_approved %}APPROVED TO PUBLISH{% else %}NOT APPROVED TO PUBLISH{% endif %}</p>
+                <button style="float:right;" class="iati-button" data-org-detail-url="{% url 'data:reporting-org-detail' oid=org.id %}" onclick="window.location.assign(this.dataset.orgDetailUrl)">View Organisation</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% if orgs|length > 1 %}
+</article>
+<aside class="iati-main__side iati-main__side--sticky">
+<nav>
+  <div class="iati-jump-menu__header">
+    <h2 class="iati-jump-menu__title">Jump to section</h2>
+    <button class="iati-jump-menu__toggle js-jump-menu-toggle" aria-controls="iati-jump-menu-items" aria-expanded="false">
+      Open
+    </button>
+  </div>
+  <ul id="iati-jump-menu-items" class="iati-jump-menu__items js-jump-menu-items" aria-hidden="true">
+    {% for org in orgs %}
+        <li class="iati-jump-menu__item"><a class="iati-jump-menu__link" href="#org_{{ org.id }}">{{ org.human_readable_name }}</a></li>
+    {% endfor %}
+  </ul>
+</nav>
+</aside>
+{% endif %}
+</div>
+
+
+{% endblock %}
