@@ -19,6 +19,8 @@ class IATIUser(AbstractUser):
     use_cases_publishing = models.BooleanField(default=False)
     use_cases_mailinglist = models.BooleanField(default=False)
     has_been_onboarded = models.BooleanField(default=False)
+    has_been_provisioned = models.BooleanField(default=False)
+    registry_id = models.CharField(max_length=36, blank=True, default="")
 
     @property
     def first_registration_use_cases(self) -> str:

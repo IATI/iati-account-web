@@ -102,6 +102,8 @@ class IATIAccountOIDCAuthBackend(OIDCAuthenticationBackend):  # type: ignore[mis
         user.timezone = claims.get("iatiTimeZone", "")
         user.set_first_registration_use_cases(claims.get("iatiFirstRegistrationUseCases", ""))
         user.has_been_onboarded = True if claims.get("iatiHasBeenOnboarded", "false").lower() == "true" else False
+        user.registry_id = claims.get("iatiRegistryId", "")
+        user.has_been_provisioned = True if claims.get("iatiHasBeenProvisioned", "false").lower() == "true" else False
         user.save()
 
         return user
@@ -128,6 +130,8 @@ class IATIAccountOIDCAuthBackend(OIDCAuthenticationBackend):  # type: ignore[mis
         user.timezone = claims.get("iatiTimeZone", "")
         user.set_first_registration_use_cases(claims.get("iatiFirstRegistrationUseCases", ""))
         user.has_been_onboarded = True if claims.get("iatiHasBeenOnboarded", "false").lower() == "true" else False
+        user.registry_id = claims.get("iatiRegistryId", "")
+        user.has_been_provisioned = True if claims.get("iatiHasBeenProvisioned", "false").lower() == "true" else False
         user.save()
 
         return user
@@ -180,13 +184,19 @@ def connect_to_identity_service(scope: str = IDENTITY_SERVICE_SCIM2_SCOPES) -> s
     return {"client": client, "session": session, "access_token": access_token}
 
 
-def patch_user_in_identity_service(user: IATIUser) -> bool:
+def patch_user_in_identity_service(
+    user: IATIUser, update_registry_id: bool = False, update_provisioned: bool = False
+) -> bool:
     """Patches a user record in the Identity Service
 
     Parameters
     ----------
     user : IATIUser
         Django user object.
+    update_registry_id : bool, optional
+        If true, updates the registry_id field in the identity service.  By default does not.
+    update_provisioned : bool, optional
+        If true, updates the has_been_provisioned field in the identity service.  By default does not.
 
     Returns
     -------
@@ -241,6 +251,22 @@ def patch_user_in_identity_service(user: IATIUser) -> bool:
             },
         ],
     }
+    if update_registry_id:
+        payload["Operations"].append(
+            {
+                "op": "replace",
+                "path": "urn:scim:schemas:extension:custom:User:iatiRegistryId",
+                "value": user.registry_id,
+            }
+        )
+    if update_provisioned:
+        payload["Operations"].append(
+            {
+                "op": "replace",
+                "path": "urn:scim:schemas:extension:custom:User:iatiHasBeenProvisioned",
+                "value": user.has_been_provisioned,
+            }
+        )
 
     # Do the patch operation.
     response = idp["session"].patch(
