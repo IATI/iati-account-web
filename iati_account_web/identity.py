@@ -232,12 +232,7 @@ def patch_user_in_identity_service(user: IATIUser) -> bool:
             {
                 "op": "replace",
                 "path": "urn:scim:schemas:extension:custom:User:iatiHasBeenOnboarded",
-                "value": "true" if user.mailinglist_subscriber else "false",
-            },
-            {
-                "op": "replace",
-                "path": "urn:scim:schemas:extension:custom:User:iatiHasBeenOnboarded",
-                "value": "true" if user.mailinglist_subscriber else "false",
+                "value": "true" if user.has_been_onboarded else "false",
             },
             {
                 "op": "replace",
