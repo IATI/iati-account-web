@@ -35,6 +35,8 @@ idna==3.10
     # via requests
 josepy==2.1.0
     # via mozilla-django-oidc
+libsuitecrm @ git+https://github.com/iati/iati-registry-libsuitecrm@v0.3.0
+    # via iati-account-web (pyproject.toml)
 mozilla-django-oidc==4.0.1
     # via iati-account-web (pyproject.toml)
 mypy==1.17.1
@@ -44,6 +46,7 @@ mypy-extensions==1.1.0
 oauthlib==3.3.1
     # via
     #   iati-account-web (pyproject.toml)
+    #   libsuitecrm
     #   requests-oauthlib
 pathspec==0.12.1
     # via mypy
@@ -60,10 +63,13 @@ pytz==2025.2
 requests==2.32.4
     # via
     #   iati-account-web (pyproject.toml)
+    #   libsuitecrm
     #   mozilla-django-oidc
     #   requests-oauthlib
 requests-oauthlib==2.0.0
-    # via iati-account-web (pyproject.toml)
+    # via
+    #   iati-account-web (pyproject.toml)
+    #   libsuitecrm
 sqlparse==0.5.3
     # via django
 types-pyyaml==6.0.12.20250516

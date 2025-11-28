@@ -13,6 +13,7 @@ dependencies = [
     "django-environ",
     "django-extensions",
     "django-stubs[compatible-mypy]",
+    "libsuitecrm @ git+https://github.com/iati/iati-registry-libsuitecrm@v0.3.0",
     "oauthlib",
     "prometheus-client>=0.22.1",
     "pytz",
