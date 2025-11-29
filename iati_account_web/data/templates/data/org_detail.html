@@ -18,30 +18,41 @@
 </style>
 
 <script>
-    function detailsChanged() {
-        window.onbeforeunload = function () {
-            return true;
-        };
-        document.getElementById("saveButton").style.display = "inline";
-        document.getElementById("discardChangesButton").style.display = "inline";
+    orgFormHasChanges = false;
+    userFormHasChanges = false;
+
+    function orgFormChangedAction() {
+        orgFormHasChanges = true;
+        window.onbeforeunload = function() {return true;};
+        document.getElementById("saveOrgChangesButton").style.display = "inline";
+        document.getElementById("discardOrgChangesButton").style.display = "inline";
     };
 
-    function discardChanges() {
-        window.onbeforeunload = null;
-        document.getElementById("saveButton").style.display = "none";
-        document.getElementById("discardChangesButton").style.display = "none";
+    function discardOrgChangesAction() {
+        orgFormHasChanges = false;
+        if (!userFormHasChanges) window.onbeforeunload = null;
+        document.getElementById("saveOrgChangesButton").style.display = "none";
+        document.getElementById("discardOrgChangesButton").style.display = "none";
         document.getElementById("organisationDetailsForm").reset();
     };
 
-    function submitChanges() {
-        window.onbeforeunload = null;
-        document.getElementById("organisationDetailsForm").submit();
+    function deleteOrganisationAction() {
+        alert("This is not implemented yet");
     };
 
-    function deleteOrg() {
-        alert("This is not implemented yet")
+    function discardUserChangesAction() {
+        userFormHasChanges = false;
+        if (!orgFormHasChanges) window.onbeforeunload = null;
+        document.getElementById("userFormActionButtons").style.display = "none";
+        document.getElementById("userForm").reset();
     };
 
+    function userFormChangedAction() {
+        userFormHasChanges = true;
+        window.onbeforeunload = function() {return true;};
+        userRolesFormChanged = true;
+        document.getElementById("userFormActionButtons").style.display = "block";
+    };
 </script>
 {% endblock %}
 {% block title %}
@@ -103,7 +114,7 @@ IATI Account: My Data
 
         <div id="organisationInformation" class="iati-section">
             <h2 class="iati-section__title">Organisation Information</h2>
-            <form class="iati-form" method="post" id="organisationDetailsForm" action="{% url 'data:reporting-org-detail' oid=org.id %}" onchange="detailsChanged()">
+            <form class="iati-form" method="post" id="organisationDetailsForm" action="{% url 'data:reporting-org-detail' oid=org.id %}" onsubmit="window.onbeforeunload = null;" onchange="orgFormChangedAction()">
 
                 {% csrf_token %}
                 <div class="iati-form__inner">
@@ -264,20 +275,49 @@ IATI Account: My Data
                 </div><br />
                 {% if show_org_info_button_box %}
                     <div id="actionButtons" class="iati-form__inner" style="display: block;">
-                        <button id="saveButton" class="iati-form__submit iati-button iati-button--submit" type="button"
-                            onclick="submitChanges()" style="display: none;">Save</button>
-                        <button id="discardChangesButton" class="iati-button" type="button" onclick="discardChanges()"
-                            style="display: none;">Discard Changes</button>
+                        <button id="saveOrgChangesButton" class="iati-form__submit iati-button iati-button--submit" type="button"
+                            style="display: none;" name="saveOrgChanges" onclick="saveOrgChangesAction()">Save</button>
+                        <button id="discardOrgChangesButton" class="iati-button" type="button"
+                            style="display: none;" onclick="discardOrgChangesAction()">Discard Changes</button>
                         {% if show_delete_org_button %}
-                        <button id="deleteOrganisation" class="iati-button iati-button--light" type="button"
-                            onclick="deleteOrg()">Delete Organisation</button>
+                        <button id="deleteOrganisationButton" class="iati-button iati-button--light" type="button" onclick="deleteOrganisationAction()">Delete Organisation</button>
                         {% endif %}
                     </div>
                 {% endif %}
+            </form>
         </div>
 
-        <div id="datasetInformation" class="iati-section iati-section--fill">
-            <h2 class="iati-section__title">Datasets</h2>
+        <div id="userInformation" class="iati-section iati-section--fill">
+            <h2 class="iati-section__title">Users</h2>
+            <form method="post" id="userForm" action="{% url 'data:reporting-org-detail' oid=org.id %}" onsubmit="window.onbeforeunload = null;" onchange="userFormChangedAction()">
+                {% csrf_token %}
+                {{ user_formset.management_form }}
+                <div class="iati-table">
+                    <table class="iati-table__table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_form in user_formset %}
+                            <tr>
+                                <td style="display:none;">{{ user_form.user_id }}</td>
+                                <td>{{ user_form.name.value }}</td>
+                                <td>{{ user_form.email.value }}</td>
+                                <td>{{ user_form.role }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div id="userFormActionButtons" class="iati-form__inner" style="display: none;">
+                    <button id="saveUserChangesButton" class="iati-form__submit iati-button iati-button--submit" type="submit" name="saveUserChanges" >Save Changes</button>
+                    <button id="discardUserChangesButton" class="iati-button" type="button" onclick="discardUserChangesAction()">Discard Changes</button>
+                </div>
+            </form>
         </div>
 
         <div id="organisationActions" class="iati-section iati-section--fill">

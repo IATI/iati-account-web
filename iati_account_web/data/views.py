@@ -1,10 +1,16 @@
 import logging
 from datetime import datetime
 
+from django.forms import formset_factory
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template import loader
-from iati_account_web.data.forms import CreateOrganisationForm, JoinOrganisationForm, OrganisationDetailsForm
+from iati_account_web.data.forms import (
+    CreateOrganisationForm,
+    JoinOrganisationForm,
+    OrganisationDetailsForm,
+    OrgUserForm,
+)
 from iati_account_web.helpers import preflight_checks
 from iati_account_web.settings import (
     COUNTRY_CODE_LOOKUP,
@@ -174,37 +180,49 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
 
     # Handle form submission.
     if request.method == "POST":
-        form = OrganisationDetailsForm(request.POST)
-        have_form = True
-        iati_account_logger.debug(f"Updating organisation {oid}; form validation result {form.is_valid()}")
-        if form.is_valid():
-            response = session.patch(
-                f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs/{oid}",
-                allow_redirects=True,
-                json=form.get_ryd_patch_payload_from_cleaned_data(),
-            )
-            iati_account_logger.debug(f"response from updating organisation {response.status_code}")
-            if response.status_code != 200:
+        if "saveOrgChanges" in request.POST:
+            form = OrganisationDetailsForm(request.POST)
+            have_form = True
+            iati_account_logger.debug(f"Updating organisation {oid}; form validation result {form.is_valid()}")
+            if form.is_valid():
+                response = session.patch(
+                    f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs/{oid}",
+                    allow_redirects=True,
+                    json=form.get_ryd_patch_payload_from_cleaned_data(),
+                )
+                iati_account_logger.debug(f"response from updating organisation {response.status_code}")
+                if response.status_code != 200:
+                    context["errors"].append(
+                        {
+                            "title": "Could not save changes to organisations",
+                            "message": "There was an error in saving your changes to the organisation. "
+                            "Please try again later, and if the error persists please contact IATI Support",
+                        }
+                    )
+
+            else:
                 context["errors"].append(
                     {
-                        "title": "Could not save changes to organisations",
-                        "message": "There was an error in saving your changes to the organisation. "
-                        "Please try again later, and if the error persists please contact IATI Support",
+                        "title": "There was an error in your form",
+                        "message": "There was an error in saving your changes to the organisation.",
                     }
                 )
-
+        elif "saveUserChanges" in request.POST:
+            UserFormSet = formset_factory(OrgUserForm, extra=0)
+            formset = UserFormSet(request.POST)
+            if formset.is_valid():
+                # TODO: Process changes and make PUT requests.
+                pass
         else:
-            context["errors"].append(
-                {
-                    "title": "There was an error in your form",
-                    "message": "There was an error in saving your changes to the organisation.",
-                }
-            )
+            # TODO: shouldn't happen, 500 or 400 if it does.
+            pass
 
     # Here we need to load the organisation and build a form if necessary.
     response = session.get(f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs/{oid}", allow_redirects=True)
 
-    if response.status_code != 200:
+    if response.status_code == 200:
+        org = response.json()["data"]
+    else:
         if response.status_code == 404:
             context["errors"].append(
                 {
@@ -232,7 +250,37 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
         template = loader.get_template("data/org_detail_no_data.html")
         return HttpResponse(template.render(context, request))
 
-    org = response.json()["data"]
+    response = session.get(f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs/{oid}/users", allow_redirects=True)
+    if response.status_code == 200:
+        org_users = response.json()["data"]
+    else:
+        if response.status_code == 404:
+            context["errors"].append(
+                {
+                    "title": "The organisation could not be found",
+                    "message": "There was an error in loading this organisation. Please try again "
+                    "later, and if the error persists please contact IATI Support.",
+                }
+            )
+        elif response.status_code in (401, 403):
+            context["errors"].append(
+                {
+                    "title": "No authorisation",
+                    "message": "You are not authorised to view this organisation. If you believe this "
+                    "is an error then please contact IATI Support.",
+                }
+            )
+        elif response.status_code != 200:
+            context["errors"].append(
+                {
+                    "title": "There was a problem loading the organisation",
+                    "message": "There was an error in loading this organisation. Please try again later, "
+                    "and if the error persists please contact IATI Support.",
+                }
+            )
+        template = loader.get_template("data/org_detail_no_data.html")
+        return HttpResponse(template.render(context, request))
+
     first_publication_date = ""
     if org["metadata"]["first_publication_date"] != "":
         first_publication_date = datetime.fromisoformat(org["metadata"]["first_publication_date"])
@@ -285,6 +333,10 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
     context["show_delete_org_button"] = True if org["user_role"].lower() == "admin" else False
     context["show_org_info_button_box"] = False if org["user_role"].lower() == "contributor" else True
 
+    UserFormSet = formset_factory(OrgUserForm, extra=0)
+    user_list = [{"user_id": x["id"], "name": x["name"], "email": x["email"], "role": x["role"]} for x in org_users]
+    formset = UserFormSet(initial=user_list)
+    context["user_formset"] = formset
     template = loader.get_template("data/org_detail.html")
     return HttpResponse(template.render(context, request))
 
