@@ -370,7 +370,7 @@ def create_organisation(request: HttpRequest) -> HttpResponse:
             session.headers["Authorization"] = f"Bearer {request.session["oidc_access_token"]}"
             session.should_strip_auth = lambda old_url, new_url: False
             response = session.post(
-                f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs",
+                f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs/",
                 allow_redirects=True,
                 json=form.get_ryd_patch_payload_from_cleaned_data(),
             )
