@@ -33,6 +33,8 @@ def _codelist_helper(filename: str) -> (list[tuple[str, str]], dict[str, str]):
 
             lookup = {x["code"]: x["name"] for x in data.get("data", [])}
 
+    lookup[""] = ""
+
     return choice_list, lookup
 
 
