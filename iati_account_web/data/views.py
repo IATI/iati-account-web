@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 
 from django.http import HttpRequest, HttpResponse
@@ -11,6 +12,8 @@ from iati_account_web.settings import (
     env,
 )
 from requests import Session
+
+iati_account_logger = logging.getLogger("iati_account")
 
 
 def home(request: HttpRequest) -> HttpResponse:
@@ -94,26 +97,86 @@ def join_reporting_org(request: HttpRequest) -> HttpResponse:
     return HttpResponse(template.render(context, request))
 
 
-def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:
+def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa: C901
     preflight = preflight_checks(request)
     if preflight.not_okay_to_continue:
         return preflight.redirect
 
-    # Try to fetch the organisation from RYD.
     session = Session()
     session.headers["Authorization"] = f"Bearer {request.session["oidc_access_token"]}"
     session.should_strip_auth = lambda old_url, new_url: False
+
+    context = {"errors": []}
+    have_form = False
+
+    # Handle form submission.
+    if request.method == "POST":
+        form = OrganisationDetailsForm(request.POST)
+        have_form = True
+        iati_account_logger.debug(f"Updating organisation {oid}; form validation result {form.is_valid()}")
+        if form.is_valid():
+            response = session.patch(
+                f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs/{oid}",
+                allow_redirects=True,
+                json=form.get_ryd_patch_payload_from_cleaned_data(),
+            )
+            iati_account_logger.debug(f"response from updating organisation {response.status_code}")
+            if response.status_code != 200:
+                context["errors"].append(
+                    {
+                        "title": "Could not save changes to organisations",
+                        "message": "There was an error in saving your changes to the organisation. "
+                        "Please try again later, and if the error persists please contact IATI Support",
+                    }
+                )
+
+        else:
+            context["errors"].append(
+                {
+                    "title": "There was an error in your form",
+                    "message": "There was an error in saving your changes to the organisation.",
+                }
+            )
+
+    # Here we need to load the organisation and build a form if necessary.
     response = session.get(f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs/{oid}", allow_redirects=True)
 
-    # Handle the case where the request failed.  This is handled with an alert in the template.
     if response.status_code != 200:
-        context = {"ryd_outcome": "failed", "ryd_status_code": response.status_code}
+        if response.status_code == 404:
+            context["errors"].append(
+                {
+                    "title": "The organisation could not be found",
+                    "message": "There was an error in loading this organisation. Please try again "
+                    "later, and if the error persists please contact IATI Support.",
+                }
+            )
+        elif response.status_code in (401, 403):
+            context["errors"].append(
+                {
+                    "title": "No authorisation",
+                    "message": "You are not authorised to view this organisation. If you believe this "
+                    "is an error then please contact IATI Support.",
+                }
+            )
+        elif response.status_code != 200:
+            context["errors"].append(
+                {
+                    "title": "There was a problem loading the organisation",
+                    "message": "There was an error in loading this organisation. Please try again later, "
+                    "and if the error persists please contact IATI Support.",
+                }
+            )
+        template = loader.get_template("data/org_detail_no_data.html")
+        return HttpResponse(template.render(context, request))
 
-    else:
-        org = response.json()["data"]
+    org = response.json()["data"]
+    first_publication_date = ""
+    if org["metadata"]["first_publication_date"] != "":
+        first_publication_date = datetime.fromisoformat(org["metadata"]["first_publication_date"])
+
+    if not have_form:
         form = OrganisationDetailsForm(
             initial={
-                "short_name": org["metadata"]["short_name"],
                 "human_readable_name": org["metadata"]["human_readable_name"],
                 "organisation_type": org["metadata"]["organisation_type"],
                 "hq_country": org["metadata"]["hq_country"],
@@ -127,43 +190,37 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:
                 "exclusions_policy_url": org["metadata"]["exclusions_policy_url"],
                 "default_licence_id": org["metadata"]["default_licence_id"],
                 "reporting_source_type": org["metadata"]["reporting_source_type"],
-                "organisation_identifier": org["metadata"]["organisation_identifier"],
             }
         )
 
-        # Set editability based on user permission.
-        if org["user_role"].lower() == "contributor":
-            form.fields["human_readable_name"].disabled = True
-            form.fields["organisation_type"].disabled = True
-            form.fields["hq_country"].disabled = True
-            form.fields["region"].disabled = True
-            form.fields["contact_email"].disabled = True
-            form.fields["website"].disabled = True
-            form.fields["phone"].disabled = True
-            form.fields["address"].disabled = True
-            form.fields["description"].disabled = True
-            form.fields["data_portal_url"].disabled = True
-            form.fields["exclusions_policy_url"].disabled = True
-            form.fields["default_licence_id"].disabled = True
-            form.fields["reporting_source_type"].disabled = True
+    # Set editability based on user permission.
+    if org["user_role"].lower() == "contributor":
+        form.fields["human_readable_name"].disabled = True
+        form.fields["organisation_type"].disabled = True
+        form.fields["hq_country"].disabled = True
+        form.fields["region"].disabled = True
+        form.fields["contact_email"].disabled = True
+        form.fields["website"].disabled = True
+        form.fields["phone"].disabled = True
+        form.fields["address"].disabled = True
+        form.fields["description"].disabled = True
+        form.fields["data_portal_url"].disabled = True
+        form.fields["exclusions_policy_url"].disabled = True
+        form.fields["default_licence_id"].disabled = True
+        form.fields["reporting_source_type"].disabled = True
 
-        first_publication_date = ""
-        if org["metadata"]["first_publication_date"] != "":
-            first_publication_date = datetime.fromisoformat(org["metadata"]["first_publication_date"])
-
-        context = {
-            "ryd_outcome": "success",
-            "org": {
-                "id": org["id"],
-                "user_role": org["user_role"],
-                "registry_approved": org["metadata"]["registry_approved"],
-                "first_publication_date": first_publication_date,
-                "number_of_published_datasets": 0,
-            },
-            "form": form,
-            "show_delete_org_button": True if org["user_role"].lower() == "admin" else False,
-            "show_org_info_button_box": False if org["user_role"].lower() == "contributor" else True,
-        }
+    context["org"] = {
+        "id": org["id"],
+        "user_role": org["user_role"],
+        "registry_approved": org["metadata"]["registry_approved"],
+        "first_publication_date": first_publication_date,
+        "number_of_published_datasets": 0,
+        "organisation_identifier": org["metadata"]["organisation_identifier"],
+        "short_name": org["metadata"]["short_name"],
+    }
+    context["form"] = form
+    context["show_delete_org_button"] = True if org["user_role"].lower() == "admin" else False
+    context["show_org_info_button_box"] = False if org["user_role"].lower() == "contributor" else True
 
     template = loader.get_template("data/org_detail.html")
     return HttpResponse(template.render(context, request))
