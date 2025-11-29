@@ -1,12 +1,17 @@
+import logging
 import urllib.parse
 
 import oauthlib
 import requests_oauthlib
-from django.http import HttpRequest, HttpResponseRedirect
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, reverse
+from django.template import loader
 from iati_account_web.account.models import IATIUser
+from iati_account_web.crm import create_person_in_crm
 from iati_account_web.settings import IDENTITY_SERVICE_SCIM2_SCOPES, OIDC_RP_CLIENT_ID, env
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
+
+iati_account_logger = logging.getLogger("iati_account")
 
 
 def generate_username(email: str, claims: dict[str, str]) -> str:
@@ -317,3 +322,97 @@ def add_ryd_role_in_identity_service(user: IATIUser) -> bool:
         return False
 
     return True
+
+
+def lock_account(uid: str) -> bool:
+    """Tries to lock a user account
+
+    Parameters
+    ----------
+    uid : str
+
+    Returns
+    -------
+    bool
+    """
+    idp = connect_to_identity_service()
+    if idp["access_token"] is None:
+        return False
+
+    # Do the patch operation.
+    payload = {
+        "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
+        "Operations": [{"op": "replace", "path": "active", "value": "false"}],
+    }
+
+    response = idp["session"].patch(
+        env("IDENTITY_SERVICE_BASE_URL") + f"scim2/Users/{uid}",
+        json=payload,
+        headers={"Content-Type": "application/scim+json"},
+    )
+
+    if response.status_code != 200:
+        # TODO: add logging
+        return False
+
+    return True
+
+
+def provision_account(request: HttpRequest) -> HttpResponse:
+    """Provision an account for a new user by making sure the user has a matching person record.
+
+    Parameters
+    ----------
+    request : HttpRequest
+
+    Returns
+    -------
+    HttpResponse
+    """
+
+    if not request.user.is_authenticated:
+        return redirect("oidc_authentication_init")
+
+    if not request.user.has_been_provisioned:
+        # Add iati_register_your_data role in identity server.
+        iati_account_logger.debug(f"Adding iati_register_your_data role to {request.user.oidc_sub}")
+        if not add_ryd_role_in_identity_service(request.user):
+            # TODO: add logging/prom metric updates.
+            lock_account(request.user.oidc_sub)
+            template = loader.get_template("provisioning_error.html")
+            return HttpResponse(template.render({}, request))
+
+        # If the logged-in user has a completed registry_id field then we assume
+        # they have a matching Person record in the CRM and so we can just redirect
+        # the user to onboarding.
+        if request.user.registry_id:
+            iati_account_logger.debug(
+                f"Provisioning has been completed for user {request.user.oidc_sub} - finishing up"
+            )
+            request.user.has_been_provisioned = True
+            if not patch_user_in_identity_service(request.user, update_provisioned=True):
+                lock_account(request.user.oidc_sub)
+                template = loader.get_template("provisioning_error.html")
+                return HttpResponse(template.render({}, request))
+            request.user.save()
+
+            return redirect("account:onboarding")
+
+        # Otherwise, the user will need a Person record to be created. We then create
+        # it and redirect for the user to do OIDC authentication again which will
+        # refresh the access token.
+        iati_account_logger.debug(f"Trying to create person in the CRM for user {request.user.oidc_sub}")
+        outcomes = [
+            create_person_in_crm(request.user),
+            patch_user_in_identity_service(request.user, update_registry_id=True, update_provisioned=True),
+        ]
+        request.user.save()
+
+        if not all(outcomes):
+            # TODO: add logging/prom metric updates.
+            lock_account(request.user.oidc_sub)
+            template = loader.get_template("provisioning_error.html")
+            return HttpResponse(template.render({}, request))
+
+    # All should be okay, redirect to refresh the access token.
+    return redirect("oidc_authentication_init")
