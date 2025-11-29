@@ -92,3 +92,12 @@ class OrganisationDetailsForm(forms.Form):
             "phone": _get_field("phone"),
             "website": _get_field("website"),
         }
+
+
+class JoinOrganisationForm(forms.Form):
+    org_id = forms.UUIDField(widget=forms.HiddenInput(), required=True)
+    human_readable_name = forms.CharField(
+        max_length=256,
+        label=_("Organisation name"),
+        widget=forms.TextInput(attrs={"class": "iati-form__input", "readonly": "readonly"}),
+    )

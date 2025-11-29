@@ -34,7 +34,7 @@ IATI Account: My Data
 <div id="org_{{ org.id }}" class="iati-section iati-section--fill">
     <h2 class="iati-section__title" id="org_{{ org.id }}">
         {{ org.human_readable_name }}
-        <span style="float: right;">Role: {{ org.user_role }}</span>
+        <span style="float: right;">Role: {{ org.user_role_label }}</span>
     </h2>
     <div class="iati-section__content">
         <div style="display: flex;">
@@ -65,16 +65,20 @@ IATI Account: My Data
                             </th>
                             <td><code>{{org.organisation_identifier}}</code></td>
                         </tr>
-                        <tr>
-                            <th scope="row" style="background-color: var(--color-green-30);">Organisation type</th>
-                            <td>{{org.organisation_type}}</td>
-                        </tr>
+                        {% if org.user_role != "contributor_pending" %}
+                            <tr>
+                                <th scope="row" style="background-color: var(--color-green-30);">Organisation type</th>
+                                <td>{{org.organisation_type}}</td>
+                            </tr>
+                        {% endif %}
                     </tbody>
                 </table>
             </div>
             <div style="flex: 4;">
-                <p style="float:right; font-size: 0.9rem; font-weight:800;">{% if org.registry_approved %}APPROVED TO PUBLISH{% else %}NOT APPROVED TO PUBLISH{% endif %}</p>
-                <button style="float:right;" class="iati-button" data-org-detail-url="{% url 'data:reporting-org-detail' oid=org.id %}" onclick="window.location.assign(this.dataset.orgDetailUrl)">View Organisation</button>
+                {% if org.user_role != "contributor_pending" %}
+                    <p style="float:right; font-size: 0.9rem; font-weight:800;">{% if org.registry_approved %}APPROVED TO PUBLISH{% else %}NOT APPROVED TO PUBLISH{% endif %}</p>
+                    <button style="float:right;" class="iati-button" data-org-detail-url="{% url 'data:reporting-org-detail' oid=org.id %}" onclick="window.location.assign(this.dataset.orgDetailUrl)">View Organisation</button>
+                {% endif %}
             </div>
         </div>
     </div>
