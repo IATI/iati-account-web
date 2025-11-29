@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block extra_head %}
+
+<style>
+</style>
+
+<script>
+    function detailsChanged() {
+        window.onbeforeunload = function () {
+            return true;
+        };
+        document.getElementById("actionButtons").style.display = "block";
+    };
+
+    function discardChanges() {
+        window.onbeforeunload = null;
+        document.getElementById("actionButtons").style.display = "none";
+        document.getElementById("createOrganisationForm").reset();
+    };
+
+    function submitChanges() {
+        window.onbeforeunload = null;
+        document.getElementById("createOrganisationForm").submit();
+    };
+</script>
+{% endblock %}
+{% block title %}
+IATI Account: My Data
+{% endblock %}
+
+{% block body %}
+<div class="iati-main__before-content">
+    {% for error in errors %}
+        <div class="iati-callout iati-callout--red">
+            <p class="iati-callout__title">{{error.title}}</p>
+            <p>{{error.message}}</p>
+        </div>
+    {% endfor %}
+
+    <h2>Create a new reporting organisation</h2>
+ 
+</div>
+
+<div class="iati-main__content">
+    <article class="iati-main__article">
+
+        <form class="iati-form" method="post" id="createOrganisationForm" action="{% url 'data:create-reporting-org' %}" onchange="detailsChanged()">
+
+            {% csrf_token %}
+
+            <div id="organisationInformation" class="iati-section">
+                <h3 class="iati-section__title">Basic Organisation Information</h3>
+                <div class="iati-form__inner">
+                    <div class="iati-form__item">
+                        <label for="{{ form.human_readable_name.id_for_label }}" class="iati-form__label">
+                            {{ form.human_readable_name.label }}:
+                        </label>
+                        {{ form.human_readable_name }}
+                        <div>
+                            {% if form.human_readable_name.errors %} {% for error in form.human_readable_name.errors %}
+                                <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.organisation_type.id_for_label }}" class="iati-form__label">
+                            {{ form.organisation_type.label }}:
+                        </label>
+                        {{ form.organisation_type }}
+                        <div>
+                            {% if form.organisation_type.errors %} {% for error in form.organisation_type.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.hq_country.id_for_label }}" class="iati-form__label">
+                            {{ form.hq_country.label }}:
+                        </label>
+                        {{ form.hq_country }}
+                        <div>
+                            {% if form.hq_country.errors %} {% for error in form.hq_country.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.region.id_for_label }}" class="iati-form__label">
+                            {{ form.region.label }}:
+                        </label>
+                        {{ form.region }}
+                        <div>
+                            {% if form.region.errors %} {% for error in form.region.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div><br/>
+
+            <div id="contactInformation" class="iati-section">
+                <h3 class="iati-section__title">Contact Information</h3>
+                <div class="iati-form__inner">
+                    <div class="iati-form__item">
+                        <label for="{{ form.contact_email.id_for_label }}" class="iati-form__label">
+                            {{ form.contact_email.label }}:
+                        </label>
+                        {{ form.contact_email }}
+                        <div>
+                            {% if form.contact_email.errors %} {% for error in form.contact_email.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.phone.id_for_label }}" class="iati-form__label">
+                            {{ form.phone.label }}:
+                        </label>
+                        {{ form.phone }}
+                        <div>
+                            {% if form.phone.errors %} {% for error in form.phone.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.address.id_for_label }}" class="iati-form__label">
+                            {{ form.address.label }}:
+                        </label>
+                        {{ form.address }}
+                        <div>
+                            {% if form.address.errors %} {% for error in form.address.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div><br/>
+            <div id="detailedInformation" class="iati-section">
+                <h3 class="iati-section__title">More detailed information about your organisation</h3>
+                <div class="iati-form__inner">
+                    <div class="iati-form__item">
+                        <label for="{{ form.description.id_for_label }}" class="iati-form__label">
+                            {{ form.description.label }}:
+                        </label>
+                        {{ form.description }}
+                        <div>
+                            {% if form.description.errors %} {% for error in form.description.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.data_portal_url.id_for_label }}" class="iati-form__label">
+                            {{ form.data_portal_url.label }}:
+                        </label>
+                        {{ form.data_portal_url }}
+                        <div>
+                            {% if form.data_portal_url.errors %} {% for error in form.data_portal_url.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.website.id_for_label }}" class="iati-form__label">
+                            {{ form.website.label }}:</label>
+                        {{ form.website }}
+                        <div>
+                            {% if form.website.errors %} {% for error in form.website.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div><br/>
+            <div id="publishingInformation" class="iati-section">
+                <h3 class="iati-section__title">How you will publish</h3>
+                <div class="iati-form__inner">
+                    <div class="iati-form__item">
+                        <label for="{{ form.short_name.id_for_label }}" class="iati-form__label">
+                            {{ form.short_name.label }}:
+                        </label>
+                        {{ form.short_name }}
+                        <div>
+                            {% if form.short_name.errors %} {% for error in form.short_name.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.exclusions_policy_url.id_for_label }}" class="iati-form__label">
+                            {{ form.exclusions_policy_url.label }}:
+                        </label>
+                        {{ form.exclusions_policy_url }}
+                        <div>
+                            {% if form.exclusions_policy_url.errors %} {% for error in form.exclusions_policy_url.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.default_licence_id.id_for_label }}" class="iati-form__label">
+                            {{  form.default_licence_id.label }}:
+                        </label>
+                        {{ form.default_licence_id }}
+                        <div>
+                            {% if form.default_licence_id.errors %} {% for error in form.default_licence_id.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.reporting_source_type.id_for_label }}" class="iati-form__label">
+                            {{ form.reporting_source_type.label }}:
+                        </label>
+                        {{ form.reporting_source_type }}
+                        <div>
+                            {% if form.reporting_source_type.errors %} {% for error in form.reporting_source_type.errors %}
+                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                    <div class="iati-form__item">
+                        <label for="{{ form.organisation_identifier.id_for_label }}" class="iati-form__label">
+                            {{ form.organisation_identifier.label }}:
+                        </label>
+                        {{ form.organisation_identifier }}
+                        <div>
+                            {% if form.human_readable_name.errors %} {% for error in form.human_readable_name.errors %}
+                                <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %} {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div><br/>
+
+            <div id="actionButtons" class="iati-form__inner" style="display: none;">
+                <button id="saveButton" class="iati-form__submit iati-button iati-button--submit" type="button"
+                    onclick="submitChanges()">Create Organisation</button>
+                <button id="discardChangesButton" class="iati-button" type="button" onclick="discardChanges()">Discard Changes</button>
+            </div>
+        </form>
+    </article>
+    <aside class="iati-main__side iati-main__side--sticky">
+        <nav>
+        <div class="iati-jump-menu__header">
+            <h2 class="iati-jump-menu__title">Jump to section</h2>
+            <button class="iati-jump-menu__toggle js-jump-menu-toggle" aria-controls="iati-jump-menu-items" aria-expanded="false">
+            Open
+            </button>
+        </div>
+        <ul id="iati-jump-menu-items" class="iati-jump-menu__items js-jump-menu-items" aria-hidden="true">
+            <li class="iati-jump-menu__item"><a class="iati-jump-menu__link" href="#organisationInformation">Basic Organisation Information</a></li>
+            <li class="iati-jump-menu__item"><a class="iati-jump-menu__link" href="#contactInformation">Contact Information</a></li>
+            <li class="iati-jump-menu__item"><a class="iati-jump-menu__link" href="#detailedInformation">About Your Organisation</a></li>
+            <li class="iati-jump-menu__item"><a class="iati-jump-menu__link" href="#publishingInformation">Publishing Information</a></li>
+        </ul>
+        </nav>
+    </aside>
+</div>
+
+{% endblock %}

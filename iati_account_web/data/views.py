@@ -4,7 +4,7 @@ from datetime import datetime
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template import loader
-from iati_account_web.data.forms import JoinOrganisationForm, OrganisationDetailsForm
+from iati_account_web.data.forms import CreateOrganisationForm, JoinOrganisationForm, OrganisationDetailsForm
 from iati_account_web.helpers import preflight_checks
 from iati_account_web.settings import (
     COUNTRY_CODE_LOOKUP,
@@ -286,4 +286,61 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
     context["show_org_info_button_box"] = False if org["user_role"].lower() == "contributor" else True
 
     template = loader.get_template("data/org_detail.html")
+    return HttpResponse(template.render(context, request))
+
+
+def create_organisation(request: HttpRequest) -> HttpResponse:
+    """Generates the create organisation page and handles creation on form submission
+
+    Parameters
+    ----------
+    request : HttpRequest
+
+    Returns
+    -------
+    HttpResponse
+    """
+    preflight = preflight_checks(request)
+    if preflight.not_okay_to_continue:
+        return preflight.redirect
+
+    context = {"errors": [], "form": None}
+
+    if request.method == "POST":
+        # Handle form submission - create and validate the form from the POST request.
+        form = CreateOrganisationForm(request.POST)
+        context["form"] = form
+        iati_account_logger.debug(f"Creating organisation; form validation result {form.is_valid()}")
+        if form.is_valid():
+
+            # Form is valid so make the request to RYD to create the organisation.
+            session = Session()
+            session.headers["Authorization"] = f"Bearer {request.session["oidc_access_token"]}"
+            session.should_strip_auth = lambda old_url, new_url: False
+            response = session.post(
+                f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs",
+                allow_redirects=True,
+                json=form.get_ryd_patch_payload_from_cleaned_data(),
+            )
+            iati_account_logger.debug(f"Creating organisation; api_status={response.status_code}")
+
+            if response.status_code != 200:
+                # TODO: handle error
+                pass
+
+            # Organisation created okay, so go to org detail page for the new organisation.
+            redirect("data:org-detail", oid=response.json()["data"]["id"])
+
+        else:
+            # Highlight to the user that there are form errors.
+            context["errors"].append(
+                {
+                    "title": "There was an error in your form",
+                    "message": "There was an error in saving your changes to the organisation.",
+                }
+            )
+
+    if context["form"] is None:
+        context["form"] = CreateOrganisationForm()
+    template = loader.get_template("data/create_org.html")
     return HttpResponse(template.render(context, request))
