@@ -1,0 +1,72 @@
+.iati-account-lozenge {
+    margin-right: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+    font-size:0.8rem;
+    border-radius: 4px;
+}
+
+.iati-account-lozenge-teal-10 {
+    background: var(--color-teal-10);
+}
+
+.iati-account-lozenge-teal-90 {
+    background: var(--color-teal-90);
+    color: white;
+}
+
+.iati-account-lozenge-blue-10 {
+    background: var(--color-blue-10);
+}
+
+.iati-account-lozenge-blue-90 {
+    background: var(--color-blue-90);
+    color: white;
+}
+
+.iati-account-lozenge-purple-10 {
+    background: var(--color-purple-10);
+}
+
+.iati-account-lozenge-purple-90 {
+    background: var(--color-purple-90);
+    color: white;
+}
+
+.iati-account-lozenge-orange-10 {
+    background: var(--color-orange-10);
+}
+
+.iati-account-lozenge-orange-90 {
+    background: var(--color-orange-90);
+    color: white;
+}
+
+.iati-account-lozenge-green-10 {
+    background: var(--color-green-10);
+}
+
+.iati-account-lozenge-green-90 {
+    background: var(--color-green-90);
+    color: white;
+}
+
+.iati-account-lozenge-red-10 {
+    background: var(--color-red-10);
+}
+
+.iati-account-lozenge-red-90 {
+    background: var(--color-red-90);
+    color: white;
+}
+
+.iati-account-lozenge-grey-10 {
+    background: var(--color-grey-10);
+}
+
+.iati-account-lozenge-grey-90 {
+    background: var(--color-grey-90);
+    color: white;
+}
