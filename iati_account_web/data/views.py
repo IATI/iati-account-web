@@ -1,9 +1,9 @@
 from datetime import datetime
 
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect
 from django.template import loader
 from iati_account_web.data.forms import OrganisationDetailsForm
+from iati_account_web.identity import preflight_checks
 from iati_account_web.settings import (
     COUNTRY_CODE_LOOKUP,
     COUNTRY_LIST,
@@ -24,8 +24,9 @@ def home(request: HttpRequest) -> HttpResponse:
     -------
     HttpResponse
     """
-    if not request.user.is_authenticated:
-        return redirect("oidc_authentication_init")
+    preflight = preflight_checks(request)
+    if preflight.not_okay_to_continue:
+        return preflight.redirect
 
     # Get list of reporting orgs for this user from RYD.
     session = Session()
@@ -61,8 +62,10 @@ def home(request: HttpRequest) -> HttpResponse:
 
 
 def join_reporting_org(request: HttpRequest) -> HttpResponse:
-    if not request.user.is_authenticated:
-        return redirect("oidc_authentication_init")
+
+    preflight = preflight_checks(request)
+    if preflight.not_okay_to_continue:
+        return preflight.redirect
 
     # Get list of discoverable reporting orgs.  Until the endpoint is running we just
     # substitute a mock list here.
@@ -92,8 +95,9 @@ def join_reporting_org(request: HttpRequest) -> HttpResponse:
 
 
 def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:
-    if not request.user.is_authenticated:
-        return redirect("oidc_authentication_init")
+    preflight = preflight_checks(request)
+    if preflight.not_okay_to_continue:
+        return preflight.redirect
 
     # Try to fetch the organisation from RYD.
     session = Session()

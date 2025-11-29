@@ -1,13 +1,15 @@
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect
 from django.template import loader
+from iati_account_web.identity import preflight_checks
 
 
 def index(request: HttpRequest) -> HttpResponse:
 
+    preflight = preflight_checks(request)
+    if preflight.not_okay_to_continue:
+        return preflight.redirect
+
     if request.user.is_authenticated:
-        if not request.user.has_been_onboarded:
-            return redirect("account:start-onboarding")
         template = loader.get_template("welcome/home.html")
     else:
         template = loader.get_template("welcome/index.html")
