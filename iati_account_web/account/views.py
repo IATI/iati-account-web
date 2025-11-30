@@ -3,7 +3,10 @@ from django.shortcuts import redirect
 from django.template import loader
 from django.utils.translation import gettext_lazy as _
 from iati_account_web.account.forms import AccountOnboardingForm, AccountSelfServiceForm
-from iati_account_web.identity import add_ryd_role_in_identity_service, patch_user_in_identity_service
+from iati_account_web.helpers import preflight_checks
+from iati_account_web.identity import (
+    patch_user_in_identity_service,
+)
 
 
 def self_service(request: HttpRequest) -> HttpResponse:
@@ -18,8 +21,9 @@ def self_service(request: HttpRequest) -> HttpResponse:
     HttpResponse
     """
 
-    if not request.user.is_authenticated:
-        return redirect("oidc_authentication_init")
+    preflight = preflight_checks(request)
+    if preflight.not_okay_to_continue:
+        return preflight.redirect
 
     context = {"detail_update": False, "detail_update_ok": None, "detail_update_text": ""}
 
@@ -56,8 +60,9 @@ def onboarding(request: HttpRequest) -> HttpResponse:
     HttpResponse
     """
 
-    if not request.user.is_authenticated:
-        return redirect("oidc_authentication_init")
+    preflight = preflight_checks(request, check_onboarding=False)
+    if preflight.not_okay_to_continue:
+        return preflight.redirect
 
     context = {"detail_update": False, "detail_update_ok": None, "detail_update_text": ""}
 
@@ -69,10 +74,12 @@ def onboarding(request: HttpRequest) -> HttpResponse:
         if form.is_valid():
             form.save()
             request.user.has_been_onboarded = True
-            request.user.save()
             if patch_user_in_identity_service(request.user):
-                if add_ryd_role_in_identity_service(request.user):
-                    return redirect("welcome:home")
+                context["detail_update_ok"] = True
+                context["detail_update_text"] = _("Account details updated successfully.")
+            request.user.save()
+
+            return redirect("welcome:home")
 
     else:
         form = AccountOnboardingForm(instance=request.user)

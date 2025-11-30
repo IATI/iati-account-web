@@ -6,5 +6,5 @@ app_name = "account"
 
 urlpatterns = [
     path("", views.self_service, name="home"),
-    path("onboarding", views.onboarding, name="start-onboarding"),
+    path("welcome", views.onboarding, name="onboarding"),
 ]

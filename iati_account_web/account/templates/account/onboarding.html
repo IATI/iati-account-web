@@ -19,7 +19,7 @@ IATI Account: Welcome to your new IATI Account
 </div><br/>
 {% endif %}
 
-<form class="iati-form" method="post" action="{% url 'account:start-onboarding' %}" id="onboardingForm">
+<form class="iati-form" method="post" action="{% url 'account:onboarding' %}" id="onboardingForm">
     {% csrf_token %}
     <div class="iati-form__inner">
         <div class="iati-form__item">

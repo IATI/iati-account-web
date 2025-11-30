@@ -60,6 +60,8 @@ isort==6.0.1
     # via iati-account-web (pyproject.toml)
 josepy==2.1.0
     # via mozilla-django-oidc
+libsuitecrm @ git+https://github.com/iati/iati-registry-libsuitecrm@v0.3.0
+    # via iati-account-web (pyproject.toml)
 markdown-it-py==3.0.0
     # via rich
 markupsafe==3.0.2
@@ -81,6 +83,7 @@ mypy-extensions==1.1.0
 oauthlib==3.3.1
     # via
     #   iati-account-web (pyproject.toml)
+    #   libsuitecrm
     #   requests-oauthlib
 packaging==25.0
     # via
@@ -130,10 +133,13 @@ pyyaml==6.0.2
 requests==2.32.4
     # via
     #   iati-account-web (pyproject.toml)
+    #   libsuitecrm
     #   mozilla-django-oidc
     #   requests-oauthlib
 requests-oauthlib==2.0.0
-    # via iati-account-web (pyproject.toml)
+    # via
+    #   iati-account-web (pyproject.toml)
+    #   libsuitecrm
 rich==14.1.0
     # via bandit
 smmap==5.0.2

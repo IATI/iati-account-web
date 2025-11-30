@@ -1,6 +1,6 @@
 [project]
 name = "iati-account-web"
-version = "0.3.0"
+version = "0.4.0"
 requires-python = ">= 3.12.11"
 readme = "README.md"
 authors = [{name="IATI Secretariat", email="support@iatistandard.org"}]
@@ -13,6 +13,7 @@ dependencies = [
     "django-environ",
     "django-extensions",
     "django-stubs[compatible-mypy]",
+    "libsuitecrm @ git+https://github.com/iati/iati-registry-libsuitecrm@v0.3.0",
     "oauthlib",
     "prometheus-client>=0.22.1",
     "pytz",

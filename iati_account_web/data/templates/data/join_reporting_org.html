@@ -62,12 +62,8 @@ function selectOrg(orgRow) {
         })
     }
     document.getElementById("foundOrgBox").style.display = "block";
-    document.getElementById("selectedOrgName").value = selectedOrgRow.children[0].innerHTML;
-    document.getElementById("selectedOrgId").value = selectedOrgRow.dataset.orgId;
-}
-
-function joinOrganisation() {
-    alert("Not implemented yet")
+    document.getElementById("id_human_readable_name").value = selectedOrgRow.children[0].innerHTML;
+    document.getElementById("id_org_id").value = selectedOrgRow.dataset.orgId;
 }
 </script>
 
@@ -79,7 +75,8 @@ IATI Account: Find your organisation
 {% block body %}
 <h2>Find your organisation</h2>
 <p>Search for your organisation below and click on the organisation in the table.</p>
-<form>
+<form method="post" action="{% url 'data:join-reporting-org' %}">
+    {% csrf_token %}
 
     <div class="iati-form__inner">
         <div class="iati-form__item">
@@ -101,11 +98,13 @@ IATI Account: Find your organisation
     </div><br/>
     <div class="iati-form__inner" id="foundOrgBox" style="display: none;">
         <div class="iati-form__item">
-            <label for="org" class="iati-form__label">Selected Organisation</label>
-            <input id="selectedOrgName" class="iati-form__input" type="text" readonly>
-            <input id="selectedOrgId" class="iati-form__input" type="text" hidden readonly>
+            <label for="{{ form.human_readable_name.id_for_label }}" class="iati-form__label">
+                {{ form.human_readable_name.label }}:
+            </label>
+            {{ form.human_readable_name }}
+            {{ form.org_id }}
         </div><br/>
-        <button class="iati-form__submit iati-button iati-button--submit" type="button" onclick="joinOrganisation()">Join Organisation</button>
+        <button class="iati-form__submit iati-button iati-button--submit" type="submit">Join Organisation</button>
     </div><br/>
 
     <div class="iati-table">

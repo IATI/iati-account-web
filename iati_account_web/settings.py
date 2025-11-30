@@ -37,6 +37,9 @@ env = environ.Env(
     IDENTITY_SERVICE_CLIENT_ID=(str, None),
     IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
     IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA=(str, None),
+    CRM_BASE_URL=(str, None),
+    CRM_CLIENT_ID=(str, None),
+    CRM_CLIENT_SECRET=(str, None),
     COUNTRY_CODELIST_JSON=(str, None),
     ORGANISATION_TYPE_CODELIST_JSON=(str, None),
     REGION_CODELIST_JSON=(str, None),
@@ -71,7 +74,11 @@ LOGGING = {
         "level": "DEBUG" if DEBUG else "WARNING",
     },
     "loggers": {
-        "mozilla_django_oidc": {"handlers": ["console"], "level": "DEBUG"},
+        "mozilla_django_oidc": {"handlers": ["console"], "level": "WARNING"},
+        "django": {"handlers": ["console"], "level": "INFO"},
+        "iati_account": {"handlers": ["console"], "level": "DEBUG"},
+        "requests": {"handlers": ["console"], "level": "WARNING"},
+        "requests_oauthlib": {"handlers": ["console"], "level": "WARNING"},
     },
 }
 
@@ -93,7 +100,7 @@ OIDC_RP_SCOPES = (
     "ryd:reporting_org:user ryd:reporting_org:user:update"
 )
 OIDC_RP_SIGN_ALGO = "RS256"
-OIDC_VERIFY_SSL = False
+OIDC_VERIFY_SSL = True
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 OIDC_OP_LOGOUT_URL_METHOD = "iati_account_web.identity.logout_uri"
