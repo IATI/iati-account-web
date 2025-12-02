@@ -11,6 +11,21 @@ app_logger = logging.getLogger("iati_account")
 audit_logger = logging.getLogger("audit")
 
 
+def post_login(request: HttpRequest) -> HttpResponseRedirect:
+    """Simple view that we call on login so we can log/count OIDC logins
+
+    Parameters
+    ----------
+    request : HttpRequest
+
+    Returns
+    -------
+    HttpResponseRedirect
+    """
+    audit_logger.info(f"User {request.user.log_label} logged in")
+    return redirect("welcome:home")
+
+
 def logout(request: HttpRequest) -> HttpResponseRedirect:
     """View called by Asgardeo on logout so that we can check session is clear.
 

@@ -19,11 +19,12 @@ from django.conf.urls.i18n import i18n_patterns
 from django.contrib import admin
 from django.urls import include, path
 
-from .views import logout, provision_account
+from .views import logout, post_login, provision_account
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("identity/oidc/", include("mozilla_django_oidc.urls")),
+    path("identity/post-login", post_login, name="post-login"),
     path("identity/logout", logout, name="logout"),
     path("identity/provisioning", provision_account, name="provisioning"),
 ]
