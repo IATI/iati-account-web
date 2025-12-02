@@ -77,6 +77,7 @@ LOGGING = {
         "mozilla_django_oidc": {"handlers": ["console"], "level": "WARNING"},
         "django": {"handlers": ["console"], "level": "INFO"},
         "iati_account": {"handlers": ["console"], "level": "DEBUG"},
+        "audit": {"handlers": ["console"], "level": "INFO"},
         "requests": {"handlers": ["console"], "level": "WARNING"},
         "requests_oauthlib": {"handlers": ["console"], "level": "WARNING"},
     },
@@ -89,7 +90,7 @@ OIDC_OP_USER_ENDPOINT = env("OIDC_OP_USER_ENDPOINT")
 OIDC_OP_JWKS_ENDPOINT = env("OIDC_OP_JWKS_ENDPOINT")
 OIDC_RP_CLIENT_ID = env("OIDC_RP_CLIENT_ID")
 OIDC_RP_CLIENT_SECRET = env("OIDC_RP_CLIENT_SECRET")
-OIDC_USERNAME_ALGO = "iati_account_web.identity.generate_username"
+OIDC_USERNAME_ALGO = "iati_account_web.oidc.generate_username"
 OIDC_STORE_ACCESS_TOKEN = True
 OIDC_STORE_ID_TOKEN = True
 OIDC_CREATE_USER = True
@@ -103,8 +104,8 @@ OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_VERIFY_SSL = True
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
-OIDC_OP_LOGOUT_URL_METHOD = "iati_account_web.identity.logout_uri"
-AUTHENTICATION_BACKENDS = ("iati_account_web.identity.IATIAccountOIDCAuthBackend",)
+OIDC_OP_LOGOUT_URL_METHOD = "iati_account_web.oidc.logout_uri"
+AUTHENTICATION_BACKENDS = ("iati_account_web.oidc.IATIAccountOIDCAuthBackend",)
 
 SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
