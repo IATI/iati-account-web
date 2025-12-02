@@ -17,6 +17,7 @@ class IATIUser(AbstractUser):
     language_es = models.BooleanField(default=False)
     use_cases_migration = models.BooleanField(default=False)
     use_cases_publishing = models.BooleanField(default=False)
+    use_cases_using_data = models.BooleanField(default=False)
     use_cases_mailinglist = models.BooleanField(default=False)
     has_been_onboarded = models.BooleanField(default=False)
     has_been_provisioned = models.BooleanField(default=False)
@@ -37,6 +38,7 @@ class IATIUser(AbstractUser):
             [
                 "migration" if self.use_cases_migration else "",
                 "publishing" if self.use_cases_publishing else "",
+                "usingdata" if self.use_cases_using_data else "",
                 "mailinglist" if self.use_cases_mailinglist else "",
             ]
         )
@@ -50,11 +52,14 @@ class IATIUser(AbstractUser):
         """
         self.use_cases_migration = False
         self.use_cases_publishing = False
+        self.use_cases_using_data = False
         self.use_cases_mailinglist = False
         if "migration" in s:
             self.use_cases_migration = True
         if "publishing" in s:
             self.use_cases_publishing = True
+        if "usingdata" in s:
+            self.use_cases_using_data = True
         if "mailinglist" in s:
             self.use_cases_mailinglist = True
 

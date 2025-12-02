@@ -21,10 +21,12 @@ class AccountSelfServiceForm(forms.ModelForm):
         ]
 
         labels = {
-            "unformatted_name": _("Name"),
-            "online_name": _("How do you want to be called online?"),
+            "unformatted_name": _("Full name"),
+            "online_name": _("How do you want to be called?"),
             "inperson_name": _("How do you want to be called in-person, for example at an IATI event?"),
-            "mailinglist_subscriber": _("General mailing list"),
+            "mailinglist_subscriber": _(
+                "IATI newsletter (monthly updates about IATI, our work, and community events)"
+            ),
             "language_en": get_language_info("en")["name_translated"],
             "language_fr": get_language_info("fr")["name_translated"],
             "language_es": get_language_info("es")["name_translated"],
@@ -60,6 +62,7 @@ class AccountOnboardingForm(forms.ModelForm):
             "country",
             "timezone",
             "use_cases_publishing",
+            "use_cases_using_data",
             "use_cases_mailinglist",
         ]
 
@@ -67,14 +70,17 @@ class AccountOnboardingForm(forms.ModelForm):
             "unformatted_name": _("Name"),
             "online_name": _("How do you want to be called online?"),
             "inperson_name": _("How do you want to be called in-person, for example at an IATI event?"),
-            "mailinglist_subscriber": _("General mailing list"),
+            "mailinglist_subscriber": _(
+                "IATI newsletter (monthly updates about IATI, out work, and community events)"
+            ),
             "language_en": get_language_info("en")["name_translated"],
             "language_fr": get_language_info("fr")["name_translated"],
             "language_es": get_language_info("es")["name_translated"],
             "country": _("Country"),
             "timezone": _("Time Zone"),
-            "use_cases_publishing": _("Publishing IATI Data"),
-            "use_cases_mailinglist": _("Join the IATI mailing list"),
+            "use_cases_publishing": _("To publish IATI data"),
+            "use_cases_using_data": _("To use IATI data"),
+            "use_cases_mailinglist": _("To join an IATI mailing list"),
         }
 
         widgets = {
@@ -88,5 +94,7 @@ class AccountOnboardingForm(forms.ModelForm):
             "country": forms.Select(attrs={"class": "iati-select__control"}),
             "timezone": forms.Select(attrs={"class": "iati-select__control"}),
             "use_cases_publishing": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
+            "use_cases_using_data": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
             "use_cases_mailinglist": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
         }
+
