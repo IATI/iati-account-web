@@ -5,10 +5,6 @@ from iati_account_web.helpers import preflight_checks
 
 def index(request: HttpRequest) -> HttpResponse:
 
-    preflight = preflight_checks(request)
-    if preflight.not_okay_to_continue:
-        return preflight.redirect
-
     if request.user.is_authenticated:
         template = loader.get_template("welcome/home.html")
     else:
