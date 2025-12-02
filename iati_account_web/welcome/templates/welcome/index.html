@@ -9,16 +9,16 @@ IATI Account
 
 <div class="iati-callout iati-callout--red">
 {% comment %}Translators: short warning to users that they need to check their email for new account settings{% endcomment %}
-  <p>{% blocktranslate %}Your old IATI Registry account username and password will not work with this new tool but should have been migrated. You will have received an email with instructions on what this means.{% endblocktranslate %}</p>
+  <p>{% blocktranslate %}Your old IATI Registry user account has been migrated to IATI Account. You can sign in with your email address once you have reset your password.{% endblocktranslate %}</p>
+  <p>{% blocktranslate %}You should have received an email with instructions on how to do this. If not, please <a href="https://iatistandard.org/en/guidance/get-support/">contact us</a>.{% endblocktranslate %}</p>
 </div>
-
 
 <div style="display:flex;flex-direction: row; align-items: center;">
   <div style="flex: 1;">
 {% comment %}Translators: Welcome text to the tool {% endcomment %}
     <h1>{% blocktranslate %}Welcome to your IATI Account{% endblocktranslate %}</h1>
-    <p>{% blocktranslate %}This is a new IATI tool which replaces the accounts you used to access IATI Publisher and the IATI Registry. To continue your publishing journey with IATI you will need an IATI account.{% endblocktranslate %}</p>
-    <p>{% blocktranslate %}If you have published IATI data before then your IATI Registry account should have been migrated but your old username and password will not work with this tool. You will have received an email with instructions on what this means.{% endblocktranslate %}</p>
+    <p>{% blocktranslate %}IATI Account has replaced the IATI Registry. It is where you register with IATI, maintain information about your organisation, and manage your organisation's IATI data files.{% endblocktranslate %}</p>
+    <p>{% blocktranslate %}If you use <a href="https://publisher.iatistandard.org/">IATI Publisher</a> you will use your IATI Account credentials to sign in from now on.{% endblocktranslate %}</p>
   </div>
 
   <div style="display:flex;flex-direction: column; align-items: center;flex: 1;">
@@ -29,7 +29,7 @@ IATI Account
           <button class="iati-button iati-button--submit" type="submit"
             formaction="{% url 'oidc_authentication_init' %}">Sign in with
             IATI</button>
-          <p style="color: white;">Don't have an IATI account?  Click below and follow the link to Register.</p>
+          <p style="color: white;">New to IATI? Click below to register as a new user:</p>
           <button class="iati-button iati-button--light" type="submit" formaction="{% url 'oidc_authentication_init' %}">Create account</button>
         </form>
       </div>
