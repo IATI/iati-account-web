@@ -144,6 +144,8 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "iati_account_web.urls"
 
+MESSAGE_STORAGE = "django.contrib.messages.storage.fallback.FallbackStorage"
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",

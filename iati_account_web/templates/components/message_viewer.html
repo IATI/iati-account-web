@@ -1,0 +1,12 @@
+{% if messages %}
+    {% for message in messages %}
+        <p class="iati-message 
+            {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}iati-message--notice
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}iati-message--success
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}iati-message--warning
+            {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}iati-message--error
+            {% endif %}">
+            {{ message }}
+        </p></br>
+    {% endfor %}
+{% endif %}

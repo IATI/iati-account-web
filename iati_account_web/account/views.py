@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template import loader
@@ -7,7 +8,9 @@ from iati_account_web.helpers import preflight_checks
 from iati_account_web.identity import (
     patch_user_in_identity_service,
 )
+import logging
 
+app_logger = logging.getLogger("iati_account")
 
 def self_service(request: HttpRequest) -> HttpResponse:
     """Generate self-service Account page view where users can self-service their account.
@@ -22,26 +25,32 @@ def self_service(request: HttpRequest) -> HttpResponse:
     """
 
     preflight = preflight_checks(request)
-    if preflight.not_okay_to_continue:
+    if not preflight.okay_to_continue:
         return preflight.redirect
 
-    context = {"detail_update": False, "detail_update_ok": None, "detail_update_text": ""}
-
     if request.method == "POST":
-        context["detail_update"] = True
-        context["detail_update_ok"] = False
-        context["detail_update_text"] = _("There was an error updating your account details, please try again later.")
         form = AccountSelfServiceForm(request.POST, instance=request.user)
         if form.is_valid():
-            form.save()
+            form.save(commit=False)
             if patch_user_in_identity_service(request.user):
-                context["detail_update_ok"] = True
-                context["detail_update_text"] = _("Account details updated successfully.")
+                messages.add_message(request, messages.SUCCESS, "Account updated successfully.")
+                form.save()
+            else:
+                app_logger.error(f"Error in patching user {request.user.oidc_sub} in IdP")
+                messages.add_message(
+                    request, messages.ERROR, "There was a problem updating your account, please try again later."
+                )
+        else:
+            messages.add_message(
+                request,
+                messages.WARNING,
+                "There was a problem with the form, please correct any errors and try again.",
+            )
 
     else:
         form = AccountSelfServiceForm(instance=request.user)
 
-    context["form"] = form
+    context = {"form": form}
 
     template = loader.get_template("account/self_service.html")
 
@@ -61,30 +70,36 @@ def onboarding(request: HttpRequest) -> HttpResponse:
     """
 
     preflight = preflight_checks(request, check_onboarding=False)
-    if preflight.not_okay_to_continue:
+    if not preflight.okay_to_continue:
         return preflight.redirect
 
-    context = {"detail_update": False, "detail_update_ok": None, "detail_update_text": ""}
-
     if request.method == "POST":
-        context["detail_update"] = True
-        context["detail_update_ok"] = False
-        context["detail_update_text"] = _("There was an error updating your account details, please try again later.")
         form = AccountOnboardingForm(request.POST, instance=request.user)
         if form.is_valid():
-            form.save()
             request.user.has_been_onboarded = True
+            form.save(commit=False)
             if patch_user_in_identity_service(request.user):
-                context["detail_update_ok"] = True
-                context["detail_update_text"] = _("Account details updated successfully.")
-            request.user.save()
+                messages.add_message(request, messages.SUCCESS, "Account updated successfully.")
+                request.user.save()
+                return redirect("welcome:home")
 
-            return redirect("welcome:home")
+            else:
+                app_logger.error(f"Error in patching user {request.user.oidc_sub} in IdP")
+                messages.add_message(
+                    request, messages.ERROR, "There was a problem completing the onboarding process, please try again later."
+                )
+        else:
+            messages.add_message(
+                request,
+                messages.WARNING,
+                "There was a problem with the form, please correct any errors and try again.",
+            )
+
 
     else:
         form = AccountOnboardingForm(instance=request.user)
 
-    context["form"] = form
+    context = {"form": form}
 
     template = loader.get_template("account/onboarding.html")
 
