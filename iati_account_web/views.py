@@ -185,7 +185,8 @@ def __provision_create_person_in_crm(request: HttpRequest) -> bool:
         libsuitecrm.CreateRecordFailed,
     ) as exc:
         audit_logger.error(
-            f"Provisioning: Failed to create record in CRM for user {request.user.log_label} in IdP with exception {exc}"
+            f"Provisioning: Failed to create record in CRM for user {request.user.log_label} "
+            f"in IdP with exception {exc}"
         )
         app_logger.error(f"Provisioning: Failed to create record in CRM with exception {exc}.")
         return False

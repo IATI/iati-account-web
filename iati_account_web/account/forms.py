@@ -97,4 +97,3 @@ class AccountOnboardingForm(forms.ModelForm):
             "use_cases_using_data": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
             "use_cases_mailinglist": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
         }
-

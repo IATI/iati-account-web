@@ -1,6 +1,5 @@
 from django.http import HttpRequest, HttpResponse
 from django.template import loader
-from iati_account_web.helpers import preflight_checks
 
 
 def index(request: HttpRequest) -> HttpResponse:
