@@ -38,7 +38,7 @@ def _codelist_helper(filename: str) -> (list[tuple[str, str]], dict[str, str]):
     return choice_list, lookup
 
 
-PreFlightStatus = namedtuple("PreFlightStatus", ["not_okay_to_continue", "redirect"])
+PreFlightStatus = namedtuple("PreFlightStatus", ["not_okay_to_continue", "okay_to_continue", "redirect"])
 
 
 def preflight_checks(request: HttpRequest, check_onboarding: bool = True) -> PreFlightStatus:
@@ -59,14 +59,18 @@ def preflight_checks(request: HttpRequest, check_onboarding: bool = True) -> Pre
     logging.getLogger("iati_account").debug(f"Preflight checks for {request.path}")
     if not request.user.is_authenticated:
         logging.getLogger("iati_account").debug(f"Preflight checks for {request.path}: not authenticated")
-        return PreFlightStatus(not_okay_to_continue=True, redirect=redirect("oidc_authentication_init"))
+        return PreFlightStatus(
+            not_okay_to_continue=True, okay_to_continue=False, redirect=redirect("oidc_authentication_init")
+        )
 
     if not request.user.has_been_provisioned:
         logging.getLogger("iati_account").debug(f"Preflight checks for {request.path}: not provisioned")
-        return PreFlightStatus(not_okay_to_continue=True, redirect=redirect("provisioning"))
+        return PreFlightStatus(not_okay_to_continue=True, okay_to_continue=False, redirect=redirect("provisioning"))
 
     if check_onboarding and not request.user.has_been_onboarded:
         logging.getLogger("iati_account").debug(f"Preflight checks for {request.path}: not onboarded")
-        return PreFlightStatus(not_okay_to_continue=True, redirect=redirect("account:onboarding"))
+        return PreFlightStatus(
+            not_okay_to_continue=True, okay_to_continue=False, redirect=redirect("account:onboarding")
+        )
 
-    return PreFlightStatus(not_okay_to_continue=False, redirect=None)
+    return PreFlightStatus(not_okay_to_continue=False, okay_to_continue=True, redirect=None)

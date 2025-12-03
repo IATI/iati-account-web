@@ -32,19 +32,19 @@
 
           <button class="iati-menu-toggle iati-menu-toggle--close js-iati-menu-toggle-close"><span>Close</span></button>
         </div>
-        <ul class="">
-          <li class="iati-mobile-nav__item">
-            <a href="{% url 'welcome:home' %}" class="iati-mobile-nav__link">Home</a>
-          </li>
-          {% if user.is_authenticated %}
-          <li class="iati-mobile-nav__item">
-            <a href="{% url 'account:home' %}" class="iati-mobile-nav__link">My Account</a>
-          </li>
-          <li class="iati-mobile-nav__item">
-            <a href="{% url 'data:home' %}" class="iati-mobile-nav__link">My Data</a>
-          </li>
-          {% endif %}
-        </ul>
+        {% if user.is_authenticated %}
+          <ul class="">
+            <li class="iati-mobile-nav__item">
+              <a href="{% url 'welcome:home' %}" class="iati-mobile-nav__link">Home</a>
+            </li>
+            <li class="iati-mobile-nav__item">
+              <a href="{% url 'account:home' %}" class="iati-mobile-nav__link">My Account</a>
+            </li>
+            <li class="iati-mobile-nav__item">
+              <a href="{% url 'data:home' %}" class="iati-mobile-nav__link">My Data</a>
+            </li>
+          </ul>
+        {% endif %}
         <ul class="">
           <li class="iati-mobile-nav__item">
             <a href="https://iatistandard.org/en/about/" class="iati-mobile-nav__link">About IATI</a>
@@ -132,23 +132,23 @@
             <p class="iati-header-title__heading">IATI Account</p>
           </div>
 
-          <div class="iati-header__nav">
-            <nav>
-              <ul class="iati-tool-nav">
-                <li>
-                  <a href="{% url 'welcome:home' %}" class="iati-tool-nav-link">Home</a>
-                </li>
-                {% if user.is_authenticated %}
-                <li>
-                  <a href="{% url 'account:home' %}" class="iati-tool-nav-link">My Account</a>
-                </li>
-                <li>
-                  <a href="{% url 'data:home' %}" class="iati-tool-nav-link">My Data</a>
-                </li>
-                {% endif %}
-              </ul>
-            </nav>
-          </div>
+          {% if user.is_authenticated %}
+            <div class="iati-header__nav">
+              <nav>
+                <ul class="iati-tool-nav">
+                  <li>
+                    <a href="{% url 'welcome:home' %}" class="iati-tool-nav-link">Home</a>
+                  </li>
+                  <li>
+                    <a href="{% url 'account:home' %}" class="iati-tool-nav-link">My Account</a>
+                  </li>
+                  <li>
+                    <a href="{% url 'data:home' %}" class="iati-tool-nav-link">My Data</a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          {% endif %}
         </div>
       </div>
     </header>
