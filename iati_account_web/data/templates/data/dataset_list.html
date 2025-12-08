@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block extra_head %}
+<script>
+function loadDatasetDetailPage(el) {
+    alert("not implemented yet");
+}
+function createDataset() {
+    alert("not implemented yet");
+}
+function changePage(el) {
+    if (el.id == "paginationCombo") {
+        window.location.assign(el.children[el.selectedIndex].dataset.href);
+    } else if ((el.id == "paginationFirst") || (el.id == "paginationLast")) {
+        window.location.assign(el.dataset.href);
+    } else {
+        console.log("Error in changing page - unknown widget id!!")
+    };
+}
+</script>
+{% endblock %}
+{% block title %}
+IATI Account: My Data
+{% endblock %}
+
+{% block body %}
+{% include 'components/message_viewer.html' %}
+    <h2>
+        {{ org.human_readable_name }}: Datasets
+        {% if org.registry_approved %}
+            <span class="iati-account-lozenge iati-account-lozenge-green-90">Approved to publish</span>
+        {% else %}
+            <span class="iati-account-lozenge iati-account-lozenge-orange-90">Not approved to publish</span>
+        {% endif %}
+    </h2>
+    <p>
+        {% if this_user.get_role_display|lower == "admin" %}
+            You are an <span class="iati-account-lozenge iati-account-lozenge-teal-90">ADMIN</span> for this organisation.
+        {% elif this_user.get_role_display|lower == "editor" %}
+            You are an <span class="iati-account-lozenge iati-account-lozenge-purple-90">EDITOR</span> for this organisation.
+        {% elif this_user.get_role_display|lower == "contributor" %}
+            You are an <span class="iati-account-lozenge iati-account-lozenge-grey-90">CONTRIBUTOR</span> for this organisation.
+        {% endif %}
+        <br/>
+    </p>
+
+    <div>
+        <button class="iati-button iati-button--submit" onclick="createDataset()">Create new dataset</button>
+    </div><br/>
+
+    <div class="iati-table" style="width:100%;">
+        <table class="iati-table__table" style="width:100%; table-layout: fixed;">
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Shortname</th>
+                    <th style="width: 55%;">URL</th>
+                    <th style="width: 10%;">Visibility</th>
+                    <th style="width: 10%;"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dataset in datasets %}
+                    <tr>
+                        <td><code>{{ dataset.short_name }}</code></td>
+                        <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><a href="{{ dataset.url }}">{{ dataset.url }}</a></td>
+                        <td>{{ dataset.get_visibility_display }}</td>
+                        <td>{{ dataset.did }}<button class="iati-button iati-button--compact" data-dataset-id="{{ dataset.dataset_id }}" onclick="loadDatasetDetailPage(this)">View/Edit</button></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div><br/>
+
+    <div style="display:flex; justify-content: center;">
+        <div style="display:flex; width:80%; align-items: center; justify-content: center;">
+            <button id="paginationFirst" class="iati-button iati-account-pagination-button-left" data-href="{% querystring page=pagination.prev_page %}" onclick="changePage(this)" {% if pagination.prev_page == None%}disabled{% endif %}>&lt;</button>
+            <div class="iati-select__control-wrapper">
+                <select id="paginationCombo" class="iati-select__control" onchange="changePage(this)">
+                    {% for page in pagination.pages %}
+                        <option data-href="{% querystring page=page.number %}" {% if page.number == pagination.page %}selected{% endif %}>{{page.label}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button id="paginationLast" class="iati-button iati-account-pagination-button-right" data-href="{% querystring page=pagination.next_page %}" onclick="changePage(this)" {% if pagination.next_page == None%}disabled{% endif %}>&gt;</button>
+        </div>
+</div>
+{% endblock %}

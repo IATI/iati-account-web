@@ -10,4 +10,7 @@ urlpatterns = [
     path("organisation/<uuid:oid>/delete", views.organisation_delete, name="delete-organisation"),
     path("join-reporting-org", views.join_reporting_org, name="join-reporting-org"),
     path("organisation", views.create_organisation, name="create-reporting-org"),
+    path("organisation/<uuid:oid>/datasets", views.dataset_list, name="dataset-list"),
+    path("organisation/<uuid:oid>/datasets/new", views.create_dataset, name="create-dataset"),
+    path("organisation/<uuid:oid>/datasets/<uuid:dataset_id>", views.dataset_detail, name="dataset-detail"),
 ]

@@ -15,8 +15,9 @@ from iati_account_web.data.forms import (
 )
 from iati_account_web.data.models import ReportingOrganisation, UserAndRole
 from iati_account_web.helpers import preflight_checks
-from iati_account_web.ryd_handling import RegisterYourDataSession
+from iati_account_web.ryd_handling import RegisterYourDataSession, parse_pagination_links
 from iati_account_web.ryd_handling.reporting_orgs import (
+    parse_dataset_list_to_objects,
     parse_discoverable_org_list_to_objects,
     parse_org_list_to_objects,
 )
@@ -505,3 +506,62 @@ def organisation_delete(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
         f"Reporting organisation '{form.cleaned_data["human_readable_name"]}' was successfully deleted.",
     )
     return redirect("data:home")
+
+
+def dataset_list(request: HttpRequest, oid: str) -> HttpResponse:
+
+    preflight = preflight_checks(request)
+    if not preflight.okay_to_continue:
+        return preflight.redirect
+
+    page = request.GET.get("page", 1)
+    page_size = 2
+    # page_size = request.GET.get("page_size", 100)
+
+    session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
+
+    # Get the dataset list.
+    try:
+        dataset_response = session.get(
+            f"/reporting-orgs/{oid}/datasets", params={"page": page, "page_size": page_size}
+        )
+        datasets = parse_dataset_list_to_objects(dataset_response.get("data", []))
+        pagination = parse_pagination_links(dataset_response.get("pagination", {}))
+    except Exception as exc:
+        audit_logger.error(
+            f"Could not access RYD for user {request.user.log_label} "
+            f"trying to load datasets for reporting org {oid} with error {exc}"
+        )
+        raise exc
+
+    # Get the reporting org details to decorate the page.
+    try:
+        reporting_org_data = session.get(f"/reporting-orgs/{oid}").get("data", {})
+        reporting_org = ReportingOrganisation.from_ryd_reporting_organisation(reporting_org_data)
+        this_user = UserAndRole.from_ryd(
+            reporting_org_data["user_role"], request.user.registry_id, reporting_org_data["id"], None, None
+        )
+    except Exception as exc:
+        audit_logger.error(
+            f"Could not access RYD for user {request.user.log_label} "
+            f"trying to load reporting org {oid} with error {exc}"
+        )
+        raise exc
+
+    context = {
+        "org": reporting_org,
+        "datasets": datasets,
+        "pagination": pagination,
+        "this_user": this_user,
+    }
+
+    template = loader.get_template("data/dataset_list.html")
+    return HttpResponse(template.render(context, request))
+
+
+def create_dataset(request: HttpRequest) -> HttpResponse:
+    return None
+
+
+def dataset_detail(request: HttpRequest, oid: str) -> HttpResponse:
+    return None
