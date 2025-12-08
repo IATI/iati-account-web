@@ -2,19 +2,7 @@
 {% load i18n %}
 
 {% block extra_head %}
-
 <style>
-    .iati-message--role-admin {
-        background-color: var(--color-purple-10);
-    }
-
-    .iati-message--role-member {
-        background-color: var(--color-green-10);
-    }
-
-    .iati-message--role-contributor {
-        background-color: var(--color-grey-10);
-    }
 </style>
 
 <script>
@@ -36,8 +24,18 @@
         document.getElementById("organisationDetailsForm").reset();
     };
 
-    function deleteOrganisationAction() {
-        alert("This is not implemented yet");
+    function saveOrgChangesAction() {
+        window.onbeforeunload = null;
+        document.getElementById("organisationDetailsForm").submit();
+    }
+
+    function deleteOrganisationShowConfirmationAction() {
+        document.getElementById("id_confirm_human_readable_name").value = "";
+        document.getElementById("deleteConfirmationModal").showModal();
+    };
+
+    function deleteOrganisationCancelAction() {
+        document.getElementById("deleteConfirmationModal").close();
     };
 
     function discardUserChangesAction() {
@@ -53,6 +51,16 @@
         userRolesFormChanged = true;
         document.getElementById("userFormActionButtons").style.display = "block";
     };
+
+    function deleteOrganisationCheckInput(org_name) {
+        const deleteConfirmationInput = document.getElementById("id_confirm_human_readable_name");
+        if (deleteConfirmationInput.value === org_name) {
+            document.getElementById("deleteOrganisationButton").disabled = false;
+        } else {
+            document.getElementById("deleteOrganisationButton").disabled = true;
+        };
+    };
+
 </script>
 {% endblock %}
 {% block title %}
@@ -60,272 +68,327 @@ IATI Account: My Data
 {% endblock %}
 
 {% block body %}
-<div class="iati-main__before-content">
-    {% for error in errors %}
-        <div class="iati-callout iati-callout--red">
-            <p class="iati-callout__title">{{error.title}}</p>
-            <p>{{error.message}}</p>
+
+<dialog id="deleteConfirmationModal" class="iati-account-delete-org-dialog">
+    <h2>Confirm deletion</h2>
+    <form id="deleteConfirmation" class="iati-form" method="post" action="{% url 'data:delete-organisation' oid=org.oid %}" onsubmit="window.onbeforeunload = null;" onchange="deleteOrganisationCheckInput('{{ org.human_readable_name}}')">
+        {% csrf_token %}
+        <div class="iati-form__inner">
+            <p style="font-weight: 600;">Please type the name of the Reporting Organisation ({{ org.human_readable_name }}) and click below to confirm you want to delete this organisation and all it's datasets.  <span style="font-weight: 800;">This cannot be undone.</span></p>
+            {{ delete_form.oid }}
+            {{ delete_form.human_readable_name }}
+            {{ delete_form.confirm_human_readable_name }}
+            <button id="deleteOrganisationButton" class="iati-button iati-button--submit" type="submit" disabled>Delete Organisation</button>
+            <button id="cancelDeleteOrganisationButton" class="iati-button" type="button" onclick="deleteOrganisationCancelAction()">Cancel</button>
         </div>
-    {% endfor %}
+    </form>
+</dialog>
 
-    <h2>{{ form.human_readable_name.value }}</h2>
+<div class="iati-main__before-content">
 
-    <p class="iati-message iati-message--role-{{org.user_role}}">
-        You have <span class="iati-message-highlight"></span>{{ org.user_role|upper }}</span> access to this
-        organisation.
-    </p>
+    {# Messages from previous page loads #}
+    <div id="messageContainer">
+        {% include 'components/message_viewer.html' %}
 
-    <div class="iati-figures">
-        <ul class="iati-figures__items">
-            <li class="iati-figures__item">
-                <span href="#" class="iati-figures__content">
-                    <span class="iati-figures__label">
-                        <span class="iati-figures__label-line">
-                            {% if org.registry_approved %}Approved{% else %}Not Approved{% endif %}
-                        </span>
-                        <span class="iati-figures__label-line">to Publish</span>
-                    </span>
-                </span>
-            </li>
-            <li class="iati-figures__item">
-                <span href="#" class="iati-figures__content">
-                    <span class="iati-figures__label">
-                        <span class="iati-figures__label-line">Number of</span>
-                        <span class="iati-figures__label-line">Published Datasets</span>
-                        <span class="iati-figures__number">{{ org.number_of_published_datasets }}</span>
-                    </span>
-                </span>
-            </li>
-            <li class="iati-figures__item">
-                <span href="#" class="iati-figures__content">
-                    <span class="iati-figures__label">
-                        <span class="iati-figures__label-line">First Published</span>
-                        <span class="iati-figures__number">{{ org.first_publication_date|date:"d M Y" }}</span>
-                    </span>
-                </span>
-            </li>
-        </ul>
+        {% for error in errors %}
+            <p class="iati-message iati-message--error">
+                <span class="iati-message-highlight">{{error.title}}</span><br/>
+                {{error.message}}
+            </p>
+        {% endfor %}
     </div>
 
+    <h2>
+        {{ org_form.human_readable_name.value }}
+        {% if org.registry_approved %}
+            <span class="iati-account-lozenge iati-account-lozenge-green-90">Approved to publish</span>
+        {% else %}
+            <span class="iati-account-lozenge iati-account-lozenge-orange-90">Not approved to publish</span>
+        {% endif %}
+    </h2>
+    <p>
+        {% if this_user.get_role_display|lower == "admin" %}
+            You are an <span class="iati-account-lozenge iati-account-lozenge-teal-90">ADMIN</span> for this organisation.
+        {% elif this_user.get_role_display|lower == "editor" %}
+            You are an <span class="iati-account-lozenge iati-account-lozenge-purple-90">EDITOR</span> for this organisation.
+        {% elif this_user.get_role_display|lower == "contributor" %}
+            You are an <span class="iati-account-lozenge iati-account-lozenge-grey-90">CONTRIBUTOR</span> for this organisation.
+        {% endif %}
+        <br/>
+    </p>
 </div>
 
 <div class="iati-main__content">
-    <article class="iati-main__article">
+<article class="iati-main__article">
+    <form class="iati-form" method="post" id="organisationDetailsForm" action="{% url 'data:reporting-org-detail' oid=org.oid %}" onsubmit="window.onbeforeunload = null;" onchange="orgFormChangedAction()">
+    {% csrf_token %}
 
-        <div id="organisationInformation" class="iati-section">
-            <h2 class="iati-section__title">Organisation Information</h2>
-            <form class="iati-form" method="post" id="organisationDetailsForm" action="{% url 'data:reporting-org-detail' oid=org.id %}" onsubmit="window.onbeforeunload = null;" onchange="orgFormChangedAction()">
+    {# Buttons to submit changes, reset changes, and delete organisation #}
+    {% if show_org_info_button_box %}
+        <div id="actionButtons" class="iati-form__inner" style="display: block;">
+            <button id="saveOrgChangesButton" class="iati-form__submit iati-button iati-button--submit" type="submit"
+                style="display: none;" name="saveOrgChanges">Save</button>
+            <button id="discardOrgChangesButton" class="iati-button" type="button"
+                style="display: none;" onclick="discardOrgChangesAction()">Discard Changes</button>
+            {% if show_delete_org_button %}
+            <button id="deleteOrganisationButton" class="iati-button" type="button" onclick="deleteOrganisationShowConfirmationAction()">Delete Organisation</button>
+            {% endif %}
+        </div>
+    {% endif %}
+    <br/>
 
-                {% csrf_token %}
-                <div class="iati-form__inner">
-                    <div class="iati-form__item">
-                        <label for="{{ form.human_readable_name.id_for_label }}" class="iati-form__label">
-                            {{ form.human_readable_name.label }}:
-                        </label>
-                        {{ form.human_readable_name }}
-                        <div>
-                            {% if form.human_readable_name.errors %} {% for error in form.human_readable_name.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.organisation_type.id_for_label }}" class="iati-form__label">
-                            {{ form.organisation_type.label }}:
-                        </label>
-                        {{ form.organisation_type }}
-                        <div>
-                            {% if form.organisation_type.errors %} {% for error in form.organisation_type.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.hq_country.id_for_label }}" class="iati-form__label">
-                            {{ form.hq_country.label }}:
-                        </label>
-                        {{ form.hq_country }}
-                        <div>
-                            {% if form.hq_country.errors %} {% for error in form.hq_country.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.region.id_for_label }}" class="iati-form__label">
-                            {{ form.region.label }}:
-                        </label>
-                        {{ form.region }}
-                        <div>
-                            {% if form.region.errors %} {% for error in form.region.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.contact_email.id_for_label }}" class="iati-form__label">
-                            {{ form.contact_email.label }}:
-                        </label>
-                        {{ form.contact_email }}
-                        <div>
-                            {% if form.contact_email.errors %} {% for error in form.contact_email.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.website.id_for_label }}" class="iati-form__label">
-                            {{ form.website.label }}:</label>
-                        {{ form.website }}
-                        <div>
-                            {% if form.website.errors %} {% for error in form.website.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.phone.id_for_label }}" class="iati-form__label">
-                            {{ form.phone.label }}:
-                        </label>
-                        {{ form.phone }}
-                        <div>
-                            {% if form.phone.errors %} {% for error in form.phone.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.address.id_for_label }}" class="iati-form__label">
-                            {{ form.address.label }}:
-                        </label>
-                        {{ form.address }}
-                        <div>
-                            {% if form.address.errors %} {% for error in form.address.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.description.id_for_label }}" class="iati-form__label">
-                            {{ form.description.label }}:
-                        </label>
-                        {{ form.description }}
-                        <div>
-                            {% if form.description.errors %} {% for error in form.description.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.data_portal_url.id_for_label }}" class="iati-form__label">
-                            {{ form.data_portal_url.label }}:
-                        </label>
-                        {{ form.data_portal_url }}
-                        <div>
-                            {% if form.data_portal_url.errors %} {% for error in form.data_portal_url.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.exclusions_policy_url.id_for_label }}" class="iati-form__label">
-                            {{ form.exclusions_policy_url.label }}:
-                        </label>
-                        {{ form.exclusions_policy_url }}
-                        <div>
-                            {% if form.exclusions_policy_url.errors %} {% for error in form.exclusions_policy_url.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.default_licence_id.id_for_label }}" class="iati-form__label">
-                            {{  form.default_licence_id.label }}:
-                        </label>
-                        {{ form.default_licence_id }}
-                        <div>
-                            {% if form.default_licence_id.errors %} {% for error in form.default_licence_id.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="{{ form.reporting_source_type.id_for_label }}" class="iati-form__label">
-                            {{ form.reporting_source_type.label }}:
-                        </label>
-                        {{ form.reporting_source_type }}
-                        <div>
-                            {% if form.reporting_source_type.errors %} {% for error in form.reporting_source_type.errors %}
-                                    <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                            {% endfor %} {% endif %}
-                        </div>
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="organisationShortName" class="iati-form__label">
-                            Organisation short name:
-                        </label>
-                        <input id="organisationShortName" type="text" class="iati-form__input" style="font-family: roboto mono;" disabled value="{{ org.short_name}}">
-                    </div>
-                    <div class="iati-form__item">
-                        <label for="organisationShortName" class="iati-form__label">
-                            Organisation identifier:
-                        </label>
-                        <input id="organisationIdentifier" type="text" class="iati-form__input" style="font-family: roboto mono;" disabled value="{{ org.organisation_identifier}}">
-                    </div>
-                </div><br />
-                {% if show_org_info_button_box %}
-                    <div id="actionButtons" class="iati-form__inner" style="display: block;">
-                        <button id="saveOrgChangesButton" class="iati-form__submit iati-button iati-button--submit" type="button"
-                            style="display: none;" name="saveOrgChanges" onclick="saveOrgChangesAction()">Save</button>
-                        <button id="discardOrgChangesButton" class="iati-button" type="button"
-                            style="display: none;" onclick="discardOrgChangesAction()">Discard Changes</button>
-                        {% if show_delete_org_button %}
-                        <button id="deleteOrganisationButton" class="iati-button iati-button--light" type="button" onclick="deleteOrganisationAction()">Delete Organisation</button>
-                        {% endif %}
-                    </div>
+    {# Summary information for this organisation #}
+    <div id="summary" class="iati-section">
+        <h3 class="iati-section__title">Summary</h3>
+        <div class="iati-form__inner">
+            <p>
+                {% if org.number_of_published_datasets == 0 %}
+                    This organisation has not published any datasets
+                {% else %}
+                    This organisation has published {{ org.number_of_published_datasets }} datasets and first published on {{ org.first_publication_date|date:"d M Y" }}
                 {% endif %}
-            </form>
+                <br/>
+                <strong>Organisation short name:</strong> <code>{{ org.short_name }}</code><br/>
+                <strong>Organisation identifier:</strong> <code>{{ org.organisation_identifier }}</code>
+            </p>
         </div>
+    </div><br/>
 
-        <div id="userInformation" class="iati-section iati-section--fill">
-            <h2 class="iati-section__title">Users</h2>
-            <form method="post" id="userForm" action="{% url 'data:reporting-org-detail' oid=org.id %}" onsubmit="window.onbeforeunload = null;" onchange="userFormChangedAction()">
-                {% csrf_token %}
-                {{ user_formset.management_form }}
-                <div class="iati-table">
-                    <table class="iati-table__table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user_form in user_formset %}
-                            <tr>
-                                <td style="display:none;">{{ user_form.user_id }}</td>
-                                <td>{{ user_form.name.value }}</td>
-                                <td>{{ user_form.email.value }}</td>
-                                <td>{{ user_form.role }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    {# Basic information #}
+    <div id="basicInformation" class="iati-section">
+        <h3 class="iati-section__title">Basic Organisation Information</h3>
+        <div class="iati-form__inner">
+            {# Human readable name #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.human_readable_name.id_for_label }}" class="iati-form__label">
+                    {{ org_form.human_readable_name.label }}:
+                </label>
+                {{ org_form.human_readable_name }}
+                <div>
+                    {% if org_form.human_readable_name.errors %} {% for error in org_form.human_readable_name.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
                 </div>
-                <div id="userFormActionButtons" class="iati-form__inner" style="display: none;">
-                    <button id="saveUserChangesButton" class="iati-form__submit iati-button iati-button--submit" type="submit" name="saveUserChanges" >Save Changes</button>
-                    <button id="discardUserChangesButton" class="iati-button" type="button" onclick="discardUserChangesAction()">Discard Changes</button>
+            </div>
+            {# Organisation type #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.organisation_type.id_for_label }}" class="iati-form__label">
+                    {{ org_form.organisation_type.label }}:
+                </label>
+                {{ org_form.organisation_type }}
+                <div>
+                    {% if org_form.organisation_type.errors %} {% for error in org_form.organisation_type.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
                 </div>
-            </form>
+            </div>
+            {# Country #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.hq_country.id_for_label }}" class="iati-form__label">
+                    {{ org_form.hq_country.label }}:
+                </label>
+                {{ org_form.hq_country }}
+                <div>
+                    {% if org_form.hq_country.errors %} {% for error in org_form.hq_country.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            {# Region #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.region.id_for_label }}" class="iati-form__label">
+                    {{ org_form.region.label }}:
+                </label>
+                {{ org_form.region }}
+                <div>
+                    {% if org_form.region.errors %} {% for error in org_form.region.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
         </div>
+    </div><br/>
 
-        <div id="organisationActions" class="iati-section iati-section--fill">
-            <h2 class="iati-section__title">Organisation Actions</h2>
+    {# Contact information #}
+    <div id="contactInformation" class="iati-section">
+        <h3 class="iati-section__title">Contact Information</h3>
+        <div class="iati-form__inner">
+            {# Contact email address #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.contact_email.id_for_label }}" class="iati-form__label">
+                    {{ org_form.contact_email.label }}:
+                </label>
+                {{ org_form.contact_email }}
+                <div>
+                    {% if org_form.contact_email.errors %} {% for error in org_form.contact_email.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            {# Phone number #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.phone.id_for_label }}" class="iati-form__label">
+                    {{ org_form.phone.label }}:
+                </label>
+                {{ org_form.phone }}
+                <div>
+                    {% if form.phone.errors %} {% for error in form.phone.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            {# Fax number #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.fax.id_for_label }}" class="iati-form__label">
+                    {{ org_form.fax.label }}:
+                </label>
+                {{ org_form.fax }}
+                <div>
+                    {% if form.fax.errors %} {% for error in form.fax.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            {# Address #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.address.id_for_label }}" class="iati-form__label">
+                    {{ org_form.address.label }}:
+                </label>
+                {{ org_form.address }}
+                <div>
+                    {% if org_form.address.errors %} {% for error in org_form.address.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
         </div>
+    </div><br/>
+
+    {# Detailed metadata about the organisation #}
+    <div id="detailedInformation" class="iati-section">
+        <h3 class="iati-section__title">More detailed information about your organisation</h3>
+        <div class="iati-form__inner">
+            {# Description #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.description.id_for_label }}" class="iati-form__label">
+                    {{ org_form.description.label }}:
+                </label>
+                {{ org_form.description }}
+                <div>
+                    {% if org_form.description.errors %} {% for error in org_form.description.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            {# Data portal URL #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.data_portal_url.id_for_label }}" class="iati-form__label">
+                    {{ org_form.data_portal_url.label }}:
+                </label>
+                {{ org_form.data_portal_url }}
+                <div>
+                    {% if org_form.data_portal_url.errors %} {% for error in org_form.data_portal_url.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            {# Organisation website #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.website.id_for_label }}" class="iati-form__label">
+                    {{ org_form.website.label }}:</label>
+                {{ org_form.website }}
+                <div>
+                    {% if org_form.website.errors %} {% for error in org_form.website.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+        </div>
+    </div><br/>
+
+    {# Publishing information #}
+    <div id="publishingInformation" class="iati-section">
+        <h3 class="iati-section__title">How you publish</h3>
+        <div class="iati-form__inner">
+            {# Exclusions policy URL #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.exclusions_policy_url.id_for_label }}" class="iati-form__label">
+                    {{ org_form.exclusions_policy_url.label }}:
+                </label>
+                {{ org_form.exclusions_policy_url }}
+                <div>
+                    {% if org_form.exclusions_policy_url.errors %} {% for error in org_form.exclusions_policy_url.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            {# Default licence #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.default_licence_id.id_for_label }}" class="iati-form__label">
+                    {{  org_form.default_licence_id.label }}:
+                </label>
+                {{ org_form.default_licence_id }}
+                <div>
+                    {% if org_form.default_licence_id.errors %} {% for error in org_form.default_licence_id.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            {# Reporting source type #}
+            <div class="iati-form__item">
+                <label for="{{ org_form.reporting_source_type.id_for_label }}" class="iati-form__label">
+                    {{ org_form.reporting_source_type.label }}:
+                </label>
+                {{ org_form.reporting_source_type }}
+                <div>
+                    {% if org_form.reporting_source_type.errors %} {% for error in org_form.reporting_source_type.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+
+    <div id="userInformation" class="iati-section iati-section--fill">
+        <h2 class="iati-section__title">Users</h2>
+        <form method="post" id="userForm" action="{% url 'data:reporting-org-detail' oid=org.oid %}" onsubmit="window.onbeforeunload = null;" onchange="userFormChangedAction()">
+            {% csrf_token %}
+            {{ user_formset.management_form }}
+            <div class="iati-table">
+                <table class="iati-table__table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user_form in user_formset %}
+                        <tr>
+                            <td style="display:none;">{{ user_form.uid }}</td>
+                            <td style="display:none;">{{ user_form.oid }}</td>
+                            <td>{{ user_form.name }} {{ user_form.name.value }}</td>
+                            <td>{{ user_form.email }} {{ user_form.email.value }}</td>
+                            <td>{{ user_form.role }}</td>
+                            <td>{{ user_form.DELETE }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div id="userFormActionButtons" class="iati-form__inner" style="display: none;">
+                <button id="saveUserChangesButton" class="iati-form__submit iati-button iati-button--submit" type="submit" name="saveUserChanges" >Save Changes</button>
+                <button id="discardUserChangesButton" class="iati-button" type="button" onclick="discardUserChangesAction()">Discard Changes</button>
+            </div>
+        </form>
+    </div><br/>
 
     </article>
 
+    {# Side menu providing quick links to different parts of the page #}
     <aside class="iati-main__side iati-main__side--sticky">
         <nav class="iati-jump-menu">
             <div class="iati-jump-menu__header">
@@ -336,12 +399,31 @@ IATI Account: My Data
                 </button>
             </div>
             <ul id="iati-jump-menu-items" class="iati-jump-menu__items js-jump-menu-items" aria-hidden="true">
-                <li class="iati-jump-menu__item"><a class="iati-jump-menu__link"
-                        href="#organisationInformation">Organisation Information</a></li>
-                <li class="iati-jump-menu__item"><a class="iati-jump-menu__link" href="#datasetInformation">Datasets</a>
+                <li class="iati-jump-menu__item">
+                    <a class="iati-jump-menu__link" href="#actionButtons">Actions</a>
                 </li>
-                <li class="iati-jump-menu__item"><a class="iati-jump-menu__link"
-                        href="#organisationActions">Organisation Actions</a></li>
+                <li class="iati-jump-menu__item">
+                    <a class="iati-jump-menu__link" href="#summary">Summary</a>
+                </li>
+
+                <li class="iati-jump-menu__item">
+                    <a class="iati-jump-menu__link" href="#basicInformation">Basic Information</a>
+                </li>
+
+                <li class="iati-jump-menu__item">
+                    <a class="iati-jump-menu__link" href="#contactInformation">Contact Information</a>
+                </li>
+
+                <li class="iati-jump-menu__item">
+                    <a class="iati-jump-menu__link" href="#detailedInformation">Detailed Information</a>
+                </li>
+
+                <li class="iati-jump-menu__item">
+                    <a class="iati-jump-menu__link" href="#publishingInformation">Publishing Information</a>
+                </li>
+                <li class="iati-jump-menu__item">
+                    <a class="iati-jump-menu__link" href="#userInformation">View/Edit Users</a>
+                </li>
             </ul>
         </nav>
     </aside>

@@ -5,6 +5,7 @@ from django.test import TestCase
 from iati_account_web.ryd_handling.reporting_orgs import (
     parse_discoverable_org_list_to_objects,
     parse_org_list_to_objects,
+    parse_user_list_to_objects,
 )
 
 

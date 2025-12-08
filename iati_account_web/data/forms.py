@@ -5,8 +5,8 @@ from iati_account_web.data.models import ReportingOrganisation, UserAndRole
 
 
 class OrganisationDetailsForm(forms.ModelForm):
-    """Form for users to view/edit details of a reporting organisation
-    """
+    """Form for users to view/edit details of a reporting organisation"""
+
     class Meta:
         model = ReportingOrganisation
         fields = "__all__"
@@ -178,27 +178,27 @@ class CreateOrganisationForm(forms.Form):
             "website": _get_field("website"),
             "short_name": _get_field("short_name"),
             "organisation_identifier": _get_field("organisation_identifier"),
+
+class OrgUserForm(forms.ModelForm):
+    class Meta:
+        model = UserAndRole
+        fields = "__all__"
+        error_messages = {}
+        widgets = {
+            "name": forms.HiddenInput(),
+            "email": forms.HiddenInput(),
+            "uid": forms.HiddenInput(),
+            "role": forms.Select(attrs={"class": "iati-select__control"}),
+            "oid": forms.HiddenInput(),
         }
 
 
-class OrgUserForm(forms.Form):
-    name = forms.CharField(
-        max_length=100,
-        required=False,
-        widget=forms.TextInput(attrs={"class": "iati-form__input", "readonly": "readonly"}),
-    )
-    email = forms.EmailField(
-        required=False, widget=forms.TextInput(attrs={"class": "iati-form__input", "readonly": "readonly"})
-    )
-    user_id = forms.CharField(required=True, widget=forms.HiddenInput())
-    role = forms.ChoiceField(
-        choices=[
-            ("admin", "Admin"),
-            ("editor", "Editor"),
-            ("contributor", "Contributor"),
-            ("contributor_pending", "Pending Approval"),
-            ("remove", "Remove User"),
-        ],
-        widget=forms.Select(attrs={"class": "iati-select__control"}),
-        required=True,
+OrgUserFormSet = formset_factory(OrgUserForm, extra=0, can_delete=True)
+
+
+class OrganisationDeleteForm(forms.Form):
+    oid = forms.UUIDField(required=True, widget=forms.HiddenInput())
+    human_readable_name = forms.CharField(required=True, widget=forms.HiddenInput())
+    confirm_human_readable_name = forms.CharField(
+        required=True, widget=forms.TextInput(attrs={"class": "iati-form__input"})
     )

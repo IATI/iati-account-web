@@ -1,6 +1,26 @@
 from iati_account_web.data.models import DiscoverableReportingOrganisation, ReportingOrganisation, UserAndRole
 
 
+def parse_user_list_to_objects(users_and_roles: list[dict], oid: str) -> list[UserAndRole]:
+    """Parse list of reporting org users into UserAndRole objects
+
+    Parameters
+    ----------
+    users_and_roles : list[dict]
+        List of users and roles from the /reporting-orgs/{oid}/users endpoint.
+    oid : str
+        Organisation ID
+
+    Returns
+    -------
+    list[UserAndOrgRole]
+    """
+    return [
+        UserAndRole.from_ryd(role_string=x["role"], name=x["name"], email=x["email"], uid=x["id"], oid=oid)
+        for x in users_and_roles
+    ]
+
+
 def parse_org_list_to_objects(
     reporting_orgs: list[dict], uid: str
 ) -> list[dict[str, ReportingOrganisation | UserAndRole]]:
