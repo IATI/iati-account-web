@@ -11,6 +11,7 @@ from iati_account_web.settings import (
     REGION_LIST,
     REPORTING_SOURCE_TYPE_LIST,
     USER_ROLE_LIST,
+    VISIBILITY_LIST,
 )
 
 
@@ -188,4 +189,44 @@ class DiscoverableReportingOrganisation(models.Model):
             region=metadata.get("region", None),
             short_name=metadata.get("short_name", None),
             website=metadata.get("website", None),
+        )
+
+
+class Dataset(models.Model):
+    class Meta:
+        managed = False
+
+    dataset_id = models.UUIDField(blank=False)
+    human_readable_name = models.CharField(blank=False)
+    owner_organisation_id = models.UUIDField(blank=False)
+    short_name = models.CharField(blank=False)
+    source_type = models.CharField(choices=REPORTING_SOURCE_TYPE_LIST)
+    url = models.URLField(blank=False)
+    visibility = models.CharField(choices=VISIBILITY_LIST, blank=False)
+    licence_id = models.CharField(choices=LICENCE_LIST)
+    last_url_update_date = models.DateTimeField(blank=True)
+    last_metadata_update_date = models.DateTimeField(blank=True)
+
+    @classmethod
+    def from_ryd(cls, dataset_dict: dict) -> Dataset:
+        dataset_metadata = dataset_dict.get("metadata", {})
+        return cls(
+            dataset_id=dataset_dict.get("id", ""),
+            human_readable_name=dataset_metadata.get("human_readable_name"),
+            owner_organisation_id=dataset_dict.get("owner_organisation_id", ""),
+            short_name=dataset_metadata.get("short_name", ""),
+            source_type=dataset_metadata.get("source_type", ""),
+            url=dataset_metadata.get("url", ""),
+            visibility=dataset_metadata.get("visibility", ""),
+            licence_id=dataset_metadata.get("licence_id", ""),
+            last_url_update_date=(
+                datetime.fromisoformat(dataset_metadata.get("last_url_update_date"))
+                if dataset_metadata.get("last_url_update_date", "")
+                else None
+            ),
+            last_metadata_update_date=(
+                datetime.fromisoformat(dataset_metadata.get("last_metadata_update_date"))
+                if dataset_metadata.get("last_metadata_update_date", "")
+                else None
+            ),
         )

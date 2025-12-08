@@ -1,0 +1,59 @@
+{
+  "error": null,
+  "status": "success",
+  "data": [
+    {
+      "id": "abcd1234-4254-486a-a632-18f148a265b1",
+      "owner_organisation_id": "abcd1234-ab4e-4667-a6b6-a8424b8fd38d",
+      "metadata": {
+        "human_readable_name": "Amundsen BA Activity File 2",
+        "short_name": "amuba-activity-file-2",
+        "source_type": "",
+        "url": "https://example.org/focus-ball-center.xml",
+        "visibility": "public",
+        "licence_id": "",
+        "last_url_update_date": "",
+        "last_metadata_update_date": ""
+      }
+    },
+    {
+      "id": "abcd1234-cb49-4ca6-84dc-d25f49f9ee40",
+      "owner_organisation_id": "abcd1234-ab4e-4667-a6b6-a8424b8fd38d",
+      "metadata": {
+        "human_readable_name": "Amundsen BA Activity File 1",
+        "short_name": "amuba-activity-file-1",
+        "source_type": "",
+        "url": "https://example.org/check-beat-color.xml",
+        "visibility": "public",
+        "licence_id": "",
+        "last_url_update_date": "",
+        "last_metadata_update_date": ""
+      }
+    },
+    {
+      "id": "abcd1234-d64c-4fa1-b980-33376bc560af",
+      "owner_organisation_id": "abcd1234-ab4e-4667-a6b6-a8424b8fd38d",
+      "metadata": {
+        "human_readable_name": "Amundsen BA Organisation File",
+        "short_name": "amuba-org-file",
+        "source_type": "",
+        "url": "https://example.org/same-environmental.xml",
+        "visibility": "public",
+        "licence_id": "",
+        "last_url_update_date": "2025-12-08T11:39:00+00:00",
+        "last_metadata_update_date": "2025-12-08T11:39:00+00:00"      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "page_size": 100,
+    "total_pages": 1,
+    "total_records": 3,
+    "links": {
+      "first": "http://dev.api.registeryourdata.iatistandard.org/api/v1/reporting-orgs/abcd1234-ab4e-4667-a6b6-a8424b8fd38d/datasets?page=1&page_size=100",
+      "last": "http://dev.api.registeryourdata.iatistandard.org/api/v1/reporting-orgs/abcd1234-ab4e-4667-a6b6-a8424b8fd38d/datasets?page=1&page_size=100",
+      "next": null,
+      "prev": null
+    }
+  }
+}
