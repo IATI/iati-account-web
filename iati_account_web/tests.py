@@ -1,6 +1,38 @@
 from django.test import TestCase
 from iati_account_web.exceptions_middleware import IATIAccountExceptionHandlerMiddleware
-from iati_account_web.ryd_handling import RegisterYourDataSession, parse_pagination_links
+from iati_account_web.ryd_handling import RegisterYourDataSession
+
+
+class RYDHelperSessionTestCase(TestCase):
+    def test_can_do_strip_auth_check(self):
+        self.assertEqual(
+            RegisterYourDataSession._strip_auth_check(
+                "https://example.org:443/api/v1/", "http://example.org:80/api/v1/"
+            ),
+            False,
+        )
+        self.assertEqual(
+            RegisterYourDataSession._strip_auth_check(
+                "http://example.org:80/api/v1/", "https://example.org:443/api/v1/"
+            ),
+            False,
+        )
+        self.assertEqual(
+            RegisterYourDataSession._strip_auth_check("http://example.org:80/api/v1/", "https://example.org/api/v1/"),
+            False,
+        )
+        self.assertEqual(
+            RegisterYourDataSession._strip_auth_check(
+                "http://example.org:80/api/v1/", "https://example.org/different_path/"
+            ),
+            True,
+        )
+        self.assertEqual(
+            RegisterYourDataSession._strip_auth_check(
+                "http://example.org:80/api/v1/", "https://different_domain.example.org/api/v1/"
+            ),
+            True,
+        )
 
 
 class ExceptionHandlerTestCase(TestCase):
