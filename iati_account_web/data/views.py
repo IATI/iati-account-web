@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime
 
+from django.contrib import messages
 from django.forms import formset_factory
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
@@ -11,7 +12,9 @@ from iati_account_web.data.forms import (
     OrganisationDetailsForm,
     OrgUserForm,
 )
+from iati_account_web.data.models import ReportingOrganisation, UserAndRole
 from iati_account_web.helpers import preflight_checks
+from iati_account_web.ryd_handling import RegisterYourDataSession
 from iati_account_web.settings import (
     COUNTRY_CODE_LOOKUP,
     COUNTRY_LIST,
@@ -19,8 +22,13 @@ from iati_account_web.settings import (
     env,
 )
 from requests import Session
+from iati_account_web.ryd_handling.reporting_orgs import (
+    parse_org_list_to_objects,
+)
 
 iati_account_logger = logging.getLogger("iati_account")
+audit_logger = logging.getLogger("audit")
+app_logger = logging.getLogger("iati_account")
 
 
 def home(request: HttpRequest) -> HttpResponse:
@@ -35,53 +43,18 @@ def home(request: HttpRequest) -> HttpResponse:
     HttpResponse
     """
     preflight = preflight_checks(request)
-    if preflight.not_okay_to_continue:
+    if not preflight.okay_to_continue:
         return preflight.redirect
 
-    # Get list of reporting orgs for this user from RYD.
-    session = Session()
-    session.headers["Authorization"] = f"Bearer {request.session["oidc_access_token"]}"
-    session.should_strip_auth = lambda old_url, new_url: False
-    response = session.get(f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs", allow_redirects=True)
+    session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
+    try:
+        response_json = session.get("/reporting-orgs")
+        org_list = parse_org_list_to_objects(response_json["data"], request.user.oidc_sub)
+    except Exception as exc:
+        audit_logger.error(f"Could not access RYD for user {request.user.oidc_sub} with error {exc}")
+        raise exc
 
-    # Handle the case where the request failed.  This is handled with an alert in the template.
-    if response.status_code != 200:
-        context = {"ryd_outcome": "failed", "ryd_status_code": response.status_code}
-        template = loader.get_template("data/multiple_org_list_ryd_error.html")
-        return HttpResponse(template.render(context, request))
-
-    org_list = response.json()["data"]
-
-    if len(org_list) == 0:
-        # There were no organisations in the response, so redirect to offer the opportunity to join
-        # an organisation.
-        context = {"orgs": []}
-        # return redirect("data:join-reporting-org")
-
-    else:
-        # We have organisations in the payload, so show all the organisations, along with a join organisation button.
-        context = {"orgs": []}
-        USER_ROLES = {
-            "admin": "Admin",
-            "editor": "Editor",
-            "contributor": "Contributor",
-            "contributor_pending": "Contributor (Pending)",
-        }
-        for org in org_list:
-            org["metadata"]["hq_country"] = COUNTRY_CODE_LOOKUP[org["metadata"]["hq_country"]]
-            org["metadata"]["organisation_type"] = ORGANISATION_TYPE_LOOKUP[
-                org["metadata"].get("organisation_type", "")
-            ]
-            context["orgs"].append(
-                {
-                    "id": org["id"],
-                    **org["metadata"],
-                    "user_role": org["user_role"],
-                    "user_role_label": USER_ROLES[org["user_role"]],
-                }
-            )
-        context["orgs"].sort(key=lambda x: x["human_readable_name"])
-
+    context = {"orgs": org_list}
     template = loader.get_template("data/multiple_org_list.html")
     return HttpResponse(template.render(context, request))
 
