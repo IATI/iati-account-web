@@ -280,3 +280,17 @@ for tz in pytz.common_timezones:
         TIMEZONE_LIST.append((tz, f"{city} - {country}/{region}"))
     else:
         raise ValueError()
+
+# Additional choice fields
+REPORTING_SOURCE_TYPE_LIST = [("primary_source", "Primary Source"), ("secondary_source", "Secondary Source")]
+REPORTING_SOURCE_TYPE_LOOKUP = {x[0]: x[1] for x in REPORTING_SOURCE_TYPE_LIST}
+VISIBILITY_LIST = [("private", "Private"), ("public", "Public")]
+VISIBILITY_LOOKUP = {x[0]: x[1] for x in VISIBILITY_LIST}
+USER_ROLE_LIST = [
+    ("admin", "Admin"),
+    ("editor", "Editor"),
+    ("contributor", "Contributor"),
+    ("provider_admin", "Provider Admin"),
+    ("contributor_pending", "Pending"),
+]
+USER_ROLE_LOOKUP = {x[0]: x[1] for x in USER_ROLE_LIST}
