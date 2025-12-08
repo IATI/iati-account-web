@@ -4,3 +4,23 @@ class IdentityServiceConnectionError(Exception):
 
 class IdentityServicePatchError(Exception):
     pass
+
+
+class RegisterYourDataResponseParsingIssue(Exception):
+    pass
+
+
+class RegisterYourDataPermissionDenied(Exception):
+    pass
+
+
+class RegisterYourDataServerIssue(Exception):
+    pass
+
+
+class RegisterYourDataBadRequest(Exception):
+    pass
+
+
+class RegisterYourData404(Exception):
+    pass

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block extra_head %}
+</script>
+{% endblock %}
+{% block title %}
+IATI Account: Permission Denied
+{% endblock %}
+
+{% block body %}
+
+<h2>Permission Denied</h2>
+
+<div class="iati-callout iati-callout--red">
+  <p>You do not have permission to access this page or perform this action.</p>
+  
+  <p>Please try again later, or, if you believe this is an error, <a href="https://iatistandard.org/en/guidance/get-support/">contact us</a> quoting error tracking code <code>{{ tracking }}</code></p>
+</div>
+
+{% endblock %}
