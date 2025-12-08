@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.2 - 2025-12-08
+
+### Added
+
+- Custom exception handler to simplify error detection/handling throughout the application and drive users to the correct error pages.
+- Register Your Data support code that simplifies calls made to the RYD API which again simplifies the view function code and makes the application more testable and robust.
+- Organisation deletetion functionality.
+- Organisation user management.
+
+### Changes
+
+- Refactors organisation editing, creation, joining and listing.
+- Fixes a bug where the name of one of the message notification CSS classes was incorrect.
+
+
 ## 0.4.1 - 2025-12-03
 
 ### Added
