@@ -11,6 +11,8 @@ IATI Account: My Data
 {% endblock %}
 
 {% block body %}
+{% include 'components/message_viewer.html' %}
+
 <h2>My Data</h2>
 
 {% if not orgs %}
@@ -30,11 +32,12 @@ IATI Account: My Data
 <article class="iati-main__article">
 {% endif %}
 
-{% for org in orgs %}
+{% for record in orgs %}
+{% with record.org as org %}
 <div id="org_{{ org.id }}" class="iati-section iati-section--fill">
-    <h2 class="iati-section__title" id="org_{{ org.id }}">
+    <h2 class="iati-section__title" id="org_{{ org.oid }}">
         {{ org.human_readable_name }}
-        <span style="float: right;">Role: {{ org.user_role_label }}</span>
+        <span style="float: right;">Role: {{ record.user_and_role.get_role_display }}</span>
     </h2>
     <div class="iati-section__content">
         <div style="display: flex;">
@@ -46,43 +49,46 @@ IATI Account: My Data
                             </th>
                             <td><code>{{org.short_name}}</code></td>
                         </tr>
-                        <tr>
-                            <th scope="row" style="background-color: var(--color-green-30);">Contact email address</th>
-                            <td><a
-                                    href="mailto:{{org.contact_email}}?subject=Link from IATI Account">{{org.contact_email}}</a>
-                            </td>
-                        </tr>
+                        {% if record.user_and_role.role != "contributor_pending" %}
+                            <tr>
+                                <th scope="row" style="background-color: var(--color-green-30);">Contact email address</th>
+                                <td><a
+                                        href="mailto:{{org.contact_email}}?subject=Link from IATI Account">{{org.contact_email}}</a>
+                                </td>
+                            </tr>
+                        {% endif %}
                         <tr>
                             <th scope="row" style="background-color: var(--color-green-30);">Country</th>
-                            <td>{{org.hq_country}}</td>
+                            <td>{{org.get_hq_country_display}}</td>
                         </tr>
                         <tr>
                             <th scope="row" style="background-color: var(--color-green-30);">Region</th>
-                            <td>{{org.region}}</td>
+                            <td>{{org.get_region_display}}</td>
                         </tr>
                         <tr>
                             <th scope="row" style="background-color: var(--color-green-30);">Organisation identifier
                             </th>
                             <td><code>{{org.organisation_identifier}}</code></td>
                         </tr>
-                        {% if org.user_role != "contributor_pending" %}
+                        {% if record.user_and_role.role != "contributor_pending" %}
                             <tr>
                                 <th scope="row" style="background-color: var(--color-green-30);">Organisation type</th>
-                                <td>{{org.organisation_type}}</td>
+                                <td>{% if org.get_organisation_type %}{{org.get_organisation_type_display}}{% endif %}</td>
                             </tr>
                         {% endif %}
                     </tbody>
                 </table>
             </div>
             <div style="flex: 4;">
-                {% if org.user_role != "contributor_pending" %}
+                {% if record.user_and_role.role != "contributor_pending" %}
                     <p style="float:right; font-size: 0.9rem; font-weight:800;">{% if org.registry_approved %}APPROVED TO PUBLISH{% else %}NOT APPROVED TO PUBLISH{% endif %}</p>
-                    <button style="float:right;" class="iati-button" data-org-detail-url="{% url 'data:reporting-org-detail' oid=org.id %}" onclick="window.location.assign(this.dataset.orgDetailUrl)">View Organisation</button>
+                    <button style="float:right;" class="iati-button" data-org-detail-url="{% url 'data:reporting-org-detail' oid=org.oid %}" onclick="window.location.assign(this.dataset.orgDetailUrl)">View Organisation</button>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
+{% endwith %}
 {% endfor %}
 
 {% if orgs|length > 1 %}
@@ -96,8 +102,8 @@ IATI Account: My Data
     </button>
   </div>
   <ul id="iati-jump-menu-items" class="iati-jump-menu__items js-jump-menu-items" aria-hidden="true">
-    {% for org in orgs %}
-        <li class="iati-jump-menu__item"><a class="iati-jump-menu__link" href="#org_{{ org.id }}">{{ org.human_readable_name }}</a></li>
+    {% for record in orgs %}
+        <li class="iati-jump-menu__item"><a class="iati-jump-menu__link" href="#org_{{ record.org.oid }}">{{ record.org.human_readable_name }}</a></li>
     {% endfor %}
   </ul>
 </nav>

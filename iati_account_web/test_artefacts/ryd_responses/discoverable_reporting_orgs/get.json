@@ -1,0 +1,40 @@
+{
+  "error": null,
+  "status": "success",
+  "data": [
+    {
+      "id": "abcd1234-b6df-4143-8895-100ec70877cd",
+      "metadata": {
+        "hq_country": "ZA",
+        "human_readable_name": "Masibekela Group",
+        "organisation_identifier": "ZA-PPE-27669040",
+        "region": "",
+        "short_name": "masoup",
+        "website": ""
+      }
+    },
+    {
+      "id": "abcd1234-ab4e-4667-a6b6-a8424b8fd38d",
+      "metadata": {
+        "hq_country": "NO",
+        "human_readable_name": "Amundsen BA",
+        "organisation_identifier": "NO-BJK-41447156",
+        "region": "619",
+        "short_name": "amuba",
+        "website": ""
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "page_size": 100,
+    "total_pages": 1,
+    "total_records": 2,
+    "links": {
+      "first": "http://dev.api.registeryourdata.iatistandard.org/api/v1/discoverable-reporting-orgs/?page=1&page_size=100",
+      "last": "http://dev.api.registeryourdata.iatistandard.org/api/v1/discoverable-reporting-orgs/?page=1&page_size=100",
+      "next": null,
+      "prev": null
+    }
+  }
+}

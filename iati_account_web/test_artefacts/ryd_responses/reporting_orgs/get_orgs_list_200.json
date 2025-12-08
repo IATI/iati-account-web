@@ -1,0 +1,60 @@
+{
+  "data": [
+    {
+      "id": "abcd1234-ab4e-4667-a6b6-a8424b8fd38d",
+      "metadata": {
+        "address": "",
+        "contact_email": "",
+        "created_date": "",
+        "data_portal_url": "",
+        "default_licence_id": "gfdl",
+        "description": "A debitis debitis eos ipsa quasi.asdfsf1231",
+        "exclusions_policy_url": "",
+        "fax": "",
+        "first_publication_date": "2025-12-02T13:30:00+00:00",
+        "hq_country": "NO",
+        "human_readable_name": "Amundsen BA",
+        "number_of_published_datasets": 3,
+        "organisation_identifier": "NO-BJK-41447156",
+        "organisation_type": "60",
+        "phone": "",
+        "region": "619",
+        "registry_approved": false,
+        "reporting_source_type": "primary_source",
+        "short_name": "amuba",
+        "website": ""
+      },
+      "reporting_org_actions": [],
+      "user_role": "editor"
+    },
+    {
+      "id": "abcd1234-b6df-4143-8895-100ec70877cd",
+      "metadata": {
+        "address": "",
+        "contact_email": "",
+        "created_date": "",
+        "data_portal_url": "",
+        "default_licence_id": "gfdl",
+        "description": "Autem earum quaerat architecto impedit.",
+        "exclusions_policy_url": "",
+        "fax": "",
+        "first_publication_date": "2025-11-28T16:48:00+00:00",
+        "hq_country": "ZA",
+        "human_readable_name": "Masibekela Group",
+        "number_of_published_datasets": 2,
+        "organisation_identifier": "ZA-PPE-27669040",
+        "organisation_type": "",
+        "phone": "",
+        "region": "",
+        "registry_approved": false,
+        "reporting_source_type": "primary_source",
+        "short_name": "masoup",
+        "website": ""
+      },
+      "reporting_org_actions": [],
+      "user_role": "admin"
+    }
+  ],
+  "error": null,
+  "status": "success"
+}

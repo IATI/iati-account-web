@@ -1,0 +1,30 @@
+{
+  "data": [
+    {
+      "id": "abcd1234-cffd-419f-942f-e6e0aa902230",
+      "name": "Camilo Alirio López",
+      "email": "",
+      "role": "editor"
+    },
+    {
+      "id": "abcd1234-a823-4bf2-a8d5-f5b967040f89",
+      "name": "Emilie Andersen",
+      "email": "",
+      "role": "admin"
+    },
+    {
+      "id": "abcd1234-e559-4298-a0e5-3db79d260ea5",
+      "name": "Emilie Næss",
+      "email": "",
+      "role": "editor"
+    },
+    {
+      "id": "abcd1234-2e29-43fc-8312-6df800098bd5",
+      "name": "Håvard-Øyvind Aune",
+      "email": "",
+      "role": "contributor"
+    }
+  ],
+  "error": null,
+  "status": "success"
+}
