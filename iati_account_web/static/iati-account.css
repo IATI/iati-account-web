@@ -80,6 +80,6 @@
   background-color: var(--color-orange-10);
 }
 
-.iati-message--failure {
+.iati-message--error {
   background-color: var(--color-red-10);
 }
