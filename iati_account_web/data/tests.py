@@ -54,3 +54,19 @@ class ReportingOrganisationTestCase(TestCase):
         self.assertEqual(data[1]["user_and_role"].uid, "abcd1234-cffd-419f-942f-e6e0aa902230")
         self.assertEqual(data[1]["user_and_role"].oid, "abcd1234-b6df-4143-8895-100ec70877cd")
         self.assertEqual(data[1]["user_and_role"].role, "admin")
+
+
+class DiscoverableReportingOrganisationTestCase(TestCase):
+    def test_can_parse_from_get_discoverable_reporting_org_list(self):
+        fh = open("iati_account_web/test_artefacts/ryd_responses/discoverable_reporting_orgs/get.json", "r")
+        api_response_data = json.load(fh)["data"]
+        fh.close()
+
+        data = parse_discoverable_org_list_to_objects(api_response_data, sort_list=True)
+
+        self.assertEqual(len(data), 2)
+
+        self.assertEqual(data[0].human_readable_name, "Amundsen BA")
+        self.assertEqual(data[0].oid, "abcd1234-ab4e-4667-a6b6-a8424b8fd38d")
+        self.assertEqual(data[1].human_readable_name, "Masibekela Group")
+        self.assertEqual(data[1].oid, "abcd1234-b6df-4143-8895-100ec70877cd")

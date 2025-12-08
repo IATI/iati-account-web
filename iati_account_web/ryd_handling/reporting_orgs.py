@@ -26,3 +26,25 @@ def parse_org_list_to_objects(
     ]
     result.sort(key=lambda x: x["org"].human_readable_name)
     return result
+
+
+def parse_discoverable_org_list_to_objects(
+    discoverable_reporting_orgs: list[dict], sort_list: bool = False
+) -> list[DiscoverableReportingOrganisation]:
+    """Parse a list of reporting orgs into pairs of ReportingOrganisation and UserandRole objects
+
+    Parameters
+    ----------
+    discoverable_reporting_orgs : list[dict]
+        List of dictionaries as received from GET /discoverable-reporting-orgs
+    sort_list : bool, optional
+        If true, the list is sorted by human_readable_name, False by default.
+
+    Returns
+    -------
+    list[DiscoverableReportingOrganisation]
+    """
+    result = [DiscoverableReportingOrganisation.from_ryd(x) for x in discoverable_reporting_orgs]
+    if sort_list:
+        result.sort(key=lambda x: x.human_readable_name)
+    return result

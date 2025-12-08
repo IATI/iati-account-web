@@ -118,7 +118,7 @@ IATI Account: Find your organisation
         </thead>
         <tbody>
             {% for org in discoverable_reporting_orgs %}
-                <tr id="id_{{ org.id }}" data-org-id="{{ org.id }}" onclick="selectOrg(this)">
+                <tr id="id_{{ org.oid }}" data-org-id="{{ org.oid }}" onclick="selectOrg(this)">
                     <td>{{ org.human_readable_name }}</td>
                     <td data-country-code="{{ org.hq_country }}">{{ org.country }}</td>
                     <td>{{ org.organisation_identifier }}</td>

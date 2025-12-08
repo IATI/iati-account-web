@@ -23,6 +23,7 @@ from iati_account_web.settings import (
 )
 from requests import Session
 from iati_account_web.ryd_handling.reporting_orgs import (
+    parse_discoverable_org_list_to_objects,
     parse_org_list_to_objects,
 )
 
@@ -59,81 +60,72 @@ def home(request: HttpRequest) -> HttpResponse:
     return HttpResponse(template.render(context, request))
 
 
-def join_reporting_org(request: HttpRequest) -> HttpResponse:
+def join_reporting_org(request: HttpRequest) -> HttpResponse:  # noqa: C901
+    """Generate the join organisation page.
+
+    Parameters
+    ----------
+    request : HttpRequest
+
+    Returns
+    -------
+    HttpResponse
+    """
 
     preflight = preflight_checks(request)
-    if preflight.not_okay_to_continue:
+    if not preflight.okay_to_continue:
         return preflight.redirect
 
+    session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
+
     if request.method == "POST":
+        # Handle the form submission.  We check the form and then call RYD assuming everything
+        # was okay.  After this we return the user to the data home page.  If the form was invalid
+        # (which it shouldn't be) then we raise an exception.
         form = JoinOrganisationForm(request.POST)
         if form.is_valid():
-            session = Session()
-            session.headers["Authorization"] = f"Bearer {request.session["oidc_access_token"]}"
-            session.should_strip_auth = lambda old_url, new_url: False
-            iati_account_logger.debug(
-                f"Trying to add user {request.user.registry_id} to organisation {str(form.cleaned_data["org_id"])}"
+
+            audit_logger.info(
+                f"Trying to add user {request.user.log_label} to organisation {str(form.cleaned_data["org_id"])}"
             )
-            response = session.post(
-                f"{env("REGISTER_YOUR_DATA_BASE_URL")}/users/{request.user.registry_id}/reporting-org",
-                allow_redirects=True,
-                json={"oid": str(form.cleaned_data["org_id"])},
-            )
+            try:
+                response_json = session.post(
+                    f"/users/{request.user.registry_id}/reporting-org", json={"oid": str(form.cleaned_data["org_id"])}
+                )
+            except Exception as exc:
+                audit_logger.error(
+                    f"Could not add user {request.user.log_label} with error {exc} "
+                    f"to organisation {str(form.cleaned_data["org_id"])}"
+                )
+                raise exc
+
             return redirect("data:home")
         else:
-            # TODO: handle form errors
-            pass
+            audit_logger.error(f"Form error when trying to add user {request.user.log_label} to an organisation")
+            raise ValueError("Join organisation form validation error")
+
     else:
         # Get list of reporting orgs for this user, and the list of discoverable reporting orgs from RYD.
-        session = Session()
-        session.headers["Authorization"] = f"Bearer {request.session["oidc_access_token"]}"
-        session.should_strip_auth = lambda old_url, new_url: False
-        response = session.get(f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs", allow_redirects=True)
-        user_org_ids = [org.get("id", "") for org in response.json()["data"]]
+        try:
+            response_json = session.get("/reporting-orgs")
+            user_org_ids = [org.get("id", "") for org in response_json["data"]]
 
-        # Handle the case where the request failed.  This is handled with an alert in the template.
-        if response.status_code != 200:
-            pass
-            # TODO: handle error
-
-        response = session.get(
-            f"{env("REGISTER_YOUR_DATA_BASE_URL")}/discoverable-reporting-orgs", allow_redirects=True
-        )
-        # Handle the case where the request failed.  This is handled with an alert in the template.
-        if response.status_code != 200:
-            pass
-            # TODO: handle error
-
-        # Get list of discoverable reporting orgs.  Until the endpoint is running we just
-        # substitute a mock list here.
-        #        discoverable_reporting_orgs = response.json()["data"]
-        discoverable_reporting_orgs = [
-            {
-                "id": "abcd1234-b6df-4143-8895-100ec70877cd",
-                "human_readable_name": "Masibekela Group",
-                "hq_country": "ZA",
-                "organisation_identifier": "ZA-PPE-27669040",
-            },
-            {
-                "id": "abcd1234-ab4e-4667-a6b6-a8424b8fd38d",
-                "human_readable_name": "Amundsen BA",
-                "hq_country": "NO",
-                "organisation_identifier": "NO-BJK-41447156",
-            },
-        ]
-        for org in discoverable_reporting_orgs:
-            org["country"] = COUNTRY_CODE_LOOKUP.get(org["hq_country"], "")
+            response_json = session.get("/discoverable-reporting-orgs")
+            discoverable_reporting_orgs = parse_discoverable_org_list_to_objects(response_json["data"])
+        except Exception as exc:
+            audit_logger.error(f"Could not access RYD for user {request.user.oidc_sub} with error {exc}")
+            raise exc
 
         # Remove user's organisations from the list.
         discoverable_reporting_orgs = list(
-            filter(lambda org: org["id"] not in user_org_ids, discoverable_reporting_orgs)
+            filter(lambda org: org.oid not in user_org_ids, discoverable_reporting_orgs)
         )
 
+        # Generate the page.
         form = JoinOrganisationForm()
         template = loader.get_template("data/join_reporting_org.html")
         context = {
             "discoverable_reporting_orgs": discoverable_reporting_orgs,
-            "COUNTRY_LIST": COUNTRY_LIST,
             "form": form,
         }
         return HttpResponse(template.render(context, request))

@@ -140,3 +140,52 @@ class ReportingOrganisation(models.Model):
             "short_name": self.address if self.address else None,
             "website": self.address if self.address else None,
         }
+
+
+class DiscoverableReportingOrganisation(models.Model):
+    class Meta:
+        managed = False
+
+    oid = models.UUIDField(null=True)
+    hq_country = models.CharField(choices=COUNTRY_LIST)
+    human_readable_name = models.CharField(null=False)
+    organisation_identifier = models.CharField(null=True)
+    region = models.CharField(null=True, choices=REGION_LIST)
+    short_name = models.CharField(null=True)
+    website = models.URLField(null=True)
+
+    @classmethod
+    def from_ryd(cls, discoverable_reporting_org: dict) -> DiscoverableReportingOrganisation:
+        """Parse a dictionary from RYD and generate a new DiscoverableReportingOrganisation object
+
+        Parameters
+        ----------
+        discoverable_reporting_org : dict
+            Dictionary from RYD response.
+
+        Returns
+        -------
+        DiscoverableReportingOrganisation
+
+        Raises
+        ------
+        RegisterYourDataResponseParsingIssue
+            If there are issues in the parsing of the dictionary.
+        """
+
+        if "id" not in discoverable_reporting_org:
+            raise RegisterYourDataResponseParsingIssue("Discoverable reporting organisation is missing its UUID")
+        if "metadata" not in discoverable_reporting_org:
+            raise RegisterYourDataResponseParsingIssue(
+                f"Discoverable reporting organisation {discoverable_reporting_org["id"]} is missing its metadata"
+            )
+        metadata = discoverable_reporting_org.get("metadata", {})
+        return cls(
+            oid=discoverable_reporting_org["id"],
+            hq_country=metadata.get("hq_country", None),
+            human_readable_name=metadata.get("human_readable_name", None),
+            organisation_identifier=metadata.get("organisation_identifier", None),
+            region=metadata.get("region", None),
+            short_name=metadata.get("short_name", None),
+            website=metadata.get("website", None),
+        )
