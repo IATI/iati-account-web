@@ -78,85 +78,63 @@ class JoinOrganisationForm(forms.Form):
     )
 
 
-class CreateOrganisationForm(forms.Form):
-    human_readable_name = forms.CharField(
-        max_length=256, label=_("Organisation name"), widget=forms.TextInput(attrs={"class": "iati-form__input"})
-    )
-    short_name = forms.CharField(
-        max_length=256,
-        label=_("Organisation short name"),
-        widget=forms.TextInput(attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}),
-        required=False,
-    )
-    organisation_type = forms.ChoiceField(
-        label=_("Organisation type"),
-        choices=ORGANISATION_TYPE_LIST,
-        widget=forms.Select(attrs={"class": "iati-select__control"}),
-        required=False,
-    )
-    hq_country = forms.ChoiceField(
-        label=_("Country"),
-        choices=COUNTRY_LIST,
-        widget=forms.Select(attrs={"class": "iati-select__control"}),
-        required=False,
-    )
-    region = forms.ChoiceField(
-        label=_("Operating region"),
-        choices=REGION_LIST,
-        widget=forms.Select(attrs={"class": "iati-select__control"}),
-        required=False,
-    )
-    contact_email = forms.EmailField(
-        label=_("Contact email address"),
-        widget=forms.TextInput(attrs={"class": "iati-form__input"}),
-        required=False,
-    )
-    website = forms.URLField(
-        label=_("Website"),
-        widget=forms.URLInput(attrs={"class": "iati-form__input"}),
-        required=False,
-    )
-    phone = forms.CharField(
-        label=_("Telephone number"),
-        widget=forms.TextInput(attrs={"class": "iati-form__input"}),
-        required=False,
-    )
-    address = forms.CharField(
-        label=_("Postal address"),
-        widget=forms.TextInput(attrs={"class": "iati-form__input"}),
-        required=False,
-    )
-    description = forms.CharField(
-        label=_("Description"),
-        widget=forms.Textarea(),
-        required=False,
-    )
-    data_portal_url = forms.URLField(
-        label=_("Publisher data portal"),
-        widget=forms.URLInput(attrs={"class": "iati-form__input"}),
-        required=False,
-    )
-    exclusions_policy_url = forms.URLField(
-        label=_("Exclusions policy website/document"),
-        widget=forms.URLInput(attrs={"class": "iati-form__input"}),
-        required=False,
-    )
-    default_licence_id = forms.ChoiceField(
-        label=_("Default licence"),
-        choices=LICENCE_LIST,
-        widget=forms.Select(attrs={"class": "iati-select__control"}),
-        required=False,
-    )
-    reporting_source_type = forms.ChoiceField(
-        label=_("Reporting source type"),
-        choices=[("primary_source", "Primary Source"), ("secondary_source", "Secondary Source")],
-        widget=forms.Select(attrs={"class": "iati-select__control"}),
-        required=False,
-    )
-    organisation_identifier = forms.CharField(
-        label=_("Organisation identifier"),
-        widget=forms.TextInput(attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}),
-    )
+class CreateOrganisationForm(forms.ModelForm):
+    class Meta:
+        model = ReportingOrganisation
+        fields = "__all__"
+        exclude = [
+            "oid",
+            "created_date",
+            "first_publication_date",
+            "number_of_published_datasets",
+            "registry_approved",
+        ]
+        labels = {
+            "address": _("Postal address"),
+            "contact_email": _("Contact email address"),
+            "data_portal_url": _("Publisher data portal"),
+            "default_licence_id": _("Default licence"),
+            "description": _("Description"),
+            "exclusions_policy_url": _("Exclusions policy website/document"),
+            "fax": _("Fax number"),
+            "hq_country": _("Country"),
+            "human_readable_name": _("Organisation name"),
+            "organisation_type": _("Organisation type"),
+            "organisation_identifier": _("Organisation identifier"),
+            "phone": _("Telephone number"),
+            "region": _("Operating region"),
+            "reporting_source_type": _("Reporting source type"),
+            "short_name": _("Organisation short name"),
+            "website": _("Website"),
+        }
+        error_messages = {}
+        widgets = {
+            "address": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "contact_email": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "data_portal_url": forms.URLInput(attrs={"class": "iati-form__input"}),
+            "default_licence_id": forms.Select(attrs={"class": "iati-select__control"}),
+            "description": forms.Textarea(),
+            "exclusions_policy_url": forms.URLInput(attrs={"class": "iati-form__input"}),
+            "fax": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "hq_country": forms.Select(attrs={"class": "iati-select__control"}),
+            "human_readable_name": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "organisation_type": forms.Select(attrs={"class": "iati-select__control"}),
+            "organisation_identifier": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}
+            ),
+            "phone": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "region": forms.Select(attrs={"class": "iati-select__control"}),
+            "reporting_source_type": forms.Select(attrs={"class": "iati-select__control"}),
+            "short_name": forms.TextInput(attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}),
+            "website": forms.URLInput(attrs={"class": "iati-form__input"}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        if cleaned_data.get("hq_country") == "" and cleaned_data.get("region") == "":
+            self.add_error("hq_country", "Must select either a country or a region")
+            self.add_error("region", "Must select either a country or a region")
 
     def get_ryd_patch_payload_from_cleaned_data(self):
         def _get_field(field_name: str) -> str:
@@ -178,6 +156,8 @@ class CreateOrganisationForm(forms.Form):
             "website": _get_field("website"),
             "short_name": _get_field("short_name"),
             "organisation_identifier": _get_field("organisation_identifier"),
+        }
+
 
 class OrgUserForm(forms.ModelForm):
     class Meta:

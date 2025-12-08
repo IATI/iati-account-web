@@ -32,16 +32,11 @@ IATI Account: My Data
 
 {% block body %}
 <div class="iati-main__before-content">
-    {% for error in errors %}
-        <div class="iati-callout iati-callout--red">
-            <p class="iati-callout__title">{{error.title}}</p>
-            <p>{{error.message}}</p>
-        </div>
-    {% endfor %}
-
+    <div id="messageContainer">
+        {% include 'components/message_viewer.html' %}
+    </div>
     <h2>Create a new reporting organisation</h2>
- 
-</div>
+ </div>
 
 <div class="iati-main__content">
     <article class="iati-main__article">

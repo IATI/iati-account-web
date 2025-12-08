@@ -16,19 +16,11 @@ from iati_account_web.data.forms import (
 from iati_account_web.data.models import ReportingOrganisation, UserAndRole
 from iati_account_web.helpers import preflight_checks
 from iati_account_web.ryd_handling import RegisterYourDataSession
-from iati_account_web.settings import (
-    COUNTRY_CODE_LOOKUP,
-    COUNTRY_LIST,
-    ORGANISATION_TYPE_LOOKUP,
-    env,
-)
-from requests import Session
 from iati_account_web.ryd_handling.reporting_orgs import (
     parse_discoverable_org_list_to_objects,
     parse_org_list_to_objects,
 )
 
-iati_account_logger = logging.getLogger("iati_account")
 audit_logger = logging.getLogger("audit")
 app_logger = logging.getLogger("iati_account")
 
@@ -393,44 +385,41 @@ def create_organisation(request: HttpRequest) -> HttpResponse:
     if preflight.not_okay_to_continue:
         return preflight.redirect
 
-    context = {"errors": [], "form": None}
+    form = None
 
     if request.method == "POST":
-        # Handle form submission - create and validate the form from the POST request.
         form = CreateOrganisationForm(request.POST)
-        context["form"] = form
-        iati_account_logger.debug(f"Creating organisation; form validation result {form.is_valid()}")
+        app_logger.debug(f"Creating organisation; form validation result {form.is_valid()}")
         if form.is_valid():
+            session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
+            try:
+                result = session.post(
+                    "/reporting-orgs",
+                    json={"iati_registry_discoverable": True, **form.instance.get_ryd_post_payload()},
+                )
+            except Exception as exc:
+                audit_logger.error(
+                    f"Could not create reporting org in RYD for user {request.user.log_label} with error {exc}"
+                )
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "There was a problem in creating your new organisation.  Please try again "
+                    "later, or if the problem persists, please contact IATI Support.",
+                )
 
-            # Form is valid so make the request to RYD to create the organisation.
-            session = Session()
-            session.headers["Authorization"] = f"Bearer {request.session["oidc_access_token"]}"
-            session.should_strip_auth = lambda old_url, new_url: False
-            response = session.post(
-                f"{env("REGISTER_YOUR_DATA_BASE_URL")}/reporting-orgs/",
-                allow_redirects=True,
-                json=form.get_ryd_patch_payload_from_cleaned_data(),
-            )
-            iati_account_logger.debug(f"Creating organisation; api_status={response.status_code}")
-
-            if response.status_code != 200:
-                # TODO: handle error
-                pass
-
-            # Organisation created okay, so go to org detail page for the new organisation.
-            redirect("data:org-detail", oid=response.json()["data"]["id"])
+            messages.add_message(request, messages.SUCCESS, "Reporting organisation created successfully.")
+            return redirect("data:reporting-org-detail", oid=result["data"]["id"])
 
         else:
-            # Highlight to the user that there are form errors.
-            context["errors"].append(
-                {
-                    "title": "There was an error in your form",
-                    "message": "There was an error in saving your changes to the organisation.",
-                }
+            messages.add_message(
+                request,
+                messages.WARNING,
+                "There was a problem in creating your new organisation.  Please correct the "
+                "errors below and try again.",
             )
 
-    if context["form"] is None:
-        context["form"] = CreateOrganisationForm()
+    context = {"form": form if form else CreateOrganisationForm()}
     template = loader.get_template("data/create_org.html")
     return HttpResponse(template.render(context, request))
 
