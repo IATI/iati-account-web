@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block extra_head %}
+
+<style>
+</style>
+
+<script>
+</script>
+{% endblock %}
+{% block title %}
+IATI Account: My Data
+{% endblock %}
+
+{% block body %}
+{% include 'components/message_viewer.html' %}
+<h2>
+    {{ org.human_readable_name }}: Create New Dataset
+    {% if org.registry_approved %}
+        <span class="iati-account-lozenge iati-account-lozenge-green-90">Approved to publish</span>
+    {% else %}
+        <span class="iati-account-lozenge iati-account-lozenge-orange-90">Not approved to publish</span>
+    {% endif %}
+</h2>
+<p>
+    {% if this_user.get_role_display|lower == "admin" %}
+        You are an <span class="iati-account-lozenge iati-account-lozenge-teal-90">ADMIN</span> for this organisation.
+    {% elif this_user.get_role_display|lower == "editor" %}
+        You are an <span class="iati-account-lozenge iati-account-lozenge-purple-90">EDITOR</span> for this organisation.
+    {% elif this_user.get_role_display|lower == "contributor" %}
+        You are an <span class="iati-account-lozenge iati-account-lozenge-grey-90">CONTRIBUTOR</span> for this organisation.
+    {% endif %}
+    <br/>
+</p>
+
+
+<div>
+    <form class="iati-form" method="post" id="createDatasetForm" action="{% url 'data:create-dataset' oid=org.oid %}">
+        {% csrf_token %}
+
+        <div class="iati-form__inner">
+            <div class="iati-form__item">
+                <label for="{{ form.human_readable_name.id_for_label }}" class="iati-form__label">
+                    {{ form.human_readable_name.label }}:
+                </label>
+                {{ form.human_readable_name }}
+                <div>
+                    {% if form.human_readable_name.errors %} {% for error in form.human_readable_name.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            <div class="iati-form__item">
+                <label for="{{ form.short_name.id_for_label }}" class="iati-form__label">
+                    {{ form.short_name.label }}:
+                </label>
+                {{ form.short_name }}
+                <div>
+                    {% if form.short_name.errors %} {% for error in form.short_name.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            <div class="iati-form__item">
+                <label for="{{ form.url.id_for_label }}" class="iati-form__label">
+                    {{ form.url.label }}:
+                </label>
+                {{ form.url }}
+                <div>
+                    {% if form.url.errors %} {% for error in form.url.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            <div class="iati-form__item">
+                <label for="{{ form.source_type.id_for_label }}" class="iati-form__label">
+                    {{ form.source_type.label }}:
+                </label>
+                {{ form.source_type }}
+                <div>
+                    {% if form.source_type.errors %} {% for error in form.source_type.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            <div class="iati-form__item">
+                <label for="{{ form.licence_id.id_for_label }}" class="iati-form__label">
+                    {{ form.licence_id.label }}:
+                </label>
+                {{ form.licence_id }}
+                <div>
+                    {% if form.licence_id.errors %} {% for error in form.licence_id.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            <div class="iati-form__item">
+                <label for="{{ form.visibility.id_for_label }}" class="iati-form__label">
+                    {{ form.visibility.label }}:
+                </label>
+                {{ form.visibility }}
+                <div>
+                    {% if form.visibility.errors %} {% for error in form.visibility.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            <div class="iati-form__item">
+                <button id="saveButton" class="iati-form__submit iati-button iati-button--submit" type="submit">Create Dataset</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

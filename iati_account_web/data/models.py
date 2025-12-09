@@ -267,3 +267,16 @@ class Dataset(models.Model):
             return max(update_dates)
 
         return None
+
+    def get_ryd_post_payload(self):
+        def _get_field(field_name: str) -> str:
+            return self.__getattribute__(field_name) if self.__getattribute__(field_name) else None
+
+        return {
+            "human_readable_name": _get_field("human_readable_name"),
+            "source_type": _get_field("source_type"),
+            "short_name": _get_field("short_name"),
+            "visibility": _get_field("visibility"),
+            "url": _get_field("url"),
+            "licence_id": _get_field("licence_id"),
+        }

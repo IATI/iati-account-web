@@ -562,8 +562,90 @@ def dataset_list(request: HttpRequest, oid: str) -> HttpResponse:
     return HttpResponse(template.render(context, request))
 
 
-def create_dataset(request: HttpRequest) -> HttpResponse:
-    return None
+def create_dataset(request: HttpRequest, oid: str) -> HttpResponse:  # noqa: C901
+    """Generates the create dataset page and handles POST responses
+
+    Parameters
+    ----------
+    request : HttpRequest
+    oid : str
+
+    Returns
+    -------
+    HttpResponse
+    """
+
+    preflight = preflight_checks(request)
+    if preflight.not_okay_to_continue:
+        return preflight.redirect
+
+    session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
+
+    form = None
+
+    if request.method == "POST":
+        form = CreateDatasetForm(request.POST)
+        app_logger.debug(f"Creating dataset; form validation result {form.is_valid()}")
+        if form.is_valid():
+            try:
+                result = session.post(
+                    "/datasets",
+                    json={"owner_organisation_id": str(oid), **form.instance.get_ryd_post_payload()},
+                )
+            except Exception as exc:
+                audit_logger.error(
+                    f"Could not create dataset in RYD for organisation {oid} on behalf of user "
+                    f"{request.user.log_label} with error {exc}"
+                )
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "There was a problem in creating your new dataset.  Please try again "
+                    "later, or if the problem persists, please contact IATI Support.",
+                )
+
+            messages.add_message(request, messages.SUCCESS, "Dataset created successfully.")
+            return redirect("data:dataset-detail", oid=oid, dataset_id=result["data"]["id"])
+
+        else:
+            messages.add_message(
+                request,
+                messages.WARNING,
+                "There was a problem in creating your new dataset.  Please correct the " "errors below and try again.",
+            )
+
+    # Get the reporting org details to decorate the page.
+    try:
+        reporting_org_data = session.get(f"/reporting-orgs/{oid}").get("data", {})
+        reporting_org = ReportingOrganisation.from_ryd_reporting_organisation(reporting_org_data)
+        this_user = UserAndRole.from_ryd(
+            reporting_org_data["user_role"], request.user.registry_id, reporting_org_data["id"], None, None
+        )
+    except Exception as exc:
+        audit_logger.error(
+            f"Could not access RYD for user {request.user.log_label} "
+            f"trying to load reporting org {oid} with error {exc}"
+        )
+        raise exc
+
+    context = {
+        "form": (
+            form
+            if form
+            else CreateDatasetForm(
+                initial={
+                    "licence_id": reporting_org.default_licence_id,
+                    "source_type": reporting_org.reporting_source_type,
+                    "visibility": "private",
+                }
+            )
+        ),
+        "org": reporting_org,
+        "this_user": this_user,
+    }
+    template = loader.get_template("data/create_dataset.html")
+    return HttpResponse(template.render(context, request))
+
 
 def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpResponse:  # noqa: C901
     """Generate dataset detail page for editing/deleting datasets.
