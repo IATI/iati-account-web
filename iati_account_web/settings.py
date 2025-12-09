@@ -65,15 +65,20 @@ DEBUG = env("DEBUG")
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {"format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}", "style": "{"},
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "verbose",
         },
     },
     "root": {
         "handlers": ["console"],
         "level": "DEBUG" if DEBUG else "WARNING",
     },
+    ""
     "loggers": {
         "mozilla_django_oidc": {"handlers": ["console"], "level": "WARNING"},
         "django": {"handlers": ["console"], "level": "INFO"},
