@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.db import models
 from iati_account_web.exceptions import RegisterYourDataResponseParsingIssue
@@ -40,6 +40,24 @@ class UserAndRole(models.Model):
             return cls(role="admin", pending=False, uid=uid, oid=oid, email=email, name=name)
         else:
             raise RegisterYourDataResponseParsingIssue(f"Cannot parse user role {role_string}")
+
+    @property
+    def can_edit_dataset(self):
+        if self.role in ("admin", "editor"):
+            return True
+        return False
+
+    @property
+    def can_change_dataset_visibility(self):
+        if self.role == "admin":
+            return True
+        return False
+
+    @property
+    def can_delete_dataset(self):
+        if self.role in ("admin", "editor"):
+            return True
+        return False
 
 
 class ReportingOrganisation(models.Model):
@@ -230,3 +248,22 @@ class Dataset(models.Model):
                 else None
             ),
         )
+
+    @property
+    def last_update_date(self) -> datetime:
+        if self.last_metadata_update_date or self.last_url_update_date:
+            update_dates = [
+                (
+                    self.last_metadata_update_date
+                    if self.last_metadata_update_date
+                    else datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+                ),
+                (
+                    self.last_url_update_date
+                    if self.last_url_update_date
+                    else datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+                ),
+            ]
+            return max(update_dates)
+
+        return None

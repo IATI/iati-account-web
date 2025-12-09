@@ -4,10 +4,10 @@
 {% block extra_head %}
 <script>
 function loadDatasetDetailPage(el) {
-    alert("not implemented yet");
+    window.location.assign(el.dataset.href);
 }
-function createDataset() {
-    alert("not implemented yet");
+function createDataset(el) {
+    window.location.assign(el.dataset.href)
 }
 function changePage(el) {
     if (el.id == "paginationCombo") {
@@ -46,7 +46,7 @@ IATI Account: My Data
     </p>
 
     <div>
-        <button class="iati-button iati-button--submit" onclick="createDataset()">Create new dataset</button>
+        <button class="iati-button iati-button--submit" onclick="createDataset(this)" data-href="{% url 'data:create-dataset' oid=org.oid %}">Create new dataset</button>
     </div><br/>
 
     <div class="iati-table" style="width:100%;">
@@ -54,7 +54,8 @@ IATI Account: My Data
             <thead>
                 <tr>
                     <th style="width: 25%;">Shortname</th>
-                    <th style="width: 55%;">URL</th>
+                    <th style="width: 40%;">URL</th>
+                    <th style="width: 15%;">Last updated</th>
                     <th style="width: 10%;">Visibility</th>
                     <th style="width: 10%;"></th>
                 </tr>
@@ -64,8 +65,9 @@ IATI Account: My Data
                     <tr>
                         <td><code>{{ dataset.short_name }}</code></td>
                         <td style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><a href="{{ dataset.url }}">{{ dataset.url }}</a></td>
+                        <td>{{ dataset.last_update_date | date:"Y-m-d" }}
                         <td>{{ dataset.get_visibility_display }}</td>
-                        <td>{{ dataset.did }}<button class="iati-button iati-button--compact" data-dataset-id="{{ dataset.dataset_id }}" onclick="loadDatasetDetailPage(this)">View/Edit</button></td>
+                        <td>{{ dataset.did }}<button class="iati-button iati-button--compact" data-href="{% url 'data:dataset-detail' oid=org.oid dataset_id=dataset.dataset_id %}" onclick="loadDatasetDetailPage(this)">View/Edit</button></td>
                     </tr>
                 {% endfor %}
             </tbody>

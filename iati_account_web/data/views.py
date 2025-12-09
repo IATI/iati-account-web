@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from uuid import UUID
 
 from django.contrib import messages
@@ -7,13 +8,15 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template import loader
 from iati_account_web.data.forms import (
+    CreateDatasetForm,
     CreateOrganisationForm,
+    DatasetDetailsForm,
     JoinOrganisationForm,
     OrganisationDeleteForm,
     OrganisationDetailsForm,
     OrgUserFormSet,
 )
-from iati_account_web.data.models import ReportingOrganisation, UserAndRole
+from iati_account_web.data.models import Dataset, ReportingOrganisation, UserAndRole
 from iati_account_web.helpers import preflight_checks
 from iati_account_web.ryd_handling import RegisterYourDataSession, parse_pagination_links
 from iati_account_web.ryd_handling.reporting_orgs import (
@@ -562,6 +565,119 @@ def dataset_list(request: HttpRequest, oid: str) -> HttpResponse:
 def create_dataset(request: HttpRequest) -> HttpResponse:
     return None
 
+def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpResponse:  # noqa: C901
+    """Generate dataset detail page for editing/deleting datasets.
 
-def dataset_detail(request: HttpRequest, oid: str) -> HttpResponse:
-    return None
+    Parameters
+    ----------
+    request : HttpRequest
+    oid : str
+        UUID of the owner organisation for the dataset.
+    dataset_id : str
+        UUID of the dataset that needs to be edited/deleted.
+
+    Returns
+    -------
+    HttpResponse
+    """
+
+    preflight = preflight_checks(request)
+    if not preflight.okay_to_continue:
+        return preflight.redirect
+
+    session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
+
+    # Get reporting org data so we can decorate the page.
+    try:
+        reporting_org_data = session.get(f"/reporting-orgs/{oid}").get("data", {})
+        reporting_org = ReportingOrganisation.from_ryd_reporting_organisation(reporting_org_data)
+        this_user = UserAndRole.from_ryd(
+            reporting_org_data["user_role"], request.user.registry_id, reporting_org_data["id"], None, None
+        )
+    except Exception as exc:
+        audit_logger.error(
+            f"Could not access RYD for user {request.user.log_label} "
+            f"trying to load reporting org {oid} with error {exc}"
+        )
+        raise exc
+
+    # Get the dataset details.
+    try:
+        dataset_data = session.get(f"/datasets/{dataset_id}").get("data", {})
+        dataset = Dataset.from_ryd(dataset_data)
+    except Exception as exc:
+        audit_logger.error(
+            f"Could not access RYD for user {request.user.log_label} "
+            f"trying to load dataset {dataset_id} from org {oid} with error {exc}"
+        )
+        raise exc
+
+    form = DatasetDetailsForm(instance=dataset)
+    if request.POST:
+        form = form = DatasetDetailsForm(request.POST, instance=dataset)
+        app_logger.debug(f"Updating a dataset - form validation state: {form.is_valid()}")
+        if form.is_valid():
+            try:
+                session.patch(
+                    f"/datasets/{dataset_id}",
+                    json=form.get_ryd_patch_payload_from_cleaned_data(),
+                )
+            except Exception as exc:
+                audit_logger.error(
+                    f"Could not update dataset in RYD for organisation {oid} on behalf of "
+                    f"user {request.user.log_label} with error {exc}"
+                )
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "There was a problem in updating this dataset.  Please try again "
+                    "later, or if the problem persists, please contact IATI Support.",
+                )
+                raise exc
+
+            # Figure out what has changed so we can reflect that on the dataset form without
+            # calling RYD again.
+            if "url" in form.changed_data:
+                dataset.last_url_update_date = datetime.now(timezone.utc)
+            if (
+                len(
+                    [
+                        field
+                        for field in form.changed_data
+                        if field in ["human_readable_name", "source_type", "short_name", "visibility", "licence_id"]
+                    ]
+                )
+                > 0
+            ):
+                dataset.last_metadata_update_date = datetime.now(timezone.utc)
+            messages.add_message(request, messages.SUCCESS, "Dataset updated successfully.")
+
+        else:
+            messages.add_message(
+                request,
+                messages.WARNING,
+                "There was a problem in updating the new dataset.  Please correct the " "errors below and try again.",
+            )
+
+    # Here we have an organisation change form and we need to set the editability
+    # of certain fields depending on the user role.
+    if not this_user.can_edit_dataset:
+        form.fields["human_readable_name"].disabled = True
+        form.fields["source_type"].disabled = True
+        form.fields["url"].disabled = True
+        form.fields["licence_id"].disabled = True
+
+    form.fields["visibility"].disabled = True
+    if this_user.can_change_dataset_visibility:
+        form.fields["visibility"].disabled = False
+
+    # Build the context and then render the page.
+    context = {
+        "form": form,
+        "org": reporting_org,
+        "dataset": dataset,
+        "this_user": this_user,
+        "show_delete_org_button": True if this_user.can_delete_dataset else False,
+    }
+    template = loader.get_template("data/dataset_detail.html")
+    return HttpResponse(template.render(context, request))

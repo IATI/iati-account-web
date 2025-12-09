@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block extra_head %}
+
+<style>
+</style>
+
+<script>
+    function formChangedAction() {
+        window.onbeforeunload = function() {return true;};
+        document.getElementById("saveChangesButton").style.display = "inline";
+        document.getElementById("discardChangesButton").style.display = "inline";
+    };
+
+    function discardChangesAction() {
+        window.onbeforeunload = null;
+        document.getElementById("saveChangesButton").style.display = "none";
+        document.getElementById("discardChangesButton").style.display = "none";
+        document.getElementById("editDatasetForm").reset();
+    };
+
+    function saveChangesAction() {
+        window.onbeforeunload = null;
+        document.getElementById("editDatasetForm").submit();
+    };
+
+    function deleteAction() {
+        alert("Not implemented yet");
+    };
+
+</script>
+{% endblock %}
+{% block title %}
+IATI Account: My Data
+{% endblock %}
+
+{% block body %}
+{% include 'components/message_viewer.html' %}
+<h2>
+    {{ org.human_readable_name }}: Dataset "{{ dataset.human_readable_name }}"
+    <br/>
+    {% if org.registry_approved %}
+        <span class="iati-account-lozenge iati-account-lozenge-green-90">Approved to publish</span>
+    {% else %}
+        <span class="iati-account-lozenge iati-account-lozenge-orange-90">Not approved to publish</span>
+    {% endif %}
+</h2>
+<p>
+    {% if this_user.get_role_display|lower == "admin" %}
+        You are an <span class="iati-account-lozenge iati-account-lozenge-teal-90">ADMIN</span> for this organisation.
+    {% elif this_user.get_role_display|lower == "editor" %}
+        You are an <span class="iati-account-lozenge iati-account-lozenge-purple-90">EDITOR</span> for this organisation.  You can make changes to this dataset, but not change its visibility.
+    {% elif this_user.get_role_display|lower == "contributor" %}
+        You are an <span class="iati-account-lozenge iati-account-lozenge-grey-90">CONTRIBUTOR</span> for this organisation.  You cannot make any changes to this dataset.
+    {% endif %}
+    <br/>
+</p>
+
+
+<div>
+    <form class="iati-form" method="post" id="editDatasetForm" action="{% url 'data:dataset-detail' oid=org.oid dataset_id=dataset.dataset_id%}" onchange="formChangedAction()">
+        {% csrf_token %}
+
+        <div class="iati-form__inner">
+            <div class="iati-form__item">
+                <label for="{{ form.human_readable_name.id_for_label }}" class="iati-form__label">
+                    {{ form.human_readable_name.label }}:
+                </label>
+                {{ form.human_readable_name }}
+                <div>
+                    {% if form.human_readable_name.errors %} {% for error in form.human_readable_name.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            <div class="iati-form__item">
+                <label for="{{ form.short_name.id_for_label }}" class="iati-form__label">
+                    {{ form.short_name.label }}:
+                </label>
+                {{ form.short_name }}
+            </div>
+            <div class="iati-form__item">
+                <label for="{{ form.url.id_for_label }}" class="iati-form__label">
+                    {{ form.url.label }}:
+                </label>
+                {{ form.url }}
+                <div>
+                    {% if form.url.errors %} {% for error in form.url.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            <div class="iati-form__item">
+                <label for="{{ form.source_type.id_for_label }}" class="iati-form__label">
+                    {{ form.source_type.label }}:
+                </label>
+                {{ form.source_type }}
+                <div>
+                    {% if form.source_type.errors %} {% for error in form.source_type.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            <div class="iati-form__item">
+                <label for="{{ form.licence_id.id_for_label }}" class="iati-form__label">
+                    {{ form.licence_id.label }}:
+                </label>
+                {{ form.licence_id }}
+                <div>
+                    {% if form.licence_id.errors %} {% for error in form.licence_id.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            <div class="iati-form__item">
+                <label for="{{ form.visibility.id_for_label }}" class="iati-form__label">
+                    {{ form.visibility.label }}:
+                </label>
+                {{ form.visibility }}
+                <div>
+                    {% if form.visibility.errors %} {% for error in form.visibility.errors %}
+                        <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>
+            </div>
+            {% if this_user.can_edit_dataset %}
+                <div>
+                    <button id="saveChangesButton" class="iati-form__submit iati-button iati-button--submit" type="button" style="display: none;" onclick="saveChangesAction()">Save</button>
+                    <button id="discardChangesButton" class="iati-form__submit iati-button" type="button" style="display: none;" onclick="discardChangesAction()">Discard Changes</button>
+                    <button id="deleteButton" class="iati-form__submit iati-button" type="button" onclick="deleteAction()">Delete</button>
+                </div>
+            {% endif %}
+        </div>
+    </form>
+    <p style="font-size: 0.8rem;">
+    {% if dataset.last_update_date %}
+        {% if dataset.last_metadata_update_date %}
+            Dataset metadata was last updated on {{ dataset.last_metadata_update_date | date:"Y-m-d" }} at {{ dataset.last_metadata_update_date | time:"H:i" }}.&nbsp;
+        {% else %}
+            Dataset metadata has not been changed since the dataset was created in IATI.&nbsp;
+        {% endif %}
+        {% if dataset.last_url_update_date %}
+            The dataset URL was last updated on {{ dataset.last_url_update_date | date:"Y-m-d" }} at {{ dataset.last_url_update_date | time:"H:i" }}.
+        {% else %}
+            The dataset URL has not been changed since the dataset was created in IATI.
+        {% endif %}
+    {% else %}
+        This dataset's metadata and URL have not been changed since the dataset was created in IATI.
+    {% endif %}
+    </p>
+
+</div>
+
+{% endblock %}
