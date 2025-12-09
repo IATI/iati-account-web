@@ -26,9 +26,12 @@
     };
 
     function deleteAction() {
-        alert("Not implemented yet");
+        document.getElementById("deleteConfirmationModal").showModal();
     };
 
+    function deleteDatasetCancelAction() {
+        document.getElementById("deleteConfirmationModal").close();
+    };
 </script>
 {% endblock %}
 {% block title %}
@@ -36,6 +39,21 @@ IATI Account: My Data
 {% endblock %}
 
 {% block body %}
+
+<dialog id="deleteConfirmationModal" class="iati-account-delete-dataset-dialog">
+    <h2>Confirm deletion</h2>
+    <form id="deleteConfirmation" class="iati-form" method="post" action="{% url 'data:delete-dataset' oid=org.oid dataset_id=dataset.dataset_id %}" onsubmit="window.onbeforeunload = null;">
+        {% csrf_token %}
+        <div class="iati-form__inner">
+            <p style="font-weight: 600;">Are you sure you wish to delete this dataset?  <span style="font-weight: 800;">This cannot be undone.</span></p>
+            {{ dataset_delete_form.dataset_id }}
+            {{ dataset_delete_form.human_readable_name }}
+            <button id="confirmDeleteButton" class="iati-button iati-button--submit" type="submit">Delete Dataset</button>
+            <button id="cancelDeleteButton" class="iati-button" type="button" onclick="deleteDatasetCancelAction()">Cancel</button>
+        </div>
+    </form>
+</dialog>
+
 {% include 'components/message_viewer.html' %}
 <h2>
     {{ org.human_readable_name }}: Dataset "{{ dataset.human_readable_name }}"

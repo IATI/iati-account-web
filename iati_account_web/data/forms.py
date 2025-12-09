@@ -252,3 +252,8 @@ class CreateDatasetForm(forms.ModelForm):
             "url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "licence_id": forms.Select(attrs={"class": "iati-select__control"}),
         }
+
+
+class DatasetDeleteForm(forms.Form):
+    dataset_id = forms.UUIDField(required=True, widget=forms.HiddenInput())
+    human_readable_name = forms.CharField(required=True, widget=forms.HiddenInput())

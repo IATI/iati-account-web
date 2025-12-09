@@ -13,4 +13,5 @@ urlpatterns = [
     path("organisation/<uuid:oid>/datasets", views.dataset_list, name="dataset-list"),
     path("organisation/<uuid:oid>/datasets/new", views.create_dataset, name="create-dataset"),
     path("organisation/<uuid:oid>/datasets/<uuid:dataset_id>", views.dataset_detail, name="dataset-detail"),
+    path("organisation/<uuid:oid>/datasets/<uuid:dataset_id>/delete", views.dataset_delete, name="delete-dataset"),
 ]

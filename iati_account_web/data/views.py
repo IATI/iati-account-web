@@ -10,6 +10,7 @@ from django.template import loader
 from iati_account_web.data.forms import (
     CreateDatasetForm,
     CreateOrganisationForm,
+    DatasetDeleteForm,
     DatasetDetailsForm,
     JoinOrganisationForm,
     OrganisationDeleteForm,
@@ -758,8 +759,65 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
         "form": form,
         "org": reporting_org,
         "dataset": dataset,
+        "dataset_delete_form": DatasetDeleteForm(
+            initial={"dataset_id": dataset.dataset_id, "human_readable_name": dataset.human_readable_name}
+        ),
         "this_user": this_user,
         "show_delete_org_button": True if this_user.can_delete_dataset else False,
     }
     template = loader.get_template("data/dataset_detail.html")
     return HttpResponse(template.render(context, request))
+
+
+def dataset_delete(request: HttpRequest, oid: str, dataset_id: str) -> HttpResponse:  # noqa: C901
+
+    # Do a small pre-flight check, as we need to check that the user is provisioned and
+    # authenticated.
+    preflight = preflight_checks(request, check_onboarding=False)
+    if not preflight.okay_to_continue:
+        if not request.user.is_authenticated:
+            audit_logger.error("Dataset delete page was called but user was not authenticated.")
+        else:
+            audit_logger.error("Dataset delete page was called but there was a preflight error.")
+        raise SuspiciousOperation(
+            f"Called {request.method} on delete dataset page but there was a preflight/authentication issue"
+        )
+
+    # This page should only be called with POST.
+    if not request.method == "POST":
+        audit_logger.error(
+            f"User {request.user.log_label} called the dataset delete page "
+            f"with an incorrect method ({request.method})"
+        )
+        raise SuspiciousOperation(f"Called {request.method} on delete dataset page")
+
+    # Build the form and validate it.
+    form = DatasetDeleteForm(request.POST)
+    if not form.is_valid():
+        audit_logger.error(f"User {request.user.log_label} called the dataset delete page but the form was invalid")
+        raise SuspiciousOperation(f"Called {request.method} on delete dataset page")
+
+    if form.cleaned_data["dataset_id"] != dataset_id:
+        audit_logger.error(
+            f"User {request.user.log_label} called the dataset delete page to "
+            f"try to delete dataset {dataset_id} but the dataset id in the form "
+            f"did not match the id of the dataset {form.cleaned_data["dataset_id"]} "
+            f"they were trying to delete."
+        )
+        raise SuspiciousOperation("Dataset delete page was called with a mismatching dataset UUIDs")
+
+    # All okay, so call RYD to delete the dataset.
+    session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
+    try:
+        session.delete(f"/datasets/{dataset_id}")
+    except Exception as exc:
+        audit_logger.error(f"Problem deleting dataset {dataset_id} by user {request.user.log_label} with error {exc}")
+        raise exc
+
+    # All okay - redirect to the dataset list page.
+    messages.add_message(
+        request,
+        messages.SUCCESS,
+        f"Dataset '{form.cleaned_data["human_readable_name"]}' was successfully deleted.",
+    )
+    return redirect("data:dataset-list", oid=oid)
