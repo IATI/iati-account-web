@@ -2,6 +2,7 @@ import logging
 import secrets
 import string
 import time
+import traceback
 
 from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
@@ -41,12 +42,16 @@ class IATIAccountExceptionHandlerMiddleware:
         -------
         HttpResponse
         """
+        stack_trace = traceback.format_exc()
 
         # Generate tracking code to help end users report problems that we can then identify in logs.
         tracking = self._generate_error_tracking_code()
 
         # Log the exception.  If the user was logged in we also put this in the audit log.
-        app_logger.error(f"Exception {exception} raised on page {request.path} with tracking code {tracking}")
+        app_logger.error(
+            f"Exception {type(exception).__name__}: {exception} raised on page {request.path} with "
+            f"tracking code {tracking}. Stack trace: {stack_trace}"
+        )
         if request.user.oidc_sub:
             audit_logger.error(
                 f"Exception {exception} raised on page {request.path} for "
