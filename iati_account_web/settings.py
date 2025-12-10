@@ -163,9 +163,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
+    "django_prometheus",
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "iati_account_web.exceptions_middleware.IATIAccountExceptionHandlerMiddleware",
@@ -176,6 +178,7 @@ MIDDLEWARE = [
     "mozilla_django_oidc.middleware.SessionRefresh",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "iati_account_web.urls"
@@ -208,7 +211,7 @@ WSGI_APPLICATION = "iati_account_web.wsgi.application"
 if env("POSTGRES_NAME"):
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
+            "ENGINE": "django_prometheus.db.backends.postgresql",
             "NAME": env("POSTGRES_NAME"),
             "USER": env("POSTGRES_USER"),
             "PASSWORD": env("POSTGRES_PASSWORD"),
@@ -219,11 +222,13 @@ if env("POSTGRES_NAME"):
 else:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.sqlite3",
+            "ENGINE": "django_prometheus.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
+# Prom settings.
+PROMETHEUS_METRIC_NAMESPACE = "iatiaccount"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

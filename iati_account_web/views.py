@@ -4,6 +4,12 @@ import libsuitecrm
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template import loader
+from iati_account_web.metrics import (
+    PROM_OIDC_LOGOUT_COUNTER,
+    PROM_OIDC_POSTLOGIN_COUNTER,
+    PROM_USER_PROVISIONING_COUNTER,
+    PROM_USER_PROVISIONING_GAUGE,
+)
 from iati_account_web.settings import env
 from libsuitecrm import SuiteCRM
 
@@ -23,6 +29,7 @@ def post_login(request: HttpRequest) -> HttpResponseRedirect:
     HttpResponseRedirect
     """
     audit_logger.info(f"User {request.user.log_label} logged in")
+    PROM_OIDC_POSTLOGIN_COUNTER.inc()
     return redirect("welcome:home")
 
 
@@ -37,6 +44,7 @@ def logout(request: HttpRequest) -> HttpResponseRedirect:
     -------
     HttpResponseRedirect
     """
+    PROM_OIDC_LOGOUT_COUNTER.inc()
     if "oidc_id_token" in request.session:
         del request.session["oidc_id_token"]
     if "oidc_access_token" in request.session:
@@ -69,15 +77,19 @@ def provision_account(request: HttpRequest) -> HttpResponse:  # noqa: C901
         # called if another view things we have not been provisioned.  Redirect to the
         # provisioning error page.  If we try to redirect to the home page we might end
         # with circular redirects.
+        PROM_USER_PROVISIONING_COUNTER.labels(state="requested_but_not_needed").inc()
         app_logger.error("Attempted to provision user, but it has already been carried out")
         audit_logger.error(f"Attempted to provision user {request.user.log_label} but it has already been carried out")
         template = loader.get_template("provisioning_error.html")
         return HttpResponse(template.render({}, request))
 
     audit_logger.info(f"Provisioning user {request.user.log_label}")
+    PROM_USER_PROVISIONING_COUNTER.labels(state="started").inc()
+    PROM_USER_PROVISIONING_GAUGE.inc()
 
     # Add iati_register_your_data role in identity server.
     if not __provision_add_roles(request):
+        PROM_USER_PROVISIONING_COUNTER.labels(state="failed").inc()
         __provision_try_to_lock_user_after_error(request)
         template = loader.get_template("provisioning_error.html")
         return HttpResponse(template.render({}, request))
@@ -86,6 +98,7 @@ def provision_account(request: HttpRequest) -> HttpResponse:  # noqa: C901
     # we need to create a matching Person record in the CRM.
     if not request.user.registry_id:
         if not __provision_create_person_in_crm(request, request.user.log_label):
+            PROM_USER_PROVISIONING_COUNTER.labels(state="failed").inc()
             __provision_try_to_lock_user_after_error(request)
             template = loader.get_template("provisioning_error.html")
             return HttpResponse(template.render({}, request))
@@ -95,6 +108,7 @@ def provision_account(request: HttpRequest) -> HttpResponse:  # noqa: C901
     # Completed, we just need to update the user record.
     request.user.has_been_provisioned = True
     if not __provision_patch_user_in_identity_service(request, request.user.log_label):
+        PROM_USER_PROVISIONING_COUNTER.labels(state="failed").inc()
         __provision_try_to_lock_user_after_error(request)
         template = loader.get_template("provisioning_error.html")
         return HttpResponse(template.render({}, request))
@@ -102,6 +116,8 @@ def provision_account(request: HttpRequest) -> HttpResponse:  # noqa: C901
     # All okay and complete.
     audit_logger.info(f"Provisioning for user {request.user.log_label} has been completed")
     request.user.save()
+    PROM_USER_PROVISIONING_COUNTER.labels(state="completed").inc()
+    PROM_USER_PROVISIONING_GAUGE.dec()
     if oidc_access_token_needs_refreshing:
         return redirect("oidc_authentication_init")
 
