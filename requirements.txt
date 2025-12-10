@@ -14,6 +14,7 @@ charset-normalizer==3.4.2
     # via requests
 cryptography==45.0.5
     # via
+    #   iati-account-web (pyproject.toml)
     #   josepy
     #   mozilla-django-oidc
 django==5.2.4

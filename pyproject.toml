@@ -8,12 +8,13 @@ license = {file = "LICENSE"}
 description = "Web application for user account self-service and to make write changes into the new IATI Registry via the Register Your Data API"
 
 dependencies = [
-    "mozilla-django-oidc",
+    "cryptography",
     "django",
     "django-environ",
     "django-extensions",
     "django-stubs[compatible-mypy]",
     "libsuitecrm @ git+https://github.com/iati/iati-registry-libsuitecrm@v0.3.0",
+    "mozilla-django-oidc",
     "oauthlib",
     "prometheus-client>=0.22.1",
     "pytz",

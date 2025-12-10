@@ -24,6 +24,7 @@ click==8.2.1
     #   pip-tools
 cryptography==45.0.5
     # via
+    #   iati-account-web (pyproject.toml)
     #   josepy
     #   mozilla-django-oidc
     #   pyopenssl

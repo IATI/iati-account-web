@@ -39,6 +39,7 @@ env = environ.Env(
     IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
     IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA=(str, None),
     AUDIT_LOG_FILE=(str, None),
+    AUDIT_LOG_PUBLIC_KEY_FILE=(str, None),
     APP_LOG_FILE=(str, None),
     AUDIT_LOG_LEVEL=(str, "INFO"),
     DJANGO_LOG_LEVEL=(str, "WARNING"),
@@ -109,6 +110,12 @@ LOGGING = {
         "requests_oauthlib": {"handlers": ["app_log_file"], "level": env("REQUESTS_LOG_LEVEL"), "propagate": False},
     },
 }
+if env("AUDIT_LOG_PUBLIC_KEY_FILE") is not None:
+    with open(env("AUDIT_LOG_PUBLIC_KEY_FILE"), "rb") as public_key_fh:
+        LOGGING["formatters"]["audit"]["()"] = "iati_account_web.audit_log_formatter.EncryptedFormatter"
+        LOGGING["formatters"]["audit"]["fmt"] = LOGGING["formatters"]["audit"]["format"]
+        del LOGGING["formatters"]["audit"]["format"]
+        LOGGING["formatters"]["audit"]["public_key"] = public_key_fh.read()
 
 # OIDC settings for communicating with the identity server.
 OIDC_OP_AUTHORIZATION_ENDPOINT = env("OIDC_OP_AUTHORIZATION_ENDPOINT")
