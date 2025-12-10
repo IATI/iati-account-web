@@ -93,6 +93,15 @@
   box-shadow: none; 
 }
 
+.iati-button:disabled {
+  background-color: var(--color-teal-10);
+  color: var(--color-teal-30);
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+  pointer-events: none;
+}
+
 
 .iati-account-delete-org-dialog {
     border: none;
@@ -100,3 +109,12 @@
     min-width: 300px;
     max-width: 600px;
 }
+
+.iati-account-pagination-button-left {
+    margin-right: 4px !important;
+}
+
+.iati-account-pagination-button-right {
+    margin-left: 4px !important;
+}
+

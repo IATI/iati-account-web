@@ -1,4 +1,4 @@
-from iati_account_web.data.models import DiscoverableReportingOrganisation, ReportingOrganisation, UserAndRole
+from iati_account_web.data.models import Dataset, DiscoverableReportingOrganisation, ReportingOrganisation, UserAndRole
 
 
 def parse_user_list_to_objects(users_and_roles: list[dict], oid: str) -> list[UserAndRole]:
@@ -65,6 +65,26 @@ def parse_discoverable_org_list_to_objects(
     list[DiscoverableReportingOrganisation]
     """
     result = [DiscoverableReportingOrganisation.from_ryd(x) for x in discoverable_reporting_orgs]
+    if sort_list:
+        result.sort(key=lambda x: x.human_readable_name)
+    return result
+
+
+def parse_dataset_list_to_objects(datasets: list[dict], sort_list: bool = False) -> list[Dataset]:
+    """Parse a list of datasets into Dataset objects
+
+    Parameters
+    ----------
+    datasets : list[dict]
+        List of dataset dictionaries as obtained from RYD.
+    sort_list : bool, optional
+        If true, the list is sorted by human_readable_name, by default False
+
+    Returns
+    -------
+    list[Dataset]
+    """
+    result = [Dataset.from_ryd(x) for x in datasets]
     if sort_list:
         result.sort(key=lambda x: x.human_readable_name)
     return result

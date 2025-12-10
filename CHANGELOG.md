@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.3 - 2025-12-09
+
+### Added
+
+- Dataset list, dataset editing, dataset deletion, and dataset creation.
+- Dataset model, RYD handling code and pagination parser so that pagination options can be presented to the user.
+
+### Changes
+
+- Added code to write the stack trace into logs from the custom exception middleware.
+- Customised log formatting to provide more detail and aid debugging.
+
 ## 0.4.2 - 2025-12-08
 
 ### Added

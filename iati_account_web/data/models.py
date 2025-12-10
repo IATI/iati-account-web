@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from django.db import models
 from iati_account_web.exceptions import RegisterYourDataResponseParsingIssue
@@ -11,6 +11,7 @@ from iati_account_web.settings import (
     REGION_LIST,
     REPORTING_SOURCE_TYPE_LIST,
     USER_ROLE_LIST,
+    VISIBILITY_LIST,
 )
 
 
@@ -39,6 +40,24 @@ class UserAndRole(models.Model):
             return cls(role="admin", pending=False, uid=uid, oid=oid, email=email, name=name)
         else:
             raise RegisterYourDataResponseParsingIssue(f"Cannot parse user role {role_string}")
+
+    @property
+    def can_edit_dataset(self):
+        if self.role in ("admin", "editor"):
+            return True
+        return False
+
+    @property
+    def can_change_dataset_visibility(self):
+        if self.role == "admin":
+            return True
+        return False
+
+    @property
+    def can_delete_dataset(self):
+        if self.role in ("admin", "editor"):
+            return True
+        return False
 
 
 class ReportingOrganisation(models.Model):
@@ -189,3 +208,75 @@ class DiscoverableReportingOrganisation(models.Model):
             short_name=metadata.get("short_name", None),
             website=metadata.get("website", None),
         )
+
+
+class Dataset(models.Model):
+    class Meta:
+        managed = False
+
+    dataset_id = models.UUIDField(blank=False)
+    human_readable_name = models.CharField(blank=False)
+    owner_organisation_id = models.UUIDField(blank=False)
+    short_name = models.CharField(blank=False)
+    source_type = models.CharField(choices=REPORTING_SOURCE_TYPE_LIST)
+    url = models.URLField(blank=False)
+    visibility = models.CharField(choices=VISIBILITY_LIST, blank=False)
+    licence_id = models.CharField(choices=LICENCE_LIST)
+    last_url_update_date = models.DateTimeField(blank=True)
+    last_metadata_update_date = models.DateTimeField(blank=True)
+
+    @classmethod
+    def from_ryd(cls, dataset_dict: dict) -> Dataset:
+        dataset_metadata = dataset_dict.get("metadata", {})
+        return cls(
+            dataset_id=dataset_dict.get("id", ""),
+            human_readable_name=dataset_metadata.get("human_readable_name"),
+            owner_organisation_id=dataset_dict.get("owner_organisation_id", ""),
+            short_name=dataset_metadata.get("short_name", ""),
+            source_type=dataset_metadata.get("source_type", ""),
+            url=dataset_metadata.get("url", ""),
+            visibility=dataset_metadata.get("visibility", ""),
+            licence_id=dataset_metadata.get("licence_id", ""),
+            last_url_update_date=(
+                datetime.fromisoformat(dataset_metadata.get("last_url_update_date"))
+                if dataset_metadata.get("last_url_update_date", "")
+                else None
+            ),
+            last_metadata_update_date=(
+                datetime.fromisoformat(dataset_metadata.get("last_metadata_update_date"))
+                if dataset_metadata.get("last_metadata_update_date", "")
+                else None
+            ),
+        )
+
+    @property
+    def last_update_date(self) -> datetime:
+        if self.last_metadata_update_date or self.last_url_update_date:
+            update_dates = [
+                (
+                    self.last_metadata_update_date
+                    if self.last_metadata_update_date
+                    else datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+                ),
+                (
+                    self.last_url_update_date
+                    if self.last_url_update_date
+                    else datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+                ),
+            ]
+            return max(update_dates)
+
+        return None
+
+    def get_ryd_post_payload(self):
+        def _get_field(field_name: str) -> str:
+            return self.__getattribute__(field_name) if self.__getattribute__(field_name) else None
+
+        return {
+            "human_readable_name": _get_field("human_readable_name"),
+            "source_type": _get_field("source_type"),
+            "short_name": _get_field("short_name"),
+            "visibility": _get_field("visibility"),
+            "url": _get_field("url"),
+            "licence_id": _get_field("licence_id"),
+        }

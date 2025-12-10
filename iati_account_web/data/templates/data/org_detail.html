@@ -61,6 +61,9 @@
         };
     };
 
+    function openDatasetPage(el) {
+        window.location.assign(el.dataset.href);
+    }
 </script>
 {% endblock %}
 {% block title %}
@@ -120,6 +123,9 @@ IATI Account: My Data
 
 <div class="iati-main__content">
 <article class="iati-main__article">
+    <div>
+        <button class="iati-button" onclick="openDatasetPage(this)" data-href="{% url 'data:dataset-list' oid=org.oid %}">View Datasets</button>
+    </div>
     <form class="iati-form" method="post" id="organisationDetailsForm" action="{% url 'data:reporting-org-detail' oid=org.oid %}" onsubmit="window.onbeforeunload = null;" onchange="orgFormChangedAction()">
     {% csrf_token %}
 

@@ -2,7 +2,9 @@ import json
 import uuid
 
 from django.test import TestCase
+from iati_account_web.data.models import Dataset
 from iati_account_web.ryd_handling.reporting_orgs import (
+    parse_dataset_list_to_objects,
     parse_discoverable_org_list_to_objects,
     parse_org_list_to_objects,
     parse_user_list_to_objects,
@@ -71,3 +73,61 @@ class DiscoverableReportingOrganisationTestCase(TestCase):
         self.assertEqual(data[0].oid, "abcd1234-ab4e-4667-a6b6-a8424b8fd38d")
         self.assertEqual(data[1].human_readable_name, "Masibekela Group")
         self.assertEqual(data[1].oid, "abcd1234-b6df-4143-8895-100ec70877cd")
+
+
+class DatasetModelTestCase(TestCase):
+    def test_can_parse_one(self):
+        test_data = {
+            "id": "abcd1234-d64c-4fa1-b980-33376bc560af",
+            "owner_organisation_id": "abcd1234-ab4e-4667-a6b6-a8424b8fd38d",
+            "metadata": {
+                "human_readable_name": "Amundsen BA Organisation File",
+                "short_name": "amuba-org-file",
+                "source_type": "primary_source",
+                "url": "https://example.org/same-environmental.xml",
+                "visibility": "public",
+                "licence_id": "gpl-3.0",
+                "last_url_update_date": "2025-12-08T11:39:00+00:00",
+                "last_metadata_update_date": "2025-12-08T11:39:00+00:00",
+            },
+        }
+        dataset = Dataset().from_ryd(test_data)
+        self.assertEqual(dataset.dataset_id, test_data["id"])
+        self.assertEqual(dataset.owner_organisation_id, test_data["owner_organisation_id"])
+        self.assertEqual(dataset.human_readable_name, test_data["metadata"]["human_readable_name"])
+        self.assertEqual(dataset.short_name, test_data["metadata"]["short_name"])
+        self.assertEqual(dataset.source_type, test_data["metadata"]["source_type"])
+        self.assertEqual(dataset.visibility, test_data["metadata"]["visibility"])
+        self.assertEqual(dataset.licence_id, test_data["metadata"]["licence_id"])
+        self.assertEqual(dataset.url, test_data["metadata"]["url"])
+        self.assertEqual(dataset.last_url_update_date.isoformat(), test_data["metadata"]["last_url_update_date"])
+        self.assertEqual(
+            dataset.last_metadata_update_date.isoformat(), test_data["metadata"]["last_metadata_update_date"]
+        )
+
+    def test_can_parse_from_dict(self):
+        fh = open("iati_account_web/test_artefacts/ryd_responses/reporting_orgs/get_org_datasets_200.json", "r")
+        api_response_data = json.load(fh)["data"]
+        fh.close()
+        dataset = Dataset().from_ryd(api_response_data[0])
+        self.assertEqual(dataset.dataset_id, "abcd1234-4254-486a-a632-18f148a265b1")
+        self.assertEqual(dataset.human_readable_name, "Amundsen BA Activity File 2")
+        self.assertEqual(dataset.owner_organisation_id, "abcd1234-ab4e-4667-a6b6-a8424b8fd38d")
+        self.assertEqual(dataset.short_name, "amuba-activity-file-2")
+        self.assertEqual(dataset.source_type, "")
+        self.assertEqual(dataset.url, "https://example.org/focus-ball-center.xml")
+        self.assertEqual(dataset.visibility, "public")
+        self.assertEqual(dataset.licence_id, "")
+        self.assertEqual(dataset.last_url_update_date, None)
+        self.assertEqual(dataset.last_metadata_update_date, None)
+
+    def test_can_parse_from_json_response(self):
+        fh = open("iati_account_web/test_artefacts/ryd_responses/reporting_orgs/get_org_datasets_200.json", "r")
+        api_response_data = json.load(fh)["data"]
+        fh.close()
+        datasets = parse_dataset_list_to_objects(api_response_data, sort_list=True)
+
+        self.assertEqual(len(datasets), 3)
+        self.assertEqual(datasets[0].human_readable_name, "Amundsen BA Activity File 1")
+        self.assertEqual(datasets[1].human_readable_name, "Amundsen BA Activity File 2")
+        self.assertEqual(datasets[2].human_readable_name, "Amundsen BA Organisation File")
