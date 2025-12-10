@@ -38,6 +38,13 @@ env = environ.Env(
     IDENTITY_SERVICE_CLIENT_ID=(str, None),
     IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
     IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA=(str, None),
+    AUDIT_LOG_FILE=(str, None),
+    APP_LOG_FILE=(str, None),
+    AUDIT_LOG_LEVEL=(str, "INFO"),
+    DJANGO_LOG_LEVEL=(str, "WARNING"),
+    APP_LOG_LEVEL=(str, "DEBUG"),
+    OIDC_LOG_LEVEL=(str, "WARNING"),
+    REQUESTS_LOG_LEVEL=(str, "WARNING"),
     CRM_BASE_URL=(str, None),
     CRM_CLIENT_ID=(str, None),
     CRM_CLIENT_SECRET=(str, None),
@@ -68,26 +75,38 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {"format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}", "style": "{"},
+        "verbose": {
+            "format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}",
+            "style": "{",
+        },
+        "audit": {
+            "format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}",
+            "style": "{",
+        },
     },
     "handlers": {
+        "app_log_file": {
+            "class": "logging.FileHandler",
+            "filename": env("APP_LOG_FILE"),
+            "formatter": "verbose",
+        },
+        "audit_log_file": {
+            "class": "logging.FileHandler",
+            "filename": env("AUDIT_LOG_FILE"),
+            "formatter": "audit",
+        },
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
     },
-    "root": {
-        "handlers": ["console"],
-        "level": "DEBUG" if DEBUG else "WARNING",
-    },
-    ""
     "loggers": {
-        "mozilla_django_oidc": {"handlers": ["console"], "level": "WARNING"},
-        "django": {"handlers": ["console"], "level": "INFO"},
-        "iati_account": {"handlers": ["console"], "level": "DEBUG"},
-        "audit": {"handlers": ["console"], "level": "INFO"},
-        "requests": {"handlers": ["console"], "level": "WARNING"},
-        "requests_oauthlib": {"handlers": ["console"], "level": "WARNING"},
+        "audit": {"handlers": ["audit_log_file"], "level": env("AUDIT_LOG_LEVEL"), "propagate": False},
+        "django": {"handlers": ["app_log_file", "console"], "level": env("DJANGO_LOG_LEVEL"), "propagate": False},
+        "iati_account": {"handlers": ["app_log_file", "console"], "level": env("APP_LOG_LEVEL"), "propagate": False},
+        "mozilla_django_oidc": {"handlers": ["app_log_file"], "level": env("OIDC_LOG_LEVEL"), "propagate": False},
+        "requests": {"handlers": ["app_log_file"], "level": env("REQUESTS_LOG_LEVEL"), "propagate": False},
+        "requests_oauthlib": {"handlers": ["app_log_file"], "level": env("REQUESTS_LOG_LEVEL"), "propagate": False},
     },
 }
 
