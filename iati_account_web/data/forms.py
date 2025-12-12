@@ -39,22 +39,30 @@ class OrganisationDetailsForm(forms.ModelForm):
         }
         error_messages = {}
         widgets = {
-            "address": forms.TextInput(attrs={"class": "iati-form__input"}),
-            "contact_email": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "address": forms.TextInput(attrs={"class": "iati-form__input iati-account-input"}),
+            "contact_email": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
             "data_portal_url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "default_licence_id": forms.Select(attrs={"class": "iati-select__control"}),
             "description": forms.Textarea(),
             "exclusions_policy_url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "fax": forms.TextInput(attrs={"class": "iati-form__input"}),
             "hq_country": forms.Select(attrs={"class": "iati-select__control"}),
-            "human_readable_name": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "human_readable_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
             "organisation_type": forms.Select(attrs={"class": "iati-select__control"}),
             "organisation_identifier": forms.TextInput(attrs={"class": "iati-form__input", "disabled": "disabled"}),
             "phone": forms.TextInput(attrs={"class": "iati-form__input"}),
             "region": forms.Select(attrs={"class": "iati-select__control"}),
             "reporting_source_type": forms.Select(attrs={"class": "iati-select__control"}),
             "short_name": forms.TextInput(
-                attrs={"class": "iati-form__input", "disabled": "disabled", "style": "font-family: roboto mono;"}
+                attrs={
+                    "class": "iati-form__input",
+                    "disabled": "disabled",
+                    "style": "font-family: roboto mono; border-width: 2px !important;",
+                }
             ),
             "website": forms.URLInput(attrs={"class": "iati-form__input"}),
         }
@@ -110,14 +118,18 @@ class CreateOrganisationForm(forms.ModelForm):
         error_messages = {}
         widgets = {
             "address": forms.TextInput(attrs={"class": "iati-form__input"}),
-            "contact_email": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "contact_email": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
             "data_portal_url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "default_licence_id": forms.Select(attrs={"class": "iati-select__control"}),
             "description": forms.Textarea(),
             "exclusions_policy_url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "fax": forms.TextInput(attrs={"class": "iati-form__input"}),
             "hq_country": forms.Select(attrs={"class": "iati-select__control"}),
-            "human_readable_name": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "human_readable_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
             "organisation_type": forms.Select(attrs={"class": "iati-select__control"}),
             "organisation_identifier": forms.TextInput(
                 attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}
@@ -125,7 +137,9 @@ class CreateOrganisationForm(forms.ModelForm):
             "phone": forms.TextInput(attrs={"class": "iati-form__input"}),
             "region": forms.Select(attrs={"class": "iati-select__control"}),
             "reporting_source_type": forms.Select(attrs={"class": "iati-select__control"}),
-            "short_name": forms.TextInput(attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}),
+            "short_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "font-family: roboto mono; border-width: 2px !important;"}
+            ),
             "website": forms.URLInput(attrs={"class": "iati-form__input"}),
         }
 
@@ -204,12 +218,22 @@ class DatasetDetailsForm(forms.ModelForm):
         }
         error_messages = {}
         widgets = {
-            "human_readable_name": forms.TextInput(attrs={"class": "iati-form__input"}),
-            "short_name": forms.TextInput(attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}),
-            "source_type": forms.Select(attrs={"class": "iati-select__control"}),
-            "visibility": forms.Select(attrs={"class": "iati-select__control"}),
-            "url": forms.URLInput(attrs={"class": "iati-form__input"}),
-            "licence_id": forms.Select(attrs={"class": "iati-select__control"}),
+            "human_readable_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
+            "short_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "font-family: roboto mono; border-width: 2px !important;"}
+            ),
+            "source_type": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
+            "visibility": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
+            "url": forms.URLInput(attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}),
+            "licence_id": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
         }
 
     def get_ryd_patch_payload_from_cleaned_data(self):
@@ -245,12 +269,22 @@ class CreateDatasetForm(forms.ModelForm):
         }
         error_messages = {}
         widgets = {
-            "human_readable_name": forms.TextInput(attrs={"class": "iati-form__input"}),
-            "source_type": forms.Select(attrs={"class": "iati-select__control"}),
-            "short_name": forms.TextInput(attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}),
-            "visibility": forms.Select(attrs={"class": "iati-select__control"}),
-            "url": forms.URLInput(attrs={"class": "iati-form__input"}),
-            "licence_id": forms.Select(attrs={"class": "iati-select__control"}),
+            "human_readable_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
+            "source_type": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
+            "short_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "font-family: roboto mono; border-width: 2px !important;"}
+            ),
+            "visibility": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
+            "url": forms.URLInput(attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}),
+            "licence_id": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
         }
 
 
