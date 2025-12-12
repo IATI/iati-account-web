@@ -30,9 +30,12 @@ class RegisterYourDataSession(Session):
         """
         super().__init__()
         self.headers["Authorization"] = f"Bearer {access_token}"
-        self.should_strip_auth = lambda old_url, new_url: False
+        if allow_redirects:
+            app_logger.info("Initialised RYD Session with allow_redirects, but this functionality is deprecated.")
+        self._allow_redirects = env("REGISTER_YOUR_DATA_ALLOW_REDIRECTS")
+        if env("REGISTER_YOUR_DATA_STRIP_AUTH_CHECK"):
+            self.should_strip_auth = self._strip_auth_check
         self._base_url = env("REGISTER_YOUR_DATA_BASE_URL").rstrip("/") + "/"
-        self._allow_redirects = allow_redirects
 
     @staticmethod
     def _strip_auth_check(old_url: str, new_url: str) -> bool:

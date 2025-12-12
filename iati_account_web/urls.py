@@ -23,6 +23,7 @@ from .views import logout, post_login, provision_account
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("", include("django_prometheus.urls")),
     path("identity/oidc/", include("mozilla_django_oidc.urls")),
     path("identity/post-login", post_login, name="post-login"),
     path("identity/logout", logout, name="logout"),

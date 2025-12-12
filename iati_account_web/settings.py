@@ -27,10 +27,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
     SECRET_KEY=(str, secrets.token_urlsafe(50)),
-    OIDC_OP_AUTHORIZATION_ENDPOINT=(str, "https://api.eu.asgardeo.io/t/iati/oauth2/authorize"),
-    OIDC_OP_TOKEN_ENDPOINT=(str, "https://api.eu.asgardeo.io/t/iati/oauth2/token"),
-    OIDC_OP_USER_ENDPOINT=(str, "https://api.eu.asgardeo.io/t/iati/oauth2/userinfo"),
-    OIDC_OP_JWKS_ENDPOINT=(str, "https://api.eu.asgardeo.io/t/iati/oauth2/jwks"),
+    OIDC_OP_AUTHORIZATION_ENDPOINT=(str, None),
+    OIDC_OP_TOKEN_ENDPOINT=(str, None),
+    OIDC_OP_USER_ENDPOINT=(str, None),
+    OIDC_OP_JWKS_ENDPOINT=(str, None),
     OIDC_RP_CLIENT_ID=(str, None),
     OIDC_RP_CLIENT_SECRET=(str, None),
     SERVER_URL_BASE=(str, None),
@@ -38,6 +38,14 @@ env = environ.Env(
     IDENTITY_SERVICE_CLIENT_ID=(str, None),
     IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
     IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA=(str, None),
+    AUDIT_LOG_FILE=(str, None),
+    AUDIT_LOG_PUBLIC_KEY_FILE=(str, None),
+    APP_LOG_FILE=(str, None),
+    AUDIT_LOG_LEVEL=(str, "INFO"),
+    DJANGO_LOG_LEVEL=(str, "WARNING"),
+    APP_LOG_LEVEL=(str, "DEBUG"),
+    OIDC_LOG_LEVEL=(str, "WARNING"),
+    REQUESTS_LOG_LEVEL=(str, "WARNING"),
     CRM_BASE_URL=(str, None),
     CRM_CLIENT_ID=(str, None),
     CRM_CLIENT_SECRET=(str, None),
@@ -46,6 +54,8 @@ env = environ.Env(
     REGION_CODELIST_JSON=(str, None),
     LICENCE_JSON=(str, None),
     REGISTER_YOUR_DATA_BASE_URL=(str, None),
+    REGISTER_YOUR_DATA_ALLOW_REDIRECTS=(bool, False),
+    REGISTER_YOUR_DATA_STRIP_AUTH_CHECK=(bool, False),
     STATIC_ROOT=(str, None),
     POSTGRES_NAME=(str, None),
     POSTGRES_USER=(str, None),
@@ -66,28 +76,46 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {"format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}", "style": "{"},
+        "verbose": {
+            "format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}",
+            "style": "{",
+        },
+        "audit": {
+            "format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}",
+            "style": "{",
+        },
     },
     "handlers": {
+        "app_log_file": {
+            "class": "logging.FileHandler",
+            "filename": env("APP_LOG_FILE"),
+            "formatter": "verbose",
+        },
+        "audit_log_file": {
+            "class": "logging.FileHandler",
+            "filename": env("AUDIT_LOG_FILE"),
+            "formatter": "audit",
+        },
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
     },
-    "root": {
-        "handlers": ["console"],
-        "level": "DEBUG" if DEBUG else "WARNING",
-    },
-    ""
     "loggers": {
-        "mozilla_django_oidc": {"handlers": ["console"], "level": "WARNING"},
-        "django": {"handlers": ["console"], "level": "INFO"},
-        "iati_account": {"handlers": ["console"], "level": "DEBUG"},
-        "audit": {"handlers": ["console"], "level": "INFO"},
-        "requests": {"handlers": ["console"], "level": "WARNING"},
-        "requests_oauthlib": {"handlers": ["console"], "level": "WARNING"},
+        "audit": {"handlers": ["audit_log_file"], "level": env("AUDIT_LOG_LEVEL"), "propagate": False},
+        "django": {"handlers": ["app_log_file", "console"], "level": env("DJANGO_LOG_LEVEL"), "propagate": False},
+        "iati_account": {"handlers": ["app_log_file", "console"], "level": env("APP_LOG_LEVEL"), "propagate": False},
+        "mozilla_django_oidc": {"handlers": ["app_log_file"], "level": env("OIDC_LOG_LEVEL"), "propagate": False},
+        "requests": {"handlers": ["app_log_file"], "level": env("REQUESTS_LOG_LEVEL"), "propagate": False},
+        "requests_oauthlib": {"handlers": ["app_log_file"], "level": env("REQUESTS_LOG_LEVEL"), "propagate": False},
     },
 }
+if env("AUDIT_LOG_PUBLIC_KEY_FILE") is not None:
+    with open(env("AUDIT_LOG_PUBLIC_KEY_FILE"), "rb") as public_key_fh:
+        LOGGING["formatters"]["audit"]["()"] = "iati_account_web.audit_log_formatter.EncryptedFormatter"
+        LOGGING["formatters"]["audit"]["fmt"] = LOGGING["formatters"]["audit"]["format"]
+        del LOGGING["formatters"]["audit"]["format"]
+        LOGGING["formatters"]["audit"]["public_key"] = public_key_fh.read()
 
 # OIDC settings for communicating with the identity server.
 OIDC_OP_AUTHORIZATION_ENDPOINT = env("OIDC_OP_AUTHORIZATION_ENDPOINT")
@@ -135,9 +163,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_extensions",
+    "django_prometheus",
 ]
 
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "iati_account_web.exceptions_middleware.IATIAccountExceptionHandlerMiddleware",
@@ -148,6 +178,7 @@ MIDDLEWARE = [
     "mozilla_django_oidc.middleware.SessionRefresh",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 ROOT_URLCONF = "iati_account_web.urls"
@@ -180,7 +211,7 @@ WSGI_APPLICATION = "iati_account_web.wsgi.application"
 if env("POSTGRES_NAME"):
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
+            "ENGINE": "django_prometheus.db.backends.postgresql",
             "NAME": env("POSTGRES_NAME"),
             "USER": env("POSTGRES_USER"),
             "PASSWORD": env("POSTGRES_PASSWORD"),
@@ -191,11 +222,13 @@ if env("POSTGRES_NAME"):
 else:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.sqlite3",
+            "ENGINE": "django_prometheus.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
 
+# Prom settings.
+PROMETHEUS_METRIC_NAMESPACE = "iatiaccount"
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

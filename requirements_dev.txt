@@ -24,12 +24,14 @@ click==8.2.1
     #   pip-tools
 cryptography==45.0.5
     # via
+    #   iati-account-web (pyproject.toml)
     #   josepy
     #   mozilla-django-oidc
     #   pyopenssl
 django==5.2.4
     # via
     #   django-extensions
+    #   django-prometheus
     #   django-stubs
     #   django-stubs-ext
     #   iati-account-web (pyproject.toml)
@@ -37,6 +39,8 @@ django==5.2.4
 django-environ==0.12.0
     # via iati-account-web (pyproject.toml)
 django-extensions==4.1
+    # via iati-account-web (pyproject.toml)
+django-prometheus==2.4.1
     # via iati-account-web (pyproject.toml)
 django-stubs==5.2.2
     # via iati-account-web (pyproject.toml)
@@ -103,7 +107,7 @@ platformdirs==4.3.8
 pluggy==1.6.0
     # via pytest
 prometheus-client==0.22.1
-    # via iati-account-web (pyproject.toml)
+    # via django-prometheus
 psycopg==3.2.13
     # via iati-account-web (pyproject.toml)
 psycopg-binary==3.2.13
