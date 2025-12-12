@@ -150,7 +150,7 @@ class CreateOrganisationForm(forms.ModelForm):
             self.add_error("hq_country", "Must select either a country or a region")
             self.add_error("region", "Must select either a country or a region")
 
-    def get_ryd_patch_payload_from_cleaned_data(self):
+    def get_ryd_post_payload_from_cleaned_data(self):
         def _get_field(field_name: str) -> str:
             return self.cleaned_data[field_name] if self.cleaned_data[field_name] else None
 
@@ -166,6 +166,7 @@ class CreateOrganisationForm(forms.ModelForm):
             "default_licence_id": _get_field("default_licence_id"),
             "contact_email": _get_field("contact_email"),
             "address": _get_field("address"),
+            "fax": _get_field("fax"),
             "phone": _get_field("phone"),
             "website": _get_field("website"),
             "short_name": _get_field("short_name"),
