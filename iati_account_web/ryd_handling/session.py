@@ -5,7 +5,9 @@ from urllib.parse import urljoin, urlparse
 from iati_account_web.exceptions import (
     RegisterYourData404,
     RegisterYourDataBadRequest,
+    RegisterYourDataFieldValidationError,
     RegisterYourDataPermissionDenied,
+    RegisterYourDataRecordAlreadyExists,
     RegisterYourDataResponseParsingIssue,
     RegisterYourDataServerIssue,
 )
@@ -196,7 +198,7 @@ class RegisterYourDataSession(Session):
 
         return data
 
-    def post(self, url: str, **kwargs) -> dict:
+    def post(self, url: str, **kwargs) -> dict:  # noqa: C901
         """POST method
 
         Parameters
@@ -214,7 +216,12 @@ class RegisterYourDataSession(Session):
             data = response.json()
             response.raise_for_status()
         except HTTPError as exc:
-            self._handle_httperror(exc, data)
+            if exc.response.status_code == 409:
+                raise RegisterYourDataRecordAlreadyExists(f"Record already exists: {data["error"]}")
+            elif exc.response.status_code == 400 and "Data validation error" in data["error"].get("error_msg", ""):
+                raise RegisterYourDataFieldValidationError(f"Validation error: {data["error"]}")
+            else:
+                self._handle_httperror(exc, data)
         except Timeout as exc:
             self._handle_timeout(exc)
         except JSONDecodeError as exc:
@@ -224,7 +231,7 @@ class RegisterYourDataSession(Session):
 
         return data
 
-    def put(self, url: str, **kwargs) -> dict:
+    def put(self, url: str, **kwargs) -> dict:  # noqa: C901
         """PUT method
 
         Parameters
@@ -242,7 +249,12 @@ class RegisterYourDataSession(Session):
             data = response.json()
             response.raise_for_status()
         except HTTPError as exc:
-            self._handle_httperror(exc, data)
+            if exc.response.status_code == 409:
+                raise RegisterYourDataRecordAlreadyExists(f"Record already exists: {data["error"]}")
+            elif exc.response.status_code == 400 and "Data validation error" in data["error"]:
+                raise RegisterYourDataFieldValidationError(f"Validation error: {data["error"]}")
+            else:
+                self._handle_httperror(exc, data)
         except Timeout as exc:
             self._handle_timeout(exc)
         except JSONDecodeError as exc:
@@ -252,7 +264,7 @@ class RegisterYourDataSession(Session):
 
         return data
 
-    def patch(self, url: str, **kwargs) -> dict:
+    def patch(self, url: str, **kwargs) -> dict:  # noqa: C901
         """PATCH method
 
         Parameters
@@ -270,7 +282,12 @@ class RegisterYourDataSession(Session):
             data = response.json()
             response.raise_for_status()
         except HTTPError as exc:
-            self._handle_httperror(exc, data)
+            if exc.response.status_code == 409:
+                raise RegisterYourDataRecordAlreadyExists(f"Record already exists: {data["error"]}")
+            elif exc.response.status_code == 400 and "Data validation error" in data["error"]:
+                raise RegisterYourDataFieldValidationError(f"Validation error: {data["error"]}")
+            else:
+                self._handle_httperror(exc, data)
         except Timeout as exc:
             self._handle_timeout(exc)
         except JSONDecodeError as exc:

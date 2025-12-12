@@ -24,3 +24,11 @@ class RegisterYourDataBadRequest(Exception):
 
 class RegisterYourData404(Exception):
     pass
+
+
+class RegisterYourDataFieldValidationError(Exception):
+    pass
+
+
+class RegisterYourDataRecordAlreadyExists(Exception):
+    pass

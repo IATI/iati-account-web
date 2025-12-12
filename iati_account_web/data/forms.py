@@ -1,7 +1,12 @@
+import re
+
 from django import forms
+from django.core.exceptions import ValidationError
 from django.forms import formset_factory
 from django.utils.translation import gettext_lazy as _
 from iati_account_web.data.models import Dataset, ReportingOrganisation, UserAndRole
+
+ALPHA_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-zA-Z0-9-_]+$")
 
 
 class OrganisationDetailsForm(forms.ModelForm):
@@ -143,6 +148,13 @@ class CreateOrganisationForm(forms.ModelForm):
             "website": forms.URLInput(attrs={"class": "iati-form__input"}),
         }
 
+    def clean_short_name(self):
+        short_name = self.cleaned_data["short_name"]
+        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+
+        return short_name
+
     def clean(self):
         cleaned_data = super().clean()
 
@@ -237,6 +249,13 @@ class DatasetDetailsForm(forms.ModelForm):
             ),
         }
 
+    def clean_short_name(self):
+        short_name = self.cleaned_data["short_name"]
+        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+
+        return short_name
+
     def get_ryd_patch_payload_from_cleaned_data(self):
         def _get_field(field_name: str) -> str:
             return self.cleaned_data[field_name] if self.cleaned_data[field_name] else None
@@ -287,6 +306,13 @@ class CreateDatasetForm(forms.ModelForm):
                 attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
             ),
         }
+
+    def clean_short_name(self):
+        short_name = self.cleaned_data["short_name"]
+        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+
+        return short_name
 
 
 class DatasetDeleteForm(forms.Form):
