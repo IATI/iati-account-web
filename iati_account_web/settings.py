@@ -18,7 +18,7 @@ import environ
 import pytz
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from iati_account_web.helpers import _codelist_helper
+from iati_account_web.helpers import _codelist_helper, get_version_from_pyproject
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -66,6 +66,8 @@ env = environ.Env(
 )
 
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+
+IATI_ACCOUNT_VERSION = get_version_from_pyproject(os.path.join(BASE_DIR, "pyproject.toml"))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 SECRET_KEY = env("SECRET_KEY")
@@ -197,6 +199,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "iati_account_web.context_processors.iati_account_data",
             ],
         },
     },
