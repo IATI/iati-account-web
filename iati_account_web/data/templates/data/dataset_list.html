@@ -28,6 +28,7 @@ IATI Account: My Data
 {% include 'components/message_viewer.html' %}
     <h2>
         {{ org.human_readable_name }}: Datasets
+        <br/>
         {% if org.registry_approved %}
             <span class="iati-account-lozenge iati-account-lozenge-green-90">Approved to publish</span>
         {% else %}
