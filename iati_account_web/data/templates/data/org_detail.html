@@ -374,6 +374,7 @@ IATI Account: My Data
                     </thead>
                     <tbody>
                         {% for user_form in user_formset %}
+                        {% if user_form.role != "provider_admin" %}
                         <tr>
                             <td style="display:none;">{{ user_form.uid }}</td>
                             <td style="display:none;">{{ user_form.oid }}</td>
@@ -382,6 +383,7 @@ IATI Account: My Data
                             <td>{{ user_form.role }}</td>
                             <td>{{ user_form.DELETE }}</td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>

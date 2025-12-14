@@ -199,6 +199,12 @@ class OrgUserForm(forms.ModelForm):
             "oid": forms.HiddenInput(),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["role"].choices = [
+            choice for choice in self.fields["role"].choices if choice[0] != "provider_admin"
+        ]
+
 
 OrgUserFormSet = formset_factory(OrgUserForm, extra=0, can_delete=True)
 

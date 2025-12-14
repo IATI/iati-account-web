@@ -26,6 +26,7 @@ from iati_account_web.ryd_handling.reporting_orgs import (
     parse_discoverable_org_list_to_objects,
     parse_org_list_to_objects,
 )
+from iati_account_web.settings import USER_ROLE_LOOKUP
 
 audit_logger = logging.getLogger("audit")
 app_logger = logging.getLogger("iati_account")
@@ -286,11 +287,10 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
                         if user_form.cleaned_data["role"] not in ("admin", "editor", "contributor"):
                             messages.add_message(
                                 request,
-                                messages.ERROR(
-                                    "You can only change the user roles to Admin, Editor or "
-                                    f"Contributor, not {user_form.cleaned_data["role"]}"
-                                ),
-                            )
+                                messages.ERROR,
+                                "You can only change the user roles to Admin, Editor or "
+                                f"Contributor, not {USER_ROLE_LOOKUP[user_form.cleaned_data["role"]]}"
+                            ),
                         else:
                             try:
                                 session.put(
