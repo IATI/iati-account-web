@@ -25,7 +25,7 @@ IATI Account: My Account
     </div><br/>
 
     <div class="iati-form__inner">
-        <h3>Your name</h3>
+        <h3 id="names">Your name</h3>
         <p>Please check your name and let us know how you want to be addressed.</p>
         <div class="iati-form__item">
             <label for="{{ form.unformatted_name.id_for_label }}" class="iati-form__label">{{ form.unformatted_name.label }}:</label>
@@ -42,7 +42,7 @@ IATI Account: My Account
     </div><br/>
 
     <div class="iati-form__inner">
-        <h3>Which languages are you able to use?</h3>
+        <h3 id="langauges">Which languages are you able to use?</h3>
         <p>This informs how we make our services accessible to you.</p>
         <div class="iati-form__item">
             <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
@@ -77,7 +77,7 @@ IATI Account: My Account
     </div><br/>
 
     <div class="iati-form__inner">
-        <h3>Where are you located in the world?</h3>
+        <h3 id="geolocation">Where are you located in the world?</h3>
         <p>This helps us understand the geographical reach of IATI and where you’re based.</p>
         <div class="iati-form__item">
             <div class="iati-select">
@@ -102,7 +102,7 @@ IATI Account: My Account
     </div><br/>
 
     <div class="iati-form__inner">
-        <h3>Which mailing lists do you want to subscribe to?</h3>
+        <h3 id="mailing-lists">Which mailing lists do you want to subscribe to?</h3>
         <div class="iati-form__item">
             <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
                 <div>
