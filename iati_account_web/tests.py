@@ -1,12 +1,13 @@
 import json
 import logging
+from unittest import mock
 
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from django.test import TestCase
 from iati_account_web.audit_log_formatter import EncryptedFormatter, decode_and_decrypt_log_entry
 from iati_account_web.exceptions_middleware import IATIAccountExceptionHandlerMiddleware
-from iati_account_web.ryd_handling import RegisterYourDataSession, parse_pagination_links
+from iati_account_web.ryd_handling import RegisterYourDataSession, parse_pagination_links, reporting_orgs
 
 
 class RYDHelperPaginationParserTestCase(TestCase):
@@ -89,6 +90,14 @@ class RYDHelperSessionTestCase(TestCase):
             ),
             True,
         )
+
+
+class RYDGetAllDiscoverableOrgs(TestCase):
+    @mock.patch.dict("os.environ", {"REGISTER_YOUR_DATA_BASE_URL": "http://localhost:3003/api/v1/"})
+    def test_get_all_discoverable_reporting_orgs(self):
+        session = RegisterYourDataSession("")
+        orgs = reporting_orgs.get_all_discoverable_reporting_orgs(session)
+        self.assertEqual(len(orgs), 2051)
 
 
 class ExceptionHandlerTestCase(TestCase):

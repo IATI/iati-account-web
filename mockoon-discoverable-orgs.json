@@ -1,0 +1,102 @@
+{
+  "uuid": "4b7e9cdb-8cec-49c9-b259-f92f63e917d2",
+  "lastMigration": 33,
+  "name": "Test discoverable orgs",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3003,
+  "hostname": "",
+  "folders": [],
+  "routes": [
+    {
+      "uuid": "dcbef849-3c13-4921-bd0b-c640c30cc15b",
+      "type": "http",
+      "documentation": "",
+      "method": "get",
+      "endpoint": "api/v1/discoverable-reporting-orgs",
+      "responses": [
+        {
+          "uuid": "44c4e62d-1414-4662-a8ff-8f6499f762a5",
+          "body": "{{setVar 'bucketName' 'Discoverable Orgs'}}\n{{setVar 'totalItems' (dataRaw (getVar 'bucketName') '$.length')}}\n{{setVar 'pageSize' (queryParam 'page_size' 10)}}\n{{setVar 'page' (queryParam 'page' 1)}}\n{{setVar 'totalPages' (ceil (divide (getVar 'totalItems') (getVar 'pageSize')))}}\n\n{{setVar 'isLastPage' (eq (parseInt (getVar 'page')) (getVar 'totalPages'))}}\n{{setVar 'isFirstPage' (eq (parseInt (getVar 'page')) 1)}}\n\n{{setVar 'nextPage' (add (getVar 'page') 1)}}\n{{setVar 'previousPage' (subtract (getVar 'page') 1)}}\n\n{{setVar 'offset' (multiply (subtract (getVar 'page') 1) (getVar 'pageSize'))}}\n{{setVar 'thisBase' '/api/v1/discoverable-reporting-orgs/'}}\n\n{\n  \"error\": null,\n  \"status\": \"success\",\n  \"data\": {{{stringify (slice (dataRaw (getVar 'bucketName')) (getVar 'offset') (add (getVar 'offset') (getVar 'pageSize')))}}},\n  \"pagination\": {\n    \"page\": {{getVar 'page'}},\n    \"page_size\": {{getVar 'pageSize'}},\n    \"total_pages\": {{getVar 'totalPages'}},\n    \"total_records\": {{getVar 'totalItems'}},\n    \"links\": {\n      \"first\": \"{{baseUrl}}{{getVar 'thisBase'}}?page={{getVar 'page'}}&page_size={{getVar 'pageSize'}}\",\n      \"prev\":\n        {{#if (getVar 'isFirstPage')}}\n          null\n        {{else}}\n          \"{{baseUrl}}{{getVar 'thisBase'}}?page={{getVar 'previousPage'}}&page_size={{getVar 'pageSize'}}\"\n        {{/if}},\n      \"next\":\n         {{#if (getVar 'isLastPage')}}\n          null\n        {{else}}\n          \"{{baseUrl}}{{getVar 'thisBase'}}?page={{getVar 'nextPage'}}&page_size={{getVar 'pageSize'}}\"\n        {{/if}},\n       \"last\": \"{{baseUrl}}{{getVar 'thisBase'}}?page={{getVar 'totalPages'}}&page_size={{getVar 'pageSize'}}\"\n    }\n  }\n}",
+          "latency": 0,
+          "statusCode": 200,
+          "label": "",
+          "headers": [],
+          "bodyType": "INLINE",
+          "filePath": "",
+          "databucketID": "",
+          "sendFileAsBody": false,
+          "rules": [],
+          "rulesOperator": "OR",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true,
+          "crudKey": "id",
+          "callbacks": []
+        }
+      ],
+      "responseMode": null,
+      "streamingMode": null,
+      "streamingInterval": 0
+    }
+  ],
+  "rootChildren": [
+    {
+      "type": "route",
+      "uuid": "dcbef849-3c13-4921-bd0b-c640c30cc15b"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "Access-Control-Allow-Origin",
+      "value": "*"
+    },
+    {
+      "key": "Access-Control-Allow-Methods",
+      "value": "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS"
+    },
+    {
+      "key": "Access-Control-Allow-Headers",
+      "value": "Content-Type, Origin, Accept, Authorization, Content-Length, X-Requested-With"
+    }
+  ],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": [
+    {
+      "uuid": "8d368901-076e-48bc-8351-3eb01fc483cf",
+      "id": "ace6",
+      "name": "Discoverable Orgs",
+      "documentation": "",
+      "value": "[\n  {{#repeat 2051}}\n    { \n      \"id\": \"{{faker 'string.uuid'}}\",\n      \"metadata\": {\n        {{setVar 'country_code' (faker 'location.countryCode') }}\n        \"hq_country\": \"{{getVar 'country_code'}}\",\n        \"human_readable_name\": \"{{faker 'company.name'}}\",\n        \"organisation_identifier\": \"{{getVar 'country_code'}}-{{faker 'string.alpha' length=3 casing='upper'}}-{{faker 'string.numeric' length=6}}\",\n        \"region\": \"\",\n        \"short_name\": \"{{faker 'string.alpha' length=8 casing='lower'}}\",\n        \"website\": \"{{faker 'internet.domainName'}}\"\n      }\n    }\n    {{/repeat}}\n]"
+    }
+  ],
+  "callbacks": []
+}

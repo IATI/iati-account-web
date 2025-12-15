@@ -22,8 +22,8 @@ from iati_account_web.exceptions import RegisterYourDataFieldValidationError, Re
 from iati_account_web.helpers import preflight_checks
 from iati_account_web.ryd_handling import RegisterYourDataSession, parse_pagination_links
 from iati_account_web.ryd_handling.reporting_orgs import (
+    get_all_discoverable_reporting_orgs,
     parse_dataset_list_to_objects,
-    parse_discoverable_org_list_to_objects,
     parse_org_list_to_objects,
 )
 from iati_account_web.settings import USER_ROLE_LOOKUP
@@ -110,8 +110,7 @@ def join_reporting_org(request: HttpRequest) -> HttpResponse:  # noqa: C901
             response_json = session.get("/reporting-orgs")
             user_org_ids = [org.get("id", "") for org in response_json["data"]]
 
-            response_json = session.get("/discoverable-reporting-orgs")
-            discoverable_reporting_orgs = parse_discoverable_org_list_to_objects(response_json["data"])
+            discoverable_reporting_orgs = get_all_discoverable_reporting_orgs(session)
         except Exception as exc:
             audit_logger.error(f"Could not access RYD for user {request.user.oidc_sub} with error {exc}")
             raise exc
@@ -289,7 +288,7 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
                                 request,
                                 messages.ERROR,
                                 "You can only change the user roles to Admin, Editor or "
-                                f"Contributor, not {USER_ROLE_LOOKUP[user_form.cleaned_data["role"]]}"
+                                f"Contributor, not {USER_ROLE_LOOKUP[user_form.cleaned_data["role"]]}",
                             ),
                         else:
                             try:
