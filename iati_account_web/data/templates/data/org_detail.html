@@ -161,7 +161,7 @@ IATI Account: My Data
                 <strong>Organisation short name:</strong> <code>{{ org.short_name }}</code><br/>
                 <strong>Organisation identifier:</strong> <code>{{ org.organisation_identifier }}</code>
             </p>
-            <button class="iati-button" onclick="openDatasetPage(this)" data-href="{% url 'data:dataset-list' oid=org.oid %}">View Datasets</button>
+            <button class="iati-button" onclick="openDatasetPage(this)" data-href="{% url 'data:dataset-list' oid=org.oid %}" type="button">View Datasets</button>
         </div>
     </div><br/>
 
