@@ -10,7 +10,27 @@ from iati_account_web.settings import USER_ROLE_LOOKUP
 ALPHA_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-zA-Z0-9-_]+$")
 
 
-class OrganisationDetailsForm(forms.ModelForm):
+class OrganisationBaseForm(forms.ModelForm):
+    def clean_data_portal_url(self):
+        data_portal_url = self.cleaned_data["data_portal_url"]
+        if (
+            "d-portal.org" in data_portal_url
+            or "iatiregistry.org" in data_portal_url
+            or "aidstream.org" in data_portal_url
+        ):
+            raise ValidationError("Data portal should be the address of the reporting organisation's own data portal")
+
+        return data_portal_url
+
+    def clean_website(self):
+        website = self.cleaned_data["website"]
+        if "d-portal.org" in website or "iatiregistry.org" in website or "aidstream.org" in website:
+            raise ValidationError("Website should be the address of the reporting organisation's main website")
+
+        return website
+
+
+class OrganisationDetailsForm(OrganisationBaseForm):
     """Form for users to view/edit details of a reporting organisation"""
 
     class Meta:
@@ -28,7 +48,7 @@ class OrganisationDetailsForm(forms.ModelForm):
         labels = {
             "address": _("Postal address"),
             "contact_email": _("Contact email address"),
-            "data_portal_url": _("Publisher data portal"),
+            "data_portal_url": _("Data portal"),
             "default_licence_id": _("Default licence"),
             "description": _("Description"),
             "exclusions_policy_url": _("Exclusions policy website/document"),
@@ -92,7 +112,7 @@ class JoinOrganisationForm(forms.Form):
     )
 
 
-class CreateOrganisationForm(forms.ModelForm):
+class CreateOrganisationForm(OrganisationBaseForm):
     class Meta:
         model = ReportingOrganisation
         fields = "__all__"
@@ -106,7 +126,7 @@ class CreateOrganisationForm(forms.ModelForm):
         labels = {
             "address": _("Postal address"),
             "contact_email": _("Contact email address"),
-            "data_portal_url": _("Publisher data portal"),
+            "data_portal_url": _("Data portal"),
             "default_licence_id": _("Default licence"),
             "description": _("Description"),
             "exclusions_policy_url": _("Exclusions policy website/document"),
