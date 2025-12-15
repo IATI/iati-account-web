@@ -10,6 +10,25 @@
 IATI Account: Welcome to your new IATI Account
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav class="iati-breadcrumb">
+  <span class="iati-breadcrumb__previous">
+    <i class="iati-icon iati-icon--chevron-left"></i>
+    <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+  </span>
+  <ol class="iati-breadcrumb__list">
+    <li class="iati-breadcrumb-pageTitle">
+          <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+        </li> <li class="iati-breadcrumb-pageTitle">
+          <a href="{% url 'account:home' %}" class="iati-breadcrumb-link">My Account</a>
+        </li> 
+    <li class="iati-breadcrumb-item iati-breadcrumb-item--current">
+      <a aria-current="page" class="iati-breadcrumb-link">Welcome to your new IATI Account</a>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block body %}
 <h2>Welcome to your new IATI Account</h2>
 {% if user.use_cases_migration %}

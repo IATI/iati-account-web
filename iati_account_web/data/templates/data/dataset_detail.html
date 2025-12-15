@@ -38,6 +38,32 @@
 IATI Account: My Data
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav class="iati-breadcrumb">
+  <span class="iati-breadcrumb__previous">
+    <i class="iati-icon iati-icon--chevron-left"></i>
+    <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+  </span>
+  <ol class="iati-breadcrumb__list">
+    <li class="iati-breadcrumb-pageTitle">
+        <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+    </li>
+    <li class="iati-breadcrumb-item">
+        <a href="{% url 'data:home' %}" class="iati-breadcrumb-link">My Data</a>
+    </li>
+    <li class="iati-breadcrumb-item">
+        <a href="{% url 'data:reporting-org-detail' oid=org.oid %}" class="iati-breadcrumb-link">{{ org.human_readable_name }}</a>
+    </li>
+    <li class="iati-breadcrumb-item ">
+        <a href="{% url 'data:dataset-list' oid=org.oid %}" class="iati-breadcrumb-link">Datasets</a>
+    </li>
+    <li class="iati-breadcrumb-item iati-breadcrumb-item--current">
+        <a aria-current="page" class="iati-breadcrumb-link">{{dataset.human_readable_name}}</a>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block body %}
 
 <dialog id="deleteConfirmationModal" class="iati-account-delete-dataset-dialog">
