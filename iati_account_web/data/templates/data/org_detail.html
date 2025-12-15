@@ -144,29 +144,12 @@ IATI Account: My Data
 
 <div class="iati-main__content">
 <article class="iati-main__article">
-    <div>
-        <button class="iati-button" onclick="openDatasetPage(this)" data-href="{% url 'data:dataset-list' oid=org.oid %}">View Datasets</button>
-    </div>
     <form class="iati-form" method="post" id="organisationDetailsForm" action="{% url 'data:reporting-org-detail' oid=org.oid %}" onsubmit="window.onbeforeunload = null;" onchange="orgFormChangedAction()">
     {% csrf_token %}
 
-    {# Buttons to submit changes, reset changes, and delete organisation #}
-    {% if show_org_info_button_box %}
-        <div id="actionButtons" class="iati-form__inner" style="display: block;">
-            <button id="saveOrgChangesButton" class="iati-form__submit iati-button iati-button--submit" type="submit"
-                style="display: none;" name="saveOrgChanges">Save</button>
-            <button id="discardOrgChangesButton" class="iati-button" type="button"
-                style="display: none;" onclick="discardOrgChangesAction()">Discard Changes</button>
-            {% if show_delete_org_button %}
-            <button id="deleteOrganisationButton" class="iati-button" type="button" onclick="deleteOrganisationShowConfirmationAction()">Delete Organisation</button>
-            {% endif %}
-        </div>
-    {% endif %}
-    <br/>
-
     {# Summary information for this organisation #}
     <div id="summary" class="iati-section">
-        <h3 class="iati-section__title">Summary</h3>
+        <h3 class="iati-section__title">Publishing Summary</h3>
         <div class="iati-form__inner">
             <p>
                 {% if org.number_of_published_datasets == 0 %}
@@ -178,6 +161,7 @@ IATI Account: My Data
                 <strong>Organisation short name:</strong> <code>{{ org.short_name }}</code><br/>
                 <strong>Organisation identifier:</strong> <code>{{ org.organisation_identifier }}</code>
             </p>
+            <button class="iati-button" onclick="openDatasetPage(this)" data-href="{% url 'data:dataset-list' oid=org.oid %}">View Datasets</button>
         </div>
     </div><br/>
 
@@ -374,7 +358,30 @@ IATI Account: My Data
                 </div>
             </div>
         </div>
+    </div><br/>
+
+    {# Buttons to submit changes, reset changes #}
+    {% if show_org_info_button_box %}
+    <div id="controlsSaveDiscard" class="iati-section">
+    <h3 class="iati-section__title">Save or Discard Changes</h3>
+        <div class="iati-form__inner">
+            <button id="saveOrgChangesButton" class="iati-form__submit iati-button iati-button--submit" type="submit"
+                style="display: none;" name="saveOrgChanges">Save</button>
+            <button id="discardOrgChangesButton" class="iati-button" type="button"
+                style="display: none;" onclick="discardOrgChangesAction()">Discard Changes</button>
+        </div>
+    </div><br/>
+    {% endif %}
+
+    {# Button to delete organisation #}
+    {% if show_delete_org_button %}
+    <div id="controlsDelete" class="iati-section">
+    <h3 class="iati-section__title">Delete Organisation</h3>
+        <div class="iati-form__inner">
+            <button id="deleteOrganisationButton" class="iati-button" type="button" onclick="deleteOrganisationShowConfirmationAction()">Delete Organisation</button>
+        </div>
     </div>
+    {% endif %}
     </form>
 
     <div id="userInformation" class="iati-section iati-section--fill">
@@ -429,12 +436,8 @@ IATI Account: My Data
             </div>
             <ul id="iati-jump-menu-items" class="iati-jump-menu__items js-jump-menu-items" aria-hidden="true">
                 <li class="iati-jump-menu__item">
-                    <a class="iati-jump-menu__link" href="#actionButtons">Actions</a>
-                </li>
-                <li class="iati-jump-menu__item">
                     <a class="iati-jump-menu__link" href="#summary">Summary</a>
                 </li>
-
                 <li class="iati-jump-menu__item">
                     <a class="iati-jump-menu__link" href="#basicInformation">Basic Information</a>
                 </li>
@@ -450,6 +453,16 @@ IATI Account: My Data
                 <li class="iati-jump-menu__item">
                     <a class="iati-jump-menu__link" href="#publishingInformation">Publishing Information</a>
                 </li>
+                {% if show_org_info_button_box %}
+                    <li class="iati-jump-menu__item">
+                        <a class="iati-jump-menu__link" href="#controlsSaveDiscard">Save or Discard Changes</a>
+                    </li>
+                {% endif %}
+                {% if show_delete_org_button %}
+                    <li class="iati-jump-menu__item">
+                        <a class="iati-jump-menu__link" href="#controlsDelete">Delete Organisation</a>
+                    </li>
+                {% endif %}
                 <li class="iati-jump-menu__item">
                     <a class="iati-jump-menu__link" href="#userInformation">View/Edit Users</a>
                 </li>
