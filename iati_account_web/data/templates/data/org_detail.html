@@ -407,8 +407,8 @@ IATI Account: My Data
                             <td style="display:none;">{{ user_form.oid }}</td>
                             <td>{{ user_form.name }} {{ user_form.name.value }}</td>
                             <td>{{ user_form.email }} {{ user_form.email.value }}</td>
-                            <td>{{ user_form.role }}</td>
-                            <td>{{ user_form.DELETE }}</td>
+                            <td>{% if  this_user.can_change_user_roles %} {{ user_form.role }} {% else %} {{ user_form.get_role_display }} {% endif %}</td>
+                            <td>{% if  this_user.can_change_user_roles %} {{ user_form.DELETE }} {% endif %}</td>
                         </tr>
                         {% endif %}
                         {% endfor %}

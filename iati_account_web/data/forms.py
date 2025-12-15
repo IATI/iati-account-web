@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.forms import formset_factory
 from django.utils.translation import gettext_lazy as _
 from iati_account_web.data.models import Dataset, ReportingOrganisation, UserAndRole
+from iati_account_web.settings import USER_ROLE_LOOKUP
 
 ALPHA_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-zA-Z0-9-_]+$")
 
@@ -204,6 +205,10 @@ class OrgUserForm(forms.ModelForm):
         self.fields["role"].choices = [
             choice for choice in self.fields["role"].choices if choice[0] != "provider_admin"
         ]
+
+    @property
+    def get_role_display(self):
+        return USER_ROLE_LOOKUP[self["role"].value()]
 
 
 OrgUserFormSet = formset_factory(OrgUserForm, extra=0, can_delete=True)

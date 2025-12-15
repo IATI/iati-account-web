@@ -59,6 +59,10 @@ class UserAndRole(models.Model):
             return True
         return False
 
+    @property
+    def can_change_user_roles(self):
+        return self.role == "admin"
+
 
 class ReportingOrganisation(models.Model):
     class Meta:
