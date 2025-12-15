@@ -70,6 +70,26 @@
 IATI Account: My Data
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav class="iati-breadcrumb">
+  <span class="iati-breadcrumb__previous">
+    <i class="iati-icon iati-icon--chevron-left"></i>
+    <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+  </span>
+  <ol class="iati-breadcrumb__list">
+    <li class="iati-breadcrumb-pageTitle">
+        <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+    </li>
+    <li class="iati-breadcrumb-item">
+        <a href="{% url 'data:home' %}" class="iati-breadcrumb-link">My Data</a>
+    </li>
+    <li class="iati-breadcrumb-item iati-breadcrumb-item--current">
+        <a aria-current="page" class="iati-breadcrumb-link">{{ org_form.human_readable_name.value }}</a>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block body %}
 
 <dialog id="deleteConfirmationModal" class="iati-account-delete-org-dialog">
@@ -103,6 +123,7 @@ IATI Account: My Data
 
     <h2>
         {{ org_form.human_readable_name.value }}
+        <br/>
         {% if org.registry_approved %}
             <span class="iati-account-lozenge iati-account-lozenge-green-90">Approved to publish</span>
         {% else %}
@@ -123,29 +144,12 @@ IATI Account: My Data
 
 <div class="iati-main__content">
 <article class="iati-main__article">
-    <div>
-        <button class="iati-button" onclick="openDatasetPage(this)" data-href="{% url 'data:dataset-list' oid=org.oid %}">View Datasets</button>
-    </div>
     <form class="iati-form" method="post" id="organisationDetailsForm" action="{% url 'data:reporting-org-detail' oid=org.oid %}" onsubmit="window.onbeforeunload = null;" onchange="orgFormChangedAction()">
     {% csrf_token %}
 
-    {# Buttons to submit changes, reset changes, and delete organisation #}
-    {% if show_org_info_button_box %}
-        <div id="actionButtons" class="iati-form__inner" style="display: block;">
-            <button id="saveOrgChangesButton" class="iati-form__submit iati-button iati-button--submit" type="submit"
-                style="display: none;" name="saveOrgChanges">Save</button>
-            <button id="discardOrgChangesButton" class="iati-button" type="button"
-                style="display: none;" onclick="discardOrgChangesAction()">Discard Changes</button>
-            {% if show_delete_org_button %}
-            <button id="deleteOrganisationButton" class="iati-button" type="button" onclick="deleteOrganisationShowConfirmationAction()">Delete Organisation</button>
-            {% endif %}
-        </div>
-    {% endif %}
-    <br/>
-
     {# Summary information for this organisation #}
     <div id="summary" class="iati-section">
-        <h3 class="iati-section__title">Summary</h3>
+        <h3 class="iati-section__title">Publishing Summary</h3>
         <div class="iati-form__inner">
             <p>
                 {% if org.number_of_published_datasets == 0 %}
@@ -157,6 +161,7 @@ IATI Account: My Data
                 <strong>Organisation short name:</strong> <code>{{ org.short_name }}</code><br/>
                 <strong>Organisation identifier:</strong> <code>{{ org.organisation_identifier }}</code>
             </p>
+            <button class="iati-button" onclick="openDatasetPage(this)" data-href="{% url 'data:dataset-list' oid=org.oid %}">View Datasets</button>
         </div>
     </div><br/>
 
@@ -167,7 +172,7 @@ IATI Account: My Data
             {# Human readable name #}
             <div class="iati-form__item">
                 <label for="{{ org_form.human_readable_name.id_for_label }}" class="iati-form__label">
-                    {{ org_form.human_readable_name.label }}:
+                    {{ org_form.human_readable_name.label }}{% if org_form.human_readable_name.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.human_readable_name }}
                 <div>
@@ -179,7 +184,7 @@ IATI Account: My Data
             {# Organisation type #}
             <div class="iati-form__item">
                 <label for="{{ org_form.organisation_type.id_for_label }}" class="iati-form__label">
-                    {{ org_form.organisation_type.label }}:
+                    {{ org_form.organisation_type.label }}{% if org_form.organisation_type.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.organisation_type }}
                 <div>
@@ -191,7 +196,7 @@ IATI Account: My Data
             {# Country #}
             <div class="iati-form__item">
                 <label for="{{ org_form.hq_country.id_for_label }}" class="iati-form__label">
-                    {{ org_form.hq_country.label }}:
+                    {{ org_form.hq_country.label }}{% if org_form.hq_country.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.hq_country }}
                 <div>
@@ -203,7 +208,7 @@ IATI Account: My Data
             {# Region #}
             <div class="iati-form__item">
                 <label for="{{ org_form.region.id_for_label }}" class="iati-form__label">
-                    {{ org_form.region.label }}:
+                    {{ org_form.region.label }}{% if org_form.region.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.region }}
                 <div>
@@ -222,7 +227,7 @@ IATI Account: My Data
             {# Contact email address #}
             <div class="iati-form__item">
                 <label for="{{ org_form.contact_email.id_for_label }}" class="iati-form__label">
-                    {{ org_form.contact_email.label }}:
+                    {{ org_form.contact_email.label }}{% if org_form.contact_email.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.contact_email }}
                 <div>
@@ -234,7 +239,7 @@ IATI Account: My Data
             {# Phone number #}
             <div class="iati-form__item">
                 <label for="{{ org_form.phone.id_for_label }}" class="iati-form__label">
-                    {{ org_form.phone.label }}:
+                    {{ org_form.phone.label }}{% if org_form.phone.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.phone }}
                 <div>
@@ -246,7 +251,7 @@ IATI Account: My Data
             {# Fax number #}
             <div class="iati-form__item">
                 <label for="{{ org_form.fax.id_for_label }}" class="iati-form__label">
-                    {{ org_form.fax.label }}:
+                    {{ org_form.fax.label }}{% if org_form.fax.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.fax }}
                 <div>
@@ -258,7 +263,7 @@ IATI Account: My Data
             {# Address #}
             <div class="iati-form__item">
                 <label for="{{ org_form.address.id_for_label }}" class="iati-form__label">
-                    {{ org_form.address.label }}:
+                    {{ org_form.address.label }}{% if org_form.address.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.address }}
                 <div>
@@ -277,7 +282,7 @@ IATI Account: My Data
             {# Description #}
             <div class="iati-form__item">
                 <label for="{{ org_form.description.id_for_label }}" class="iati-form__label">
-                    {{ org_form.description.label }}:
+                    {{ org_form.description.label }}{% if org_form.description.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.description }}
                 <div>
@@ -289,7 +294,7 @@ IATI Account: My Data
             {# Data portal URL #}
             <div class="iati-form__item">
                 <label for="{{ org_form.data_portal_url.id_for_label }}" class="iati-form__label">
-                    {{ org_form.data_portal_url.label }}:
+                    {{ org_form.data_portal_url.label }}{% if org_form.data_portal_url.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.data_portal_url }}
                 <div>
@@ -301,7 +306,7 @@ IATI Account: My Data
             {# Organisation website #}
             <div class="iati-form__item">
                 <label for="{{ org_form.website.id_for_label }}" class="iati-form__label">
-                    {{ org_form.website.label }}:</label>
+                    {{ org_form.website.label }}{% if org_form.website.field.required %} <strong>(*)</strong>{% endif %}:</label>
                 {{ org_form.website }}
                 <div>
                     {% if org_form.website.errors %} {% for error in org_form.website.errors %}
@@ -319,7 +324,7 @@ IATI Account: My Data
             {# Exclusions policy URL #}
             <div class="iati-form__item">
                 <label for="{{ org_form.exclusions_policy_url.id_for_label }}" class="iati-form__label">
-                    {{ org_form.exclusions_policy_url.label }}:
+                    {{ org_form.exclusions_policy_url.label }}{% if org_form.exclusions_policy_url.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.exclusions_policy_url }}
                 <div>
@@ -331,7 +336,7 @@ IATI Account: My Data
             {# Default licence #}
             <div class="iati-form__item">
                 <label for="{{ org_form.default_licence_id.id_for_label }}" class="iati-form__label">
-                    {{  org_form.default_licence_id.label }}:
+                    {{  org_form.default_licence_id.label }}{% if org_form.default_licence_id.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.default_licence_id }}
                 <div>
@@ -343,7 +348,7 @@ IATI Account: My Data
             {# Reporting source type #}
             <div class="iati-form__item">
                 <label for="{{ org_form.reporting_source_type.id_for_label }}" class="iati-form__label">
-                    {{ org_form.reporting_source_type.label }}:
+                    {{ org_form.reporting_source_type.label }}{% if org_form.reporting_source_type.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ org_form.reporting_source_type }}
                 <div>
@@ -353,7 +358,30 @@ IATI Account: My Data
                 </div>
             </div>
         </div>
+    </div><br/>
+
+    {# Buttons to submit changes, reset changes #}
+    {% if show_org_info_button_box %}
+    <div id="controlsSaveDiscard" class="iati-section">
+    <h3 class="iati-section__title">Save or Discard Changes</h3>
+        <div class="iati-form__inner">
+            <button id="saveOrgChangesButton" class="iati-form__submit iati-button iati-button--submit" type="submit"
+                style="display: none;" name="saveOrgChanges">Save</button>
+            <button id="discardOrgChangesButton" class="iati-button" type="button"
+                style="display: none;" onclick="discardOrgChangesAction()">Discard Changes</button>
+        </div>
+    </div><br/>
+    {% endif %}
+
+    {# Button to delete organisation #}
+    {% if show_delete_org_button %}
+    <div id="controlsDelete" class="iati-section">
+    <h3 class="iati-section__title">Delete Organisation</h3>
+        <div class="iati-form__inner">
+            <button id="deleteOrganisationButton" class="iati-button" type="button" onclick="deleteOrganisationShowConfirmationAction()">Delete Organisation</button>
+        </div>
     </div>
+    {% endif %}
     </form>
 
     <div id="userInformation" class="iati-section iati-section--fill">
@@ -373,6 +401,7 @@ IATI Account: My Data
                     </thead>
                     <tbody>
                         {% for user_form in user_formset %}
+                        {% if user_form.role != "provider_admin" %}
                         <tr>
                             <td style="display:none;">{{ user_form.uid }}</td>
                             <td style="display:none;">{{ user_form.oid }}</td>
@@ -381,6 +410,7 @@ IATI Account: My Data
                             <td>{{ user_form.role }}</td>
                             <td>{{ user_form.DELETE }}</td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
@@ -406,12 +436,8 @@ IATI Account: My Data
             </div>
             <ul id="iati-jump-menu-items" class="iati-jump-menu__items js-jump-menu-items" aria-hidden="true">
                 <li class="iati-jump-menu__item">
-                    <a class="iati-jump-menu__link" href="#actionButtons">Actions</a>
-                </li>
-                <li class="iati-jump-menu__item">
                     <a class="iati-jump-menu__link" href="#summary">Summary</a>
                 </li>
-
                 <li class="iati-jump-menu__item">
                     <a class="iati-jump-menu__link" href="#basicInformation">Basic Information</a>
                 </li>
@@ -427,6 +453,16 @@ IATI Account: My Data
                 <li class="iati-jump-menu__item">
                     <a class="iati-jump-menu__link" href="#publishingInformation">Publishing Information</a>
                 </li>
+                {% if show_org_info_button_box %}
+                    <li class="iati-jump-menu__item">
+                        <a class="iati-jump-menu__link" href="#controlsSaveDiscard">Save or Discard Changes</a>
+                    </li>
+                {% endif %}
+                {% if show_delete_org_button %}
+                    <li class="iati-jump-menu__item">
+                        <a class="iati-jump-menu__link" href="#controlsDelete">Delete Organisation</a>
+                    </li>
+                {% endif %}
                 <li class="iati-jump-menu__item">
                     <a class="iati-jump-menu__link" href="#userInformation">View/Edit Users</a>
                 </li>

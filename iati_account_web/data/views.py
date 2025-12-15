@@ -18,13 +18,15 @@ from iati_account_web.data.forms import (
     OrgUserFormSet,
 )
 from iati_account_web.data.models import Dataset, ReportingOrganisation, UserAndRole
+from iati_account_web.exceptions import RegisterYourDataFieldValidationError, RegisterYourDataRecordAlreadyExists
 from iati_account_web.helpers import preflight_checks
 from iati_account_web.ryd_handling import RegisterYourDataSession, parse_pagination_links
 from iati_account_web.ryd_handling.reporting_orgs import (
+    get_all_discoverable_reporting_orgs,
     parse_dataset_list_to_objects,
-    parse_discoverable_org_list_to_objects,
     parse_org_list_to_objects,
 )
+from iati_account_web.settings import USER_ROLE_LOOKUP
 
 audit_logger = logging.getLogger("audit")
 app_logger = logging.getLogger("iati_account")
@@ -108,8 +110,7 @@ def join_reporting_org(request: HttpRequest) -> HttpResponse:  # noqa: C901
             response_json = session.get("/reporting-orgs")
             user_org_ids = [org.get("id", "") for org in response_json["data"]]
 
-            response_json = session.get("/discoverable-reporting-orgs")
-            discoverable_reporting_orgs = parse_discoverable_org_list_to_objects(response_json["data"])
+            discoverable_reporting_orgs = get_all_discoverable_reporting_orgs(session)
         except Exception as exc:
             audit_logger.error(f"Could not access RYD for user {request.user.oidc_sub} with error {exc}")
             raise exc
@@ -285,11 +286,10 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
                         if user_form.cleaned_data["role"] not in ("admin", "editor", "contributor"):
                             messages.add_message(
                                 request,
-                                messages.ERROR(
-                                    "You can only change the user roles to Admin, Editor or "
-                                    f"Contributor, not {user_form.cleaned_data["role"]}"
-                                ),
-                            )
+                                messages.ERROR,
+                                "You can only change the user roles to Admin, Editor or "
+                                f"Contributor, not {USER_ROLE_LOOKUP[user_form.cleaned_data["role"]]}",
+                            ),
                         else:
                             try:
                                 session.put(
@@ -375,7 +375,7 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
     return HttpResponse(template.render(context, request))
 
 
-def create_organisation(request: HttpRequest) -> HttpResponse:
+def create_organisation(request: HttpRequest) -> HttpResponse:  # noqa: C901
     """Generates the create organisation page and handles creation on form submission
 
     Parameters
@@ -400,8 +400,41 @@ def create_organisation(request: HttpRequest) -> HttpResponse:
             try:
                 result = session.post(
                     "/reporting-orgs",
-                    json={"iati_registry_discoverable": True, **form.instance.get_ryd_post_payload()},
+                    json=form.get_ryd_post_payload_from_cleaned_data(),
                 )
+                messages.add_message(request, messages.SUCCESS, "Reporting organisation created    successfully.")
+                return redirect("data:reporting-org-detail", oid=result["data"]["id"])
+            except RegisterYourDataRecordAlreadyExists:
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "An organisation already exists in the registry with the same short name. "
+                    "Please try a different short name and try again.",
+                )
+                form.add_error("short_name", "Already exists in the registry")
+            except RegisterYourDataFieldValidationError as exc:
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "There was a problem in creating your new organisation.  Please correct the "
+                    "errors below and try again.",
+                )
+                if "short_name" in str(exc):
+                    form.add_error(
+                        "short_name",
+                        "Short names should only contain alphanumeric characters, hyphens, or underscores.",
+                    )
+                else:
+                    audit_logger.error(
+                        f"Could not create reporting org in RYD for user {request.user.log_label} with error {exc}"
+                    )
+                    messages.add_message(
+                        request,
+                        messages.ERROR,
+                        "There was a problem in creating your new organisation.  Please try again "
+                        "later, or if the problem persists, please contact IATI Support.",
+                    )
+                    raise exc
             except Exception as exc:
                 audit_logger.error(
                     f"Could not create reporting org in RYD for user {request.user.log_label} with error {exc}"
@@ -412,10 +445,6 @@ def create_organisation(request: HttpRequest) -> HttpResponse:
                     "There was a problem in creating your new organisation.  Please try again "
                     "later, or if the problem persists, please contact IATI Support.",
                 )
-
-            messages.add_message(request, messages.SUCCESS, "Reporting organisation created successfully.")
-            return redirect("data:reporting-org-detail", oid=result["data"]["id"])
-
         else:
             messages.add_message(
                 request,
@@ -593,6 +622,40 @@ def create_dataset(request: HttpRequest, oid: str) -> HttpResponse:  # noqa: C90
                     "/datasets",
                     json={"owner_organisation_id": str(oid), **form.instance.get_ryd_post_payload()},
                 )
+                messages.add_message(request, messages.SUCCESS, "Dataset created successfully.")
+                return redirect("data:dataset-detail", oid=oid, dataset_id=result["data"]["id"])
+            except RegisterYourDataRecordAlreadyExists:
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "A dataset already exists in the registry with the same short name. "
+                    "Please try a different short name and try again.",
+                )
+                form.add_error("short_name", "Already exists in the registry")
+            except RegisterYourDataFieldValidationError as exc:
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "There was a problem in creating your new dataset.  Please correct the "
+                    "errors below and try again.",
+                )
+                if "short_name" in str(exc):
+                    form.add_error(
+                        "short_name",
+                        "Short names should only contain alphanumeric characters, hyphens, or underscores.",
+                    )
+                else:
+                    audit_logger.error(
+                        f"Could not create dataset in RYD for organisation {oid} on behalf of user "
+                        f"{request.user.log_label} with error {exc}"
+                    )
+                    messages.add_message(
+                        request,
+                        messages.ERROR,
+                        "There was a problem in creating your new dataset.  Please try again "
+                        "later, or if the problem persists, please contact IATI Support.",
+                    )
+                    raise exc
             except Exception as exc:
                 audit_logger.error(
                     f"Could not create dataset in RYD for organisation {oid} on behalf of user "
@@ -604,10 +667,6 @@ def create_dataset(request: HttpRequest, oid: str) -> HttpResponse:  # noqa: C90
                     "There was a problem in creating your new dataset.  Please try again "
                     "later, or if the problem persists, please contact IATI Support.",
                 )
-
-            messages.add_message(request, messages.SUCCESS, "Dataset created successfully.")
-            return redirect("data:dataset-detail", oid=oid, dataset_id=result["data"]["id"])
-
         else:
             messages.add_message(
                 request,
@@ -705,6 +764,56 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
                     f"/datasets/{dataset_id}",
                     json=form.get_ryd_patch_payload_from_cleaned_data(),
                 )
+
+                # Figure out what has changed so we can reflect that on the dataset form without
+                # calling RYD again.
+                if "url" in form.changed_data:
+                    dataset.last_url_update_date = datetime.now(timezone.utc)
+                if (
+                    len(
+                        [
+                            field
+                            for field in form.changed_data
+                            if field
+                            in ["human_readable_name", "source_type", "short_name", "visibility", "licence_id"]
+                        ]
+                    )
+                    > 0
+                ):
+                    dataset.last_metadata_update_date = datetime.now(timezone.utc)
+                messages.add_message(request, messages.SUCCESS, "Dataset updated successfully.")
+            except RegisterYourDataRecordAlreadyExists:
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "A dataset already exists in the registry with the same short name. "
+                    "Please try a different short name and try again.",
+                )
+                form.add_error("short_name", "Already exists in the registry")
+            except RegisterYourDataFieldValidationError as exc:
+                messages.add_message(
+                    request,
+                    messages.ERROR,
+                    "There was a problem in creating your new dataset.  Please correct the "
+                    "errors below and try again.",
+                )
+                if "short_name" in str(exc):
+                    form.add_error(
+                        "short_name",
+                        "Short names should only contain alphanumeric characters, hyphens, or underscores.",
+                    )
+                else:
+                    audit_logger.error(
+                        f"Could not update dataset in RYD for organisation {oid} on behalf of "
+                        f"user {request.user.log_label} with error {exc}"
+                    )
+                    messages.add_message(
+                        request,
+                        messages.ERROR,
+                        "There was a problem in updating this dataset.  Please try again "
+                        "later, or if the problem persists, please contact IATI Support.",
+                    )
+                    raise exc
             except Exception as exc:
                 audit_logger.error(
                     f"Could not update dataset in RYD for organisation {oid} on behalf of "
@@ -717,24 +826,6 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
                     "later, or if the problem persists, please contact IATI Support.",
                 )
                 raise exc
-
-            # Figure out what has changed so we can reflect that on the dataset form without
-            # calling RYD again.
-            if "url" in form.changed_data:
-                dataset.last_url_update_date = datetime.now(timezone.utc)
-            if (
-                len(
-                    [
-                        field
-                        for field in form.changed_data
-                        if field in ["human_readable_name", "source_type", "short_name", "visibility", "licence_id"]
-                    ]
-                )
-                > 0
-            ):
-                dataset.last_metadata_update_date = datetime.now(timezone.utc)
-            messages.add_message(request, messages.SUCCESS, "Dataset updated successfully.")
-
         else:
             messages.add_message(
                 request,

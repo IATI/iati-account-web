@@ -13,6 +13,32 @@
 IATI Account: My Data
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav class="iati-breadcrumb">
+  <span class="iati-breadcrumb__previous">
+    <i class="iati-icon iati-icon--chevron-left"></i>
+    <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+  </span>
+  <ol class="iati-breadcrumb__list">
+    <li class="iati-breadcrumb-pageTitle">
+        <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+    </li>
+    <li class="iati-breadcrumb-item">
+        <a href="{% url 'data:home' %}" class="iati-breadcrumb-link">My Data</a>
+    </li>
+    <li class="iati-breadcrumb-item">
+        <a href="{% url 'data:reporting-org-detail' oid=org.oid %}" class="iati-breadcrumb-link">{{ org.human_readable_name }}</a>
+    </li>
+    <li class="iati-breadcrumb-item ">
+        <a href="{% url 'data:dataset-list' oid=org.oid %}" class="iati-breadcrumb-link">Datasets</a>
+    </li>
+    <li class="iati-breadcrumb-item iati-breadcrumb-item--current">
+        <a aria-current="page" class="iati-breadcrumb-link">Create a new Dataset</a>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block body %}
 {% include 'components/message_viewer.html' %}
 <h2>
@@ -42,7 +68,7 @@ IATI Account: My Data
         <div class="iati-form__inner">
             <div class="iati-form__item">
                 <label for="{{ form.human_readable_name.id_for_label }}" class="iati-form__label">
-                    {{ form.human_readable_name.label }}:
+                    {{ form.human_readable_name.label }}{% if form.human_readable_name.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ form.human_readable_name }}
                 <div>
@@ -53,7 +79,7 @@ IATI Account: My Data
             </div>
             <div class="iati-form__item">
                 <label for="{{ form.short_name.id_for_label }}" class="iati-form__label">
-                    {{ form.short_name.label }}:
+                    {{ form.short_name.label }}{% if form.short_name.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ form.short_name }}
                 <div>
@@ -64,7 +90,7 @@ IATI Account: My Data
             </div>
             <div class="iati-form__item">
                 <label for="{{ form.url.id_for_label }}" class="iati-form__label">
-                    {{ form.url.label }}:
+                    {{ form.url.label }}{% if form.url.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ form.url }}
                 <div>
@@ -75,7 +101,7 @@ IATI Account: My Data
             </div>
             <div class="iati-form__item">
                 <label for="{{ form.source_type.id_for_label }}" class="iati-form__label">
-                    {{ form.source_type.label }}:
+                    {{ form.source_type.label }}{% if form.source_type.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ form.source_type }}
                 <div>
@@ -86,7 +112,7 @@ IATI Account: My Data
             </div>
             <div class="iati-form__item">
                 <label for="{{ form.licence_id.id_for_label }}" class="iati-form__label">
-                    {{ form.licence_id.label }}:
+                    {{ form.licence_id.label }}{% if form.licence_id.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ form.licence_id }}
                 <div>
@@ -97,7 +123,7 @@ IATI Account: My Data
             </div>
             <div class="iati-form__item">
                 <label for="{{ form.visibility.id_for_label }}" class="iati-form__label">
-                    {{ form.visibility.label }}:
+                    {{ form.visibility.label }}{% if form.visibility.field.required %} <strong>(*)</strong>{% endif %}:
                 </label>
                 {{ form.visibility }}
                 <div>

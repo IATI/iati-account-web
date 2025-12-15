@@ -4,6 +4,7 @@ import libsuitecrm
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template import loader
+from iati_account_web.helpers import preflight_checks
 from iati_account_web.metrics import (
     PROM_OIDC_LOGOUT_COUNTER,
     PROM_OIDC_POSTLOGIN_COUNTER,
@@ -30,6 +31,13 @@ def post_login(request: HttpRequest) -> HttpResponseRedirect:
     """
     audit_logger.info(f"User {request.user.log_label} logged in")
     PROM_OIDC_POSTLOGIN_COUNTER.inc()
+
+    # At this point the user is logged in but might not be onboarded or provisioned.  Let's
+    # redirect as appropriate.
+    preflight = preflight_checks(request)
+    if not preflight.okay_to_continue:
+        return preflight.redirect
+
     return redirect("welcome:home")
 
 

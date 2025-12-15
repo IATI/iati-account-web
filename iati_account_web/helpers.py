@@ -1,9 +1,12 @@
 import json
 import logging
+import tomllib
 from collections import namedtuple
 
 from django.http import HttpRequest
 from django.shortcuts import redirect
+
+app_logger = logging.getLogger("iati_account")
 
 
 def _codelist_helper(filename: str) -> (list[tuple[str, str]], dict[str, str]):
@@ -74,3 +77,17 @@ def preflight_checks(request: HttpRequest, check_onboarding: bool = True) -> Pre
         )
 
     return PreFlightStatus(not_okay_to_continue=False, okay_to_continue=True, redirect=None)
+
+
+def get_version_from_pyproject(filename: str) -> str:
+    try:
+        fh = open(filename, "rb")
+        data = tomllib.load(fh)
+        if "project" not in data:
+            raise RuntimeError("Cannot understand pyproject.toml structure")
+        if "version" not in data["project"]:
+            raise RuntimeError("Cannot understand pyproject.toml structure")
+        return data["project"]["version"]
+    except Exception as exc:
+        app_logger.error("Cannot retrieve software version from pyproject.toml")
+        raise exc

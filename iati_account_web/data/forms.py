@@ -1,7 +1,12 @@
+import re
+
 from django import forms
+from django.core.exceptions import ValidationError
 from django.forms import formset_factory
 from django.utils.translation import gettext_lazy as _
 from iati_account_web.data.models import Dataset, ReportingOrganisation, UserAndRole
+
+ALPHA_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-zA-Z0-9-_]+$")
 
 
 class OrganisationDetailsForm(forms.ModelForm):
@@ -39,22 +44,30 @@ class OrganisationDetailsForm(forms.ModelForm):
         }
         error_messages = {}
         widgets = {
-            "address": forms.TextInput(attrs={"class": "iati-form__input"}),
-            "contact_email": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "address": forms.TextInput(attrs={"class": "iati-form__input iati-account-input"}),
+            "contact_email": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
             "data_portal_url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "default_licence_id": forms.Select(attrs={"class": "iati-select__control"}),
             "description": forms.Textarea(),
             "exclusions_policy_url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "fax": forms.TextInput(attrs={"class": "iati-form__input"}),
             "hq_country": forms.Select(attrs={"class": "iati-select__control"}),
-            "human_readable_name": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "human_readable_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
             "organisation_type": forms.Select(attrs={"class": "iati-select__control"}),
             "organisation_identifier": forms.TextInput(attrs={"class": "iati-form__input", "disabled": "disabled"}),
             "phone": forms.TextInput(attrs={"class": "iati-form__input"}),
             "region": forms.Select(attrs={"class": "iati-select__control"}),
             "reporting_source_type": forms.Select(attrs={"class": "iati-select__control"}),
             "short_name": forms.TextInput(
-                attrs={"class": "iati-form__input", "disabled": "disabled", "style": "font-family: roboto mono;"}
+                attrs={
+                    "class": "iati-form__input",
+                    "disabled": "disabled",
+                    "style": "font-family: roboto mono; border-width: 2px !important;",
+                }
             ),
             "website": forms.URLInput(attrs={"class": "iati-form__input"}),
         }
@@ -110,14 +123,18 @@ class CreateOrganisationForm(forms.ModelForm):
         error_messages = {}
         widgets = {
             "address": forms.TextInput(attrs={"class": "iati-form__input"}),
-            "contact_email": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "contact_email": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
             "data_portal_url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "default_licence_id": forms.Select(attrs={"class": "iati-select__control"}),
             "description": forms.Textarea(),
             "exclusions_policy_url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "fax": forms.TextInput(attrs={"class": "iati-form__input"}),
             "hq_country": forms.Select(attrs={"class": "iati-select__control"}),
-            "human_readable_name": forms.TextInput(attrs={"class": "iati-form__input"}),
+            "human_readable_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
             "organisation_type": forms.Select(attrs={"class": "iati-select__control"}),
             "organisation_identifier": forms.TextInput(
                 attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}
@@ -125,9 +142,18 @@ class CreateOrganisationForm(forms.ModelForm):
             "phone": forms.TextInput(attrs={"class": "iati-form__input"}),
             "region": forms.Select(attrs={"class": "iati-select__control"}),
             "reporting_source_type": forms.Select(attrs={"class": "iati-select__control"}),
-            "short_name": forms.TextInput(attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}),
+            "short_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "font-family: roboto mono; border-width: 2px !important;"}
+            ),
             "website": forms.URLInput(attrs={"class": "iati-form__input"}),
         }
+
+    def clean_short_name(self):
+        short_name = self.cleaned_data["short_name"]
+        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+
+        return short_name
 
     def clean(self):
         cleaned_data = super().clean()
@@ -136,7 +162,7 @@ class CreateOrganisationForm(forms.ModelForm):
             self.add_error("hq_country", "Must select either a country or a region")
             self.add_error("region", "Must select either a country or a region")
 
-    def get_ryd_patch_payload_from_cleaned_data(self):
+    def get_ryd_post_payload_from_cleaned_data(self):
         def _get_field(field_name: str) -> str:
             return self.cleaned_data[field_name] if self.cleaned_data[field_name] else None
 
@@ -152,6 +178,7 @@ class CreateOrganisationForm(forms.ModelForm):
             "default_licence_id": _get_field("default_licence_id"),
             "contact_email": _get_field("contact_email"),
             "address": _get_field("address"),
+            "fax": _get_field("fax"),
             "phone": _get_field("phone"),
             "website": _get_field("website"),
             "short_name": _get_field("short_name"),
@@ -171,6 +198,12 @@ class OrgUserForm(forms.ModelForm):
             "role": forms.Select(attrs={"class": "iati-select__control"}),
             "oid": forms.HiddenInput(),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["role"].choices = [
+            choice for choice in self.fields["role"].choices if choice[0] != "provider_admin"
+        ]
 
 
 OrgUserFormSet = formset_factory(OrgUserForm, extra=0, can_delete=True)
@@ -204,13 +237,30 @@ class DatasetDetailsForm(forms.ModelForm):
         }
         error_messages = {}
         widgets = {
-            "human_readable_name": forms.TextInput(attrs={"class": "iati-form__input"}),
-            "short_name": forms.TextInput(attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}),
-            "source_type": forms.Select(attrs={"class": "iati-select__control"}),
-            "visibility": forms.Select(attrs={"class": "iati-select__control"}),
-            "url": forms.URLInput(attrs={"class": "iati-form__input"}),
-            "licence_id": forms.Select(attrs={"class": "iati-select__control"}),
+            "human_readable_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
+            "short_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "font-family: roboto mono; border-width: 2px !important;"}
+            ),
+            "source_type": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
+            "visibility": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
+            "url": forms.URLInput(attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}),
+            "licence_id": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
         }
+
+    def clean_short_name(self):
+        short_name = self.cleaned_data["short_name"]
+        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+
+        return short_name
 
     def get_ryd_patch_payload_from_cleaned_data(self):
         def _get_field(field_name: str) -> str:
@@ -245,13 +295,30 @@ class CreateDatasetForm(forms.ModelForm):
         }
         error_messages = {}
         widgets = {
-            "human_readable_name": forms.TextInput(attrs={"class": "iati-form__input"}),
-            "source_type": forms.Select(attrs={"class": "iati-select__control"}),
-            "short_name": forms.TextInput(attrs={"class": "iati-form__input", "style": "font-family: roboto mono;"}),
-            "visibility": forms.Select(attrs={"class": "iati-select__control"}),
-            "url": forms.URLInput(attrs={"class": "iati-form__input"}),
-            "licence_id": forms.Select(attrs={"class": "iati-select__control"}),
+            "human_readable_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
+            ),
+            "source_type": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
+            "short_name": forms.TextInput(
+                attrs={"class": "iati-form__input", "style": "font-family: roboto mono; border-width: 2px !important;"}
+            ),
+            "visibility": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
+            "url": forms.URLInput(attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}),
+            "licence_id": forms.Select(
+                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
+            ),
         }
+
+    def clean_short_name(self):
+        short_name = self.cleaned_data["short_name"]
+        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+
+        return short_name
 
 
 class DatasetDeleteForm(forms.Form):

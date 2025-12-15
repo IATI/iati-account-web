@@ -32,6 +32,22 @@ class IATIUser(AbstractUser):
     registry_id = models.CharField(max_length=36, blank=True, default="")
 
     @property
+    def has_complete_geolocation(self) -> bool:
+        return self.country and self.timezone
+
+    @property
+    def has_complete_names(self) -> bool:
+        return self.unformatted_name and self.inperson_name and self.online_name
+
+    @property
+    def has_subscribed_to_mailing_lists(self) -> bool:
+        return self.mailinglist_subscriber
+
+    @property
+    def has_complete_profile(self) -> bool:
+        return self.has_complete_geolocation and self.has_complete_names and self.has_subscribed_to_mailing_lists
+
+    @property
     def first_registration_use_cases(self) -> str:
         """Return string of first registration use cases.
 

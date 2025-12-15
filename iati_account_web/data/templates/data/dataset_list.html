@@ -24,10 +24,34 @@ function changePage(el) {
 IATI Account: My Data
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav class="iati-breadcrumb">
+  <span class="iati-breadcrumb__previous">
+    <i class="iati-icon iati-icon--chevron-left"></i>
+    <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+  </span>
+  <ol class="iati-breadcrumb__list">
+    <li class="iati-breadcrumb-pageTitle">
+        <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+    </li>
+    <li class="iati-breadcrumb-item">
+        <a href="{% url 'data:home' %}" class="iati-breadcrumb-link">My Data</a>
+    </li>
+    <li class="iati-breadcrumb-item iati-breadcrumb-item--current">
+        <a href="{% url 'data:reporting-org-detail' oid=org.oid %}" class="iati-breadcrumb-link">{{ org.human_readable_name }}</a>
+    </li>
+    <li class="iati-breadcrumb-item iati-breadcrumb-item--current">
+        <a aria-current="page" class="iati-breadcrumb-link">Datasets</a>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block body %}
 {% include 'components/message_viewer.html' %}
     <h2>
         {{ org.human_readable_name }}: Datasets
+        <br/>
         {% if org.registry_approved %}
             <span class="iati-account-lozenge iati-account-lozenge-green-90">Approved to publish</span>
         {% else %}

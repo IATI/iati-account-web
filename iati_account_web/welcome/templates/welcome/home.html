@@ -1,83 +1,92 @@
 {% extends 'base.html' %}
 {% load i18n %}
 
+{% block extra_head %}
+<script>
+function loadOrganisationDetailPage(el) {
+    window.location.assign(el.dataset.href);
+}
+</script>
+{% endblock %}
 {% block title %}
 IATI Account: Home
 {% endblock %}
 
+{% block breadcrumbs %}
+<nav class="iati-breadcrumb">
+  <span class="iati-breadcrumb__previous">
+    <i class="iati-icon iati-icon--chevron-left"></i>
+    <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+  </span>
+  <ol class="iati-breadcrumb__list">
+    <li class="iati-breadcrumb-item iati-breadcrumb-item--current">
+        <a aria-current="page" class="iati-breadcrumb-link">Home</a>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block body %}
 
-<h2>Welcome to IATI Account</h2>
-{% if user.is_authenticated %}
-  <h3>User</h3>
-  <table>
-    <tr>
-      <td>username</td>
-      <td>{{ user.username }}</td>
-    </tr>
-    <tr>
-      <td>first_name</td>
-      <td>{{ user.first_name }}</td>
-    </tr>
-    <tr>
-      <td>last_name</td>
-      <td>{{ user.last_name }}</td>
-    </tr>
-    <tr>
-      <td>email</td>
-      <td>{{ user.email }}</td>
-    </tr>
-    <tr>
-      <td>password</td>
-      <td>{{ user.password }}</td>
-    </tr>
-    <tr>
-      <td>groups</td>
-      <td>{{ user.groups }}</td>
-    </tr>
-    <tr>
-      <td>user_permissions</td>
-      <td>{{ user.user_permissions }}</td>
-    </tr>
-    <tr>
-      <td>is_staff</td>
-      <td>{{ user.is_staff }}</td>
-    </tr>
-    <tr>
-      <td>is_active</td>
-      <td>{{ user.is_active }}</td>
-    </tr>
-    <tr>
-      <td>is_superuser</td>
-      <td>{{ user.is_superuser }}</td>
-    </tr>
-    <tr>
-      <td>last_login</td>
-      <td>{{ user.last_login }}</td>
-    </tr>
-    <tr>
-      <td>date_joined</td>
-      <td>{{ user.date_joined }}</td>
-    </tr>
-  </table>
+<h2>Welcome to IATI Account {{ user.online_name }}</h2>
 
-  <h3>Claims</h3>
-  <table>
-    {% for key, value in claims.items %}
-      <tr>
-        <td>{{ key }}</td>
-        <td>{{ value }}</td>
-      </tr>
-    {% endfor %}
-  </table>
+<p>IATI Account has replaced the IATI Registry. It is where you register with IATI, maintain information about your organisation, and manage your organisation's IATI data files.</p>
 
-  <form action="{% url 'oidc_logout' %}" method="post">
-    {% csrf_token %}
-    <input type="submit" value="logout">
-  </form>
-
+<h3>Your profile</h3>
+{% if not user.has_complete_profile %}
+  <p>If you have time, please could you add more information to your <a href="{% url 'account:home' %}">profile</a>.  This will help us to understand how to help you.</p>
+  <ul>
+    {% if not user.has_complete_names %}
+      <li>Could you tell us more about how <a href="{% url 'account:home' %}#names">you'd like to be addressed</a>.</li>
+    {% endif %}
+    {% if not user.has_complete_geolocation %}
+      <li>Could you tell us <a href="{% url 'account:home' %}#geolocation">where you are in the world?</a>. This helps us understand the geographical reach of IATI and where you're based</li>
+    {% endif %}
+    {% if not user.has_subscribed_to_mailing_lists %}
+      <li>Why not <a href="{% url 'account:home' %}#mailing-lists">subscribe to our mailing lists</a> to help you stay up-to-date with IATI.</li>
+    {% endif %}
+  </ul>
+{% else %}
+  <p>Your profile is complete</p>
 {% endif %}
 
+<h3>Your organisations</h3>
+{% if not orgs %}
+  <p>It looks like you're not associated with any organisations.  To start, you can 
+      <a href="{% url 'data:join-reporting-org' %}">search for your organisation</a>, or you can <a href="#">create an new reporting organisation</a> if your organisation is starting it's publishing journey with IATI.
+  </p>
+{% else %}
+  <div class="iati-table" style="width:100%;">
+      <table class="iati-table__table" style="width:100%; table-layout: fixed;">
+          <thead>
+              <tr>
+                  <th style="width: 40%;">Organisation</th>
+                  <th style="width: 20%;">Short name</th>
+                  <th style="width: 20%;">Organisation identifier</th>
+                  <th style="width: 10%;">Your role</th>
+                  <th style="width: 10%;"></th>
+              </tr>
+          </thead>
+          <tbody>
+            {% for record in orgs %}
+              <tr>
+                <td>{{ record.org.human_readable_name }}</td>
+                <td><code>{{ record.org.short_name }}</code></td>
+                <td><code>{{ record.org.organisation_identifier }}</code></td>
+                <td>{{ record.user_and_role.get_role_display }}</td>
+                <td>{% if record.user_and_role.role != "contributor_pending" %}<button class="iati-button iati-button--compact" data-href="{% url 'data:reporting-org-detail' oid=record.org.oid %}" onclick="loadOrganisationDetailPage(this)">View/Edit</button>{% endif %}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+      </table>
+  </div>
+{% endif %}
 
+<hr/>
+
+<form action="{% url 'oidc_logout' %}" method="post" class="iati-form">
+  {% csrf_token %}
+  <button id="logout" class="iati-button iati-button--submit" type="submit">Logout</button>
+</form>
 
 {% endblock %}

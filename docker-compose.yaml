@@ -1,0 +1,17 @@
+name: test-config
+
+services:
+  mock-ryd:
+    image: mockoon/cli:latest
+    ports:
+      - 3003:3003
+    volumes:
+      - type: bind
+        source: mockoon-discoverable-orgs.json
+        target: /server-config.json
+    command: ["--data", "server-config.json"]
+    healthcheck:
+      test: curl -s -o /dev/null 'http://localhost:3001/api/v1/discoverable-reporting-orgs/?page=1&page_size=5'
+      interval: 10s
+      timeout: 10s
+      retries: 1

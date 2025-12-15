@@ -1,4 +1,6 @@
 from iati_account_web.data.models import Dataset, DiscoverableReportingOrganisation, ReportingOrganisation, UserAndRole
+from iati_account_web.ryd_handling import RegisterYourDataSession
+from iati_account_web.settings import env
 
 
 def parse_user_list_to_objects(users_and_roles: list[dict], oid: str) -> list[UserAndRole]:
@@ -88,3 +90,29 @@ def parse_dataset_list_to_objects(datasets: list[dict], sort_list: bool = False)
     if sort_list:
         result.sort(key=lambda x: x.human_readable_name)
     return result
+
+
+def get_all_discoverable_reporting_orgs(session: RegisterYourDataSession) -> list[DiscoverableReportingOrganisation]:
+    """Get all the discoverable reporting orgs from RYD
+
+    Parameters
+    ----------
+    access_token : str
+
+    Returns
+    -------
+    list[DiscoverableReportingOrganisation]
+    """
+
+    page = 1
+    orgs = []
+    r = {"data": [], "pagination": {"links": {"next": ""}}}
+    while r["pagination"]["links"]["next"] is not None:
+        r = session.get(
+            "/discoverable-reporting-orgs",
+            params={"page": page, "page_size": env("REGISTER_YOUR_DATA_DISCOVERABLE_REPORTING_ORGS_PAGE_SIZE")},
+        )
+        orgs += r["data"]
+        page += 1
+
+    return parse_discoverable_org_list_to_objects(orgs)

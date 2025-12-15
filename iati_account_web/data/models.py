@@ -66,7 +66,7 @@ class ReportingOrganisation(models.Model):
 
     oid = models.UUIDField()
     address = models.CharField(blank=True)
-    contact_email = models.EmailField()
+    contact_email = models.EmailField(blank=False)
     created_date = models.DateTimeField(blank=True)
     data_portal_url = models.URLField(blank=True)
     default_licence_id = models.CharField(choices=LICENCE_LIST, blank=True)
@@ -75,7 +75,7 @@ class ReportingOrganisation(models.Model):
     fax = models.CharField(blank=True)
     first_publication_date = models.DateTimeField(blank=True)
     hq_country = models.CharField(choices=COUNTRY_LIST, blank=True)
-    human_readable_name = models.CharField()
+    human_readable_name = models.CharField(blank=False)
     number_of_published_datasets = models.IntegerField()
     organisation_identifier = models.CharField(blank=True)
     organisation_type = models.CharField(choices=ORGANISATION_TYPE_LIST, blank=True)
@@ -83,7 +83,7 @@ class ReportingOrganisation(models.Model):
     region = models.CharField(choices=REGION_LIST, blank=True)
     registry_approved = models.BooleanField(default=False)
     reporting_source_type = models.CharField(choices=REPORTING_SOURCE_TYPE_LIST, blank=True)
-    short_name = models.CharField(blank=True)
+    short_name = models.CharField(blank=False)
     website = models.URLField(blank=True)
 
     @classmethod
