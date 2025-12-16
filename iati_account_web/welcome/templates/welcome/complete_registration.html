@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}
+IATI Account: Complete Registration
+{% endblock %}
+
+{% block body %}
+
+<h1>Please complete the setup of your IATI Account</h1>
+<p>Before you can use any other publishing tools we need to complete the sign up process in <a href="{% url 'welcome:home' %}">IATI Account</a>.  Please sign into your account to complete the process and then you can return to the tool you were using.</p>
+
+<form style="display:flex;flex-direction: column; align-items: center;">
+  <button class="iati-button iati-button--submit" type="submit"
+    formaction="{% url 'oidc_authentication_init' %}">Sign in with
+    IATI</button>
+</form>
+
+{% endblock %}

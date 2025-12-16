@@ -696,7 +696,7 @@ def create_dataset(request: HttpRequest, oid: str) -> HttpResponse:  # noqa: C90
                 initial={
                     "licence_id": reporting_org.default_licence_id,
                     "source_type": reporting_org.reporting_source_type,
-                    "visibility": "private",
+                    "visibility": "public",
                 }
             )
         ),

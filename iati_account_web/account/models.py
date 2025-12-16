@@ -122,7 +122,10 @@ class IATIUser(AbstractUser):
     @property
     def log_label(self) -> str:
         """Short string to help identify users in audit logs"""
-        return f"{self.oidc_sub} ({self.unformatted_name})"
+        if self.registry_id:
+            return f"{self.oidc_sub} ({self.unformatted_name}) [crm id {self.registry_id}]"
+        else:
+            return f"{self.oidc_sub} ({self.unformatted_name})"
 
     def update_from_claims(self, claims: dict[str, str], include_sub: bool = False):
         """Update the user model fields from an OIDC claims dictionary

@@ -31,3 +31,21 @@ def index(request: HttpRequest) -> HttpResponse:
         template = loader.get_template("welcome/index.html")
 
     return HttpResponse(template.render(context, request))
+
+
+def complete_registration(request: HttpRequest) -> HttpResponse:
+    """Simple page to inform a user that they need to complete registration in IATI Account
+
+    This is called when a user tries to log into a third party application (e.g., IATI Publisher)
+    with an unprovisioned account.
+
+    Parameters
+    ----------
+    request : HttpRequest
+
+    Returns
+    -------
+    HttpResponseRedirect
+    """
+    template = loader.get_template("welcome/complete_registration.html")
+    return HttpResponse(template.render({}, request))

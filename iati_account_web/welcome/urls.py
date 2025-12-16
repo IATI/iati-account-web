@@ -6,4 +6,5 @@ app_name = "welcome"
 
 urlpatterns = [
     path("", views.index, name="home"),
+    path("complete-registration", views.complete_registration, name="complete-registration"),
 ]
