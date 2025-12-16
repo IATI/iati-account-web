@@ -64,6 +64,7 @@ env = environ.Env(
     POSTGRES_HOST=(str, None),
     POSTGRES_PORT=(str, None),
     ALLOWED_HOSTS=(list, []),
+    SERVE_PROM_APP_METRICS=(bool, False),
 )
 
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
@@ -113,7 +114,7 @@ LOGGING = {
         "requests_oauthlib": {"handlers": ["app_log_file"], "level": env("REQUESTS_LOG_LEVEL"), "propagate": False},
     },
 }
-if env("AUDIT_LOG_PUBLIC_KEY_FILE") is not None:
+if env("AUDIT_LOG_PUBLIC_KEY_FILE") is not None and env("AUDIT_LOG_PUBLIC_KEY_FILE") != "None":
     with open(env("AUDIT_LOG_PUBLIC_KEY_FILE"), "rb") as public_key_fh:
         LOGGING["formatters"]["audit"]["()"] = "iati_account_web.audit_log_formatter.EncryptedFormatter"
         LOGGING["formatters"]["audit"]["fmt"] = LOGGING["formatters"]["audit"]["format"]
