@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## 0.4.6 - 2025-12-16
+
+### Added
+
+- Complete registration page that users will be redirected to after self-registering via third party applications.
+- Add user registry id to audit log entries to aid debugging.
+
+### Changes
+
+- Default dataset visibility is now public.
+- Reword "Publisher Data Portal" to "Data Portal" and add some basic validation.
+- Hide user role dropdowns when users do not have permissions to change user roles.
+- Fix empty links to create reporting organisation page.
+- Fix "view datasets" button on reporting organisation page.
+
 ## 0.4.5 - 2025-12-15
 
 ### Added
