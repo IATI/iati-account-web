@@ -64,6 +64,7 @@ env = environ.Env(
     POSTGRES_HOST=(str, None),
     POSTGRES_PORT=(str, None),
     ALLOWED_HOSTS=(list, []),
+    SERVE_PROM_APP_METRICS=(bool, False),
 )
 
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
