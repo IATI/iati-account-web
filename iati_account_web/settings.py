@@ -160,7 +160,6 @@ INSTALLED_APPS = [
     "iati_account_web.account.apps.AccountConfig",
     "iati_account_web.data.apps.DataConfig",
     "django.contrib.auth",
-    "django.contrib.admin",
     "mozilla_django_oidc",
     "django.contrib.contenttypes",
     "django.contrib.sessions",

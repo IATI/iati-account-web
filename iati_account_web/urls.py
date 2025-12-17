@@ -16,14 +16,12 @@ Including another URLconf
 """
 
 from django.conf.urls.i18n import i18n_patterns
-from django.contrib import admin
 from django.urls import include, path
 from iati_account_web.settings import env
 
 from .views import logout, post_login, provision_account
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("identity/oidc/", include("mozilla_django_oidc.urls")),
     path("identity/post-login", post_login, name="post-login"),
     path("identity/logout", logout, name="logout"),
