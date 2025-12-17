@@ -64,6 +64,7 @@ function selectOrg(orgRow) {
     document.getElementById("foundOrgBox").style.display = "block";
     document.getElementById("id_human_readable_name").value = selectedOrgRow.children[0].innerHTML;
     document.getElementById("id_org_id").value = selectedOrgRow.dataset.orgId;
+    document.getElementById("joinOrgButton").disabled = false;
 }
 </script>
 
@@ -125,7 +126,7 @@ IATI Account: Find your organisation
             {{ form.human_readable_name }}
             {{ form.org_id }}
         </div><br/>
-        <button class="iati-form__submit iati-button iati-button--submit" type="submit">Join Organisation</button>
+        <button id="joinOrgButton" class="iati-form__submit iati-button iati-button--submit" type="submit" disabled>Join Organisation</button>
     </div><br/>
 
     <div class="iati-table">
