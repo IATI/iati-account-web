@@ -1,6 +1,6 @@
 [project]
 name = "iati-account-web"
-version = "0.4.7"
+version = "0.4.8"
 requires-python = ">= 3.12.11"
 readme = "README.md"
 authors = [{name="IATI Secretariat", email="support@iatistandard.org"}]
