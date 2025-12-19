@@ -30,6 +30,7 @@ class IATIUser(AbstractUser):
     has_been_onboarded = models.BooleanField(default=False)
     has_been_provisioned = models.BooleanField(default=False)
     registry_id = models.CharField(max_length=36, blank=True, default="")
+    is_iati_superadmin = models.BooleanField(default=False)
 
     @property
     def has_complete_geolocation(self) -> bool:
@@ -151,6 +152,8 @@ class IATIUser(AbstractUser):
         self.has_been_onboarded = True if claims.get("iatiHasBeenOnboarded", "false").lower() == "true" else False
         self.registry_id = claims.get("iatiRegistryId", "")
         self.has_been_provisioned = True if claims.get("iatiHasBeenProvisioned", "false").lower() == "true" else False
+        if "Internal/iati_superadmin" in claims.get("roles", []):
+            self.is_iati_superadmin = True
 
     @staticmethod
     def _connect_to_identity_service(scope: str = IDENTITY_SERVICE_SCIM2_SCOPES) -> dict[str, str] | None:
