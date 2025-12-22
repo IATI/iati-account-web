@@ -90,17 +90,17 @@ IATI Account: My Data
         <span class="iati-account-lozenge iati-account-lozenge-orange-90">Not approved to publish</span>
     {% endif %}
 </h2>
-<p>
-    {% if this_user.get_role_display|lower == "admin" %}
-        You are an <span class="iati-account-lozenge iati-account-lozenge-teal-90">ADMIN</span> for this organisation.
-    {% elif this_user.get_role_display|lower == "editor" %}
-        You are an <span class="iati-account-lozenge iati-account-lozenge-purple-90">EDITOR</span> for this organisation.  You can make changes to this dataset, but not change its visibility.
-    {% elif this_user.get_role_display|lower == "contributor" %}
-        You are an <span class="iati-account-lozenge iati-account-lozenge-grey-90">CONTRIBUTOR</span> for this organisation.  You cannot make any changes to this dataset.
+<p>You are viewing/editing this dataset for this organisation as 
+    {% if this_user.role == "admin" %}
+        an <span class="iati-account-lozenge iati-account-lozenge-teal-90">ADMIN</span>.
+    {% elif this_user.role == "editor" %}
+        an <span class="iati-account-lozenge iati-account-lozenge-purple-90">EDITOR</span>.
+    {% elif this_user.role == "contributor" %}
+        a <span class="iati-account-lozenge iati-account-lozenge-grey-90">CONTRIBUTOR</span>.
+    {% elif this_user.role == "super_admin" %}
+        a <span class="iati-account-lozenge iati-account-lozenge-red-90">SUPERADMIN</span>.
     {% endif %}
-    <br/>
 </p>
-
 
 <div>
     <form class="iati-form" method="post" id="editDatasetForm" action="{% url 'data:dataset-detail' oid=org.oid dataset_id=dataset.dataset_id%}" onchange="formChangedAction()">

@@ -43,6 +43,11 @@
             <li class="iati-mobile-nav__item">
               <a href="{% url 'data:home' %}" class="iati-mobile-nav__link">My Data</a>
             </li>
+            {% if user.is_iati_superadmin %}
+              <li class="iati-mobile-nav__item">
+                <a href="#" class="iati-mobile-nav__link">Superadmin</a>
+              </li>
+            {% endif %}
           </ul>
         {% endif %}
         <ul class="">
@@ -145,6 +150,11 @@
                   <li>
                     <a href="{% url 'data:home' %}" class="iati-tool-nav-link">My Data</a>
                   </li>
+                  {% if user.is_iati_superadmin %}
+                    <li>
+                      <a href="#" class="iati-tool-nav-link">Superadmin</a>
+                    </li>
+                  {% endif %}
                 </ul>
               </nav>
             </div>
