@@ -25,43 +25,48 @@ class UserAndRole(models.Model):
     role = models.CharField(choices=USER_ROLE_LIST, blank=False)
     name = models.CharField(blank=True)
     pending = models.BooleanField(default=False)
+    super_admin = models.BooleanField(default=False)
 
     @classmethod
     def from_ryd(cls, role_string: str, uid: str, oid: str, email: str = None, name: str = None) -> UserAndRole:
         if role_string.lower() == "contributor_pending":
             return cls(role="contributor_pending", pending=True, uid=uid, oid=oid, email=email, name=name)
         elif role_string.lower() == "provider_admin":
-            return cls(role="provider_admin", pending=False, uid=uid, oid=oid, email=email, name=name)
+            return cls(role="provider_admin", uid=uid, oid=oid, email=email, name=name)
         elif role_string.lower() == "contributor":
-            return cls(role="contributor", pending=False, uid=uid, oid=oid, email=email, name=name)
+            return cls(role="contributor", uid=uid, oid=oid, email=email, name=name)
         elif role_string.lower() == "editor":
-            return cls(role="editor", pending=False, uid=uid, oid=oid, email=email, name=name)
+            return cls(role="editor", uid=uid, oid=oid, email=email, name=name)
         elif role_string.lower() == "admin":
-            return cls(role="admin", pending=False, uid=uid, oid=oid, email=email, name=name)
+            return cls(role="admin", uid=uid, oid=oid, email=email, name=name)
+        elif role_string.lower() == "super_admin":
+            return cls(role="super_admin", super_admin=True, uid=uid, oid=oid, email=email, name=name)
         else:
             raise RegisterYourDataResponseParsingIssue(f"Cannot parse user role {role_string}")
 
     @property
     def can_edit_dataset(self):
-        if self.role in ("admin", "editor"):
+        if self.role in ("admin", "editor", "super_admin"):
             return True
         return False
 
     @property
     def can_change_dataset_visibility(self):
-        if self.role == "admin":
+        if self.role in ("admin", "super_admin"):
             return True
         return False
 
     @property
     def can_delete_dataset(self):
-        if self.role in ("admin", "editor"):
+        if self.role in ("admin", "editor", "super_admin"):
             return True
         return False
 
     @property
     def can_change_user_roles(self):
-        return self.role == "admin"
+        if self.role in ("admin", "super_admin"):
+            return True
+        return False
 
 
 class ReportingOrganisation(models.Model):

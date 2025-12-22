@@ -334,5 +334,6 @@ USER_ROLE_LIST = [
     ("contributor", "Contributor"),
     ("provider_admin", "Provider Admin"),
     ("contributor_pending", "Pending"),
+    ("super_admin", "Superadmin"),
 ]
 USER_ROLE_LOOKUP = {x[0]: x[1] for x in USER_ROLE_LIST}
