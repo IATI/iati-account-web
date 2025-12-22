@@ -548,8 +548,7 @@ def dataset_list(request: HttpRequest, oid: str) -> HttpResponse:
         return preflight.redirect
 
     page = request.GET.get("page", 1)
-    page_size = 2
-    # page_size = request.GET.get("page_size", 100)
+    page_size = request.GET.get("page_size", 24)
 
     session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
 

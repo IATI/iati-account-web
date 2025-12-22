@@ -42,9 +42,6 @@ IATI Account: Home
     {% if not user.has_complete_geolocation %}
       <li>Could you tell us <a href="{% url 'account:home' %}#geolocation">where you are in the world?</a>. This helps us understand the geographical reach of IATI and where you're based</li>
     {% endif %}
-    {% if not user.has_subscribed_to_mailing_lists %}
-      <li>Why not <a href="{% url 'account:home' %}#mailing-lists">subscribe to our mailing lists</a> to help you stay up-to-date with IATI.</li>
-    {% endif %}
   </ul>
 {% else %}
   <p>Your profile is complete</p>

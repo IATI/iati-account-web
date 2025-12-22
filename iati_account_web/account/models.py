@@ -45,7 +45,7 @@ class IATIUser(AbstractUser):
 
     @property
     def has_complete_profile(self) -> bool:
-        return self.has_complete_geolocation and self.has_complete_names and self.has_subscribed_to_mailing_lists
+        return self.has_complete_geolocation and self.has_complete_names
 
     @property
     def first_registration_use_cases(self) -> str:
