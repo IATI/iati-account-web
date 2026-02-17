@@ -803,7 +803,7 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
                     )
                 else:
                     audit_logger.error(
-                        f"Could not update dataset in RYD for organisation {oid} on behalf of "
+                        f"Could not update dataset in RYD for organisation {oid} on behalf of "  # nosec B608
                         f"user {request.user.log_label} with error {exc}"
                     )
                     messages.add_message(
@@ -815,7 +815,7 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
                     raise exc
             except Exception as exc:
                 audit_logger.error(
-                    f"Could not update dataset in RYD for organisation {oid} on behalf of "
+                    f"Could not update dataset in RYD for organisation {oid} on behalf of "  # nosec B608
                     f"user {request.user.log_label} with error {exc}"
                 )
                 messages.add_message(
