@@ -367,7 +367,7 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
         "user_formset": user_formset,
         "org": reporting_org,
         "this_user": this_user,
-        "show_delete_org_button": True if this_user.role == "admin" else False,
+        "show_delete_org_button": True if this_user.role == "admin" or this_user.super_admin else False,
         "show_org_info_button_box": False if this_user.role == "contributor" else True,
         "delete_form": delete_org_form,
     }
