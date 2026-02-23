@@ -291,17 +291,11 @@ class DatasetDetailsForm(forms.ModelForm):
 
         return short_name
 
-    def get_ryd_patch_payload_from_cleaned_data(self):
-        def _get_field(field_name: str) -> str:
+    def get_ryd_patch_payload_from_cleaned_data(self, fields_editable_status: dict[str, bool]):
+        def _get_field(field_name: str) -> str | None:
             return self.cleaned_data[field_name] if self.cleaned_data[field_name] else None
 
-        return {
-            "human_readable_name": _get_field("human_readable_name"),
-            "licence_id": _get_field("licence_id"),
-            "short_name": _get_field("short_name"),
-            "source_type": _get_field("source_type"),
-            "url": _get_field("url"),
-        }
+        return {field: _get_field(field) for field, editable in fields_editable_status.items() if editable}
 
 
 class CreateDatasetForm(forms.ModelForm):
