@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from iati_account_web.data.models import Dataset, ReportingOrganisation, UserAndRole
 from iati_account_web.settings import USER_ROLE_LOOKUP
 
-ALPHA_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-zA-Z0-9-_]+$")
+ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-z0-9-_]+$")
 
 
 class OrganisationBaseForm(forms.ModelForm):
@@ -171,8 +171,10 @@ class CreateOrganisationForm(OrganisationBaseForm):
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
-        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
-            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+        if not ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError(
+                "Short names must contain only lowercase alphanumeric characters, hyphens, or underscores"
+            )
 
         return short_name
 
@@ -282,8 +284,10 @@ class DatasetDetailsForm(forms.ModelForm):
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
-        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
-            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+        if not ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError(
+                "Short names must contain only lowercase alphanumeric characters, hyphens, or underscores"
+            )
 
         return short_name
 
@@ -340,8 +344,10 @@ class CreateDatasetForm(forms.ModelForm):
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
-        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
-            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+        if not ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError(
+                "Short names must contain only lowercase alphanumeric characters, hyphens, or underscores"
+            )
 
         return short_name
 
