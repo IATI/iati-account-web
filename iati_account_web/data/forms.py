@@ -7,7 +7,7 @@ from django.utils.translation import gettext_lazy as _
 from iati_account_web.data.models import Dataset, ReportingOrganisation, UserAndRole
 from iati_account_web.settings import USER_ROLE_LOOKUP
 
-ALPHA_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-zA-Z0-9-_]+$")
+ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-z0-9-_]+$")
 
 
 class OrganisationBaseForm(forms.ModelForm):
@@ -171,8 +171,10 @@ class CreateOrganisationForm(OrganisationBaseForm):
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
-        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
-            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+        if not ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError(
+                "Short names must contain only lowercase alphanumeric characters, hyphens, or underscores"
+            )
 
         return short_name
 
@@ -282,22 +284,18 @@ class DatasetDetailsForm(forms.ModelForm):
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
-        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
-            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+        if not ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError(
+                "Short names must contain only lowercase alphanumeric characters, hyphens, or underscores"
+            )
 
         return short_name
 
-    def get_ryd_patch_payload_from_cleaned_data(self):
-        def _get_field(field_name: str) -> str:
+    def get_ryd_patch_payload_from_cleaned_data(self, fields_editable_status: dict[str, bool]):
+        def _get_field(field_name: str) -> str | None:
             return self.cleaned_data[field_name] if self.cleaned_data[field_name] else None
 
-        return {
-            "human_readable_name": _get_field("human_readable_name"),
-            "licence_id": _get_field("licence_id"),
-            "short_name": _get_field("short_name"),
-            "source_type": _get_field("source_type"),
-            "url": _get_field("url"),
-        }
+        return {field: _get_field(field) for field, editable in fields_editable_status.items() if editable}
 
 
 class CreateDatasetForm(forms.ModelForm):
@@ -340,8 +338,10 @@ class CreateDatasetForm(forms.ModelForm):
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
-        if not ALPHA_NUMERIC_HYPHEN_REGEX.match(short_name):
-            raise ValidationError("Short names must contain only alphanumeric characters, hyphens, or underscores")
+        if not ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX.match(short_name):
+            raise ValidationError(
+                "Short names must contain only lowercase alphanumeric characters, hyphens, or underscores"
+            )
 
         return short_name
 

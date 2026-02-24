@@ -123,6 +123,11 @@ IATI Account: My Data
                     {{ form.short_name.label }}:
                 </label>
                 {{ form.short_name }}
+                <div>
+                    {% if form.short_name.errors %} {% for error in form.short_name.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                    {% endfor %} {% endif %}
+                </div>                
             </div>
             <div class="iati-form__item">
                 <label for="{{ form.url.id_for_label }}" class="iati-form__label">
