@@ -82,10 +82,12 @@ LOGGING = {
     "formatters": {
         "verbose": {
             "format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}",
+            "datefmt": "%Y-%m-%dT%H:%M:%S%z",
             "style": "{",
         },
         "audit": {
             "format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}",
+            "datefmt": "%Y-%m-%dT%H:%M:%S%z",
             "style": "{",
         },
     },
