@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load i18n %}
+{% load filters.country_from_countrycode %}
 
 {% block extra_head %}
 <style>
@@ -142,7 +143,7 @@ IATI Account: Find your organisation
             {% for org in discoverable_reporting_orgs %}
                 <tr id="id_{{ org.oid }}" data-org-id="{{ org.oid }}" onclick="selectOrg(this)">
                     <td>{{ org.human_readable_name }}</td>
-                    <td data-country-code="{{ org.hq_country }}">{{ org.country }}</td>
+                    <td data-country-code="{{ org.hq_country }}">{{ org.hq_country|country_from_countrycode }}</td>
                     <td>{{ org.organisation_identifier }}</td>
                 </tr>
             {% endfor %}

@@ -202,6 +202,9 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "iati_account_web.context_processors.iati_account_data",
             ],
+            "libraries": {
+                "filters.country_from_countrycode": "iati_account_web.templatetags.filters",
+            },
         },
     },
 ]
