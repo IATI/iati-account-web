@@ -367,7 +367,7 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
         "user_formset": user_formset,
         "org": reporting_org,
         "this_user": this_user,
-        "show_delete_org_button": True if this_user.role == "admin" else False,
+        "show_delete_org_button": True if this_user.role == "admin" or this_user.super_admin else False,
         "show_org_info_button_box": False if this_user.role == "contributor" else True,
         "delete_form": delete_org_form,
     }
@@ -722,6 +722,15 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
     HttpResponse
     """
 
+    updateable_fields: list[str] = [
+        "human_readable_name",
+        "licence_id",
+        "source_type",
+        "short_name",
+        "url",
+        "visibility",
+    ]
+
     preflight = preflight_checks(request)
     if not preflight.okay_to_continue:
         return preflight.redirect
@@ -753,6 +762,11 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
         )
         raise exc
 
+    fields_editable_status: dict[str, bool] = {
+        f: this_user.can_edit_dataset for f in updateable_fields if f != "visibility"
+    }
+    fields_editable_status["visibility"] = this_user.can_change_dataset_visibility
+
     form = DatasetDetailsForm(instance=dataset)
     if request.POST:
         form = form = DatasetDetailsForm(request.POST, instance=dataset)
@@ -761,24 +775,14 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
             try:
                 session.patch(
                     f"/datasets/{dataset_id}",
-                    json=form.get_ryd_patch_payload_from_cleaned_data(),
+                    json=form.get_ryd_patch_payload_from_cleaned_data(fields_editable_status),
                 )
 
                 # Figure out what has changed so we can reflect that on the dataset form without
                 # calling RYD again.
                 if "url" in form.changed_data:
                     dataset.last_url_update_date = datetime.now(timezone.utc)
-                if (
-                    len(
-                        [
-                            field
-                            for field in form.changed_data
-                            if field
-                            in ["human_readable_name", "source_type", "short_name", "visibility", "licence_id"]
-                        ]
-                    )
-                    > 0
-                ):
+                if len(set(form.changed_data) & set([f for f in updateable_fields if f != "url"])) > 0:
                     dataset.last_metadata_update_date = datetime.now(timezone.utc)
                 messages.add_message(request, messages.SUCCESS, "Dataset updated successfully.")
             except RegisterYourDataRecordAlreadyExists:
@@ -803,7 +807,7 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
                     )
                 else:
                     audit_logger.error(
-                        f"Could not update dataset in RYD for organisation {oid} on behalf of "
+                        f"Could not update dataset in RYD for organisation {oid} on behalf of "  # nosec B608
                         f"user {request.user.log_label} with error {exc}"
                     )
                     messages.add_message(
@@ -815,7 +819,7 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
                     raise exc
             except Exception as exc:
                 audit_logger.error(
-                    f"Could not update dataset in RYD for organisation {oid} on behalf of "
+                    f"Could not update dataset in RYD for organisation {oid} on behalf of "  # nosec B608
                     f"user {request.user.log_label} with error {exc}"
                 )
                 messages.add_message(
@@ -834,15 +838,8 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
 
     # Here we have an organisation change form and we need to set the editability
     # of certain fields depending on the user role.
-    if not this_user.can_edit_dataset:
-        form.fields["human_readable_name"].disabled = True
-        form.fields["source_type"].disabled = True
-        form.fields["url"].disabled = True
-        form.fields["licence_id"].disabled = True
-
-    form.fields["visibility"].disabled = True
-    if this_user.can_change_dataset_visibility:
-        form.fields["visibility"].disabled = False
+    for field_name, editable in fields_editable_status.items():
+        form.fields[field_name].disabled = not editable
 
     # Build the context and then render the page.
     context = {

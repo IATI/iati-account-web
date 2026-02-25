@@ -37,10 +37,34 @@ openssl req -x509 -newkey rsa:4096 -keyout private-key.pem -out certificate.pem 
 deo.io"
 ```
 
-The Django can be run over HTTPS using
+The application also needs a database. When running locally it will (create) and
+use a new SQLite database automatically by default, but migrations need to be
+run before starting the server:
+
+```bash
+python manage.py migrate
+```
+
+Now the Django app can be run over HTTPS using
 
 ```
-python manage.py runserver_plus --cert-file certificate.pem --key-file private-key.pem
+python manage.py runserver_plus "127.0.0.1:8443" --cert-file certificate.pem --key-file private-key.pem
+```
+
+It will be accessible on: [https://localhost:8443](https://localhost:8443)
+
+### Automated tests
+
+There are some automated tests in Django. First, start the docker compose setup, which will run a Mockoon instance:
+
+```bash
+docker compose up
+```
+
+Then run the tests:
+
+```bash
+python manage.py test
 ```
 
 ### Adding new dependencies

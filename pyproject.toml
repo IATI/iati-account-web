@@ -1,6 +1,6 @@
 [project]
 name = "iati-account-web"
-version = "0.4.9"
+version = "0.4.11"
 requires-python = ">= 3.12.11"
 readme = "README.md"
 authors = [{name="IATI Secretariat", email="support@iatistandard.org"}]
@@ -67,7 +67,7 @@ strip-extras = true
 
 [tool.isort]
 py_version=312
-extend_skip = ['__pycache__']
+extend_skip = ['__pycache__', '.ve', '.venv']
 skip_gitignore = true
 src_paths = ['src', 'tests']
 line_length = 119
@@ -76,7 +76,7 @@ profile = "black"
 [tool.flake8]
 max-line-length = 119
 extend_ignore = ['E203', 'W503', 'E275']
-exclude = ['__pycache__', '.pytest_cache', 'iati_account_web/account/migrations']
+exclude = ['__pycache__', '.pytest_cache', 'iati_account_web/account/migrations', '.ve', '.venv']
 max_complexity = 7
 
 [tool.black]
