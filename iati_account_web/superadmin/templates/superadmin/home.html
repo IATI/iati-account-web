@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load filters.country_from_countrycode %}
+
+{% block extra_head %}
+
+<script>
+function filterTable() {
+    const tableBody = document.getElementById("discoverableReportingOrgsTable");
+    const rows = tableBody.querySelectorAll("tr");
+    const filterText = document.getElementById("nameFilter").value.toUpperCase();
+    const filterCountryCode = document.getElementById("countryFilter").value.toUpperCase();
+    const filteringOnText = (filterText != "");
+    const filteringOnCountry = (filterCountryCode != "");
+    const noResultsWarning = document.getElementById("displayResultsWarning");
+
+    noResults = true;
+    rows.forEach((row, index) => {
+        if (index>0) {
+            orgName = row.children[0].innerHTML.toUpperCase();
+            foundFilterText = (orgName.indexOf(filterText) != -1);
+            showFromText = ((filteringOnText && foundFilterText) || !filteringOnText);
+
+            countryCode = row.children[1].dataset.countryCode.toUpperCase();
+            foundCountry = (countryCode == filterCountryCode);
+            showFromCountry = ((filteringOnCountry && foundCountry) || !filteringOnCountry);
+
+            if (showFromText && showFromCountry) {
+                row.style.display = "";
+                noResults = false;
+            } else {
+                row.style.display = "none";
+            };
+        }
+    })
+
+    if (noResults) {
+        noResultsWarning.style.display = "block";
+    } else {
+        noResultsWarning.style.display = "none";
+    }
+}
+</script>
+{% endblock %}
+{% block title %}
+IATI Account: Superadmin
+{% endblock %}
+
+{% block breadcrumbs %}
+<nav class="iati-breadcrumb">
+  <span class="iati-breadcrumb__previous">
+    <i class="iati-icon iati-icon--chevron-left"></i>
+    <a href="{% url 'superadmin:home' %}" class="iati-breadcrumb-link">Home</a>
+  </span>
+  <ol class="iati-breadcrumb__list">
+    <li class="iati-breadcrumb-item iati-breadcrumb-item--current">
+        <a aria-current="page" class="iati-breadcrumb-link">Home</a>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block body %}
+<h2>Superadmin</h2>
+<h3>Find an organisation</h3>
+<form>
+    <div class="iati-form__inner">
+        <div class="iati-form__item">
+            <label for="nameFilter" class="iati-form__label">Enter some text to filter by organisation name</label>
+            <input id="nameFilter" class="iati-form__input" type="text" oninput="filterTable()">
+        </div>
+        <div class="iati-form__item">
+            <div class="iati-select">
+                <label for="countryFilter" class="iati-select__label">Filter by country</label>
+                <div class="iati-select__control-wrapper">
+                    <select id="countryFilter" class="iati-select__control" onchange="filterTable()">
+                        {% for country in COUNTRY_LIST %}
+                            <option value="{{ country.0 }}">{{ country.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div><br/>
+
+    <div class="iati-table">
+    <table id="discoverableReportingOrgsTable" class="iati-table__table" style="table-layout: fixed;">
+        <thead>
+        <tr>
+            <th style="width: 50%">Organisation Name</th>
+            <th style="width: 30%">Country</th>
+            <th style="width: 20%">Organisation Identifier</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for org in discoverable_reporting_orgs %}
+                <tr id="id_{{ org.oid }}" data-org-id="{{ org.oid }}">
+                    <td><a href="{% url 'data:reporting-org-detail' oid=org.oid %}">{{ org.human_readable_name }}</a></td>
+                    <td data-country-code="{{ org.hq_country }}">{{ org.hq_country|country_from_countrycode }}</td>
+                    <td>{{ org.organisation_identifier }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <p id="displayResultsWarning" style="display: none;">No organisations found.</p>
+</form>
+
+{% endblock %}
