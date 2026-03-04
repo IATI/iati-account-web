@@ -66,9 +66,11 @@ env = environ.Env(
     POSTGRES_PORT=(str, None),
     ALLOWED_HOSTS=(list, []),
     SERVE_PROM_APP_METRICS=(bool, False),
+    ENV_FILE=(str, None),
 )
 
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+if env("ENV_FILE") is not None:
+    environ.Env.read_env(os.path.join(BASE_DIR, env("ENV_FILE")))
 
 IATI_ACCOUNT_VERSION = get_version_from_pyproject(os.path.join(BASE_DIR, "pyproject.toml"))
 

@@ -17,14 +17,23 @@ Support | [IATI Support Website](https://iatistandard.org/en/guidance/get-suppor
 
 ## Overview
 
-This application currently is a skeleton that will form the basis of IATI Account Web.  At the moment the application supports single sign on to Asgardeo and displaying the resulting
-user model and claims that have been obtained from the identity service.
+This application is the main tool through which IATI users can self-service their accounts, create and delete reporting organisations, and manage dataset urls that are part of the IATI corpus.
 
-Running this application locally and opening `https://localhost:8000` allows the user to login to Asgardeo using one of our development accounts.
+Running this application locally and opening `https://localhost:8443` allows the user to login to Asgardeo using one of our development accounts.
 
 ## Development
 
 ### Running locally
+
+Configuration is through environment variables.  The application will get environment variables from the local environment, or through a ".env" file that is specified through the environment variable ENV_FILE.
+
+To run, the application needs a database. When running locally it will (create) and
+use a new SQLite database automatically by default, but migrations need to be
+run before starting the server:
+
+```bash
+ENV_FILE=.env.dev python manage.py migrate
+```
 
 Running this application locally and logging in to Asgardeo should not be done under HTTP as client secrets and user details will be passed via easily intercepted communications.  Local development should be done using SSL/TLS.
 
@@ -35,14 +44,6 @@ This can be done using `openssl`:
 ```
 openssl req -x509 -newkey rsa:4096 -keyout private-key.pem -out certificate.pem -sha256 -days 365 -nodes -subj "/C=GB/O=Open Data Services Co-operative Ltd./CN=api.eu.asgar
 deo.io"
-```
-
-The application also needs a database. When running locally it will (create) and
-use a new SQLite database automatically by default, but migrations need to be
-run before starting the server:
-
-```bash
-python manage.py migrate
 ```
 
 Now the Django app can be run over HTTPS using
