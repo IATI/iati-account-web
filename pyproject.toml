@@ -35,6 +35,7 @@ dev = [
     "pip-tools",
     "pyopenssl",
     "pytest",
+    "responses",
     "werkzeug"
 ]
 

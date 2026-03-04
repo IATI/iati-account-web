@@ -1,8 +1,9 @@
 import json
-from unittest import mock
 
+import responses
 from django.test import TestCase
 from iati_account_web.ryd_handling import RegisterYourDataSession, parse_pagination_links, reporting_orgs
+from iati_account_web.tests.iati_mock import IatiInfrastructureMock
 
 
 class RYDHelperPaginationParserTestCase(TestCase):
@@ -88,8 +89,11 @@ class RYDHelperSessionTestCase(TestCase):
 
 
 class RYDGetAllDiscoverableOrgs(TestCase):
-    @mock.patch.dict("os.environ", {"REGISTER_YOUR_DATA_BASE_URL": "http://localhost:3003/api/v1/"})
+    @responses.activate
     def test_get_all_discoverable_reporting_orgs(self):
+        iati_mock = IatiInfrastructureMock(num_discoverable_reporting_orgs=2051)
+        iati_mock.register_all()
+
         session = RegisterYourDataSession("")
         orgs = reporting_orgs.get_all_discoverable_reporting_orgs(session)
         self.assertEqual(len(orgs), 2051)

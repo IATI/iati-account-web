@@ -54,18 +54,16 @@ python manage.py runserver_plus "127.0.0.1:8443" --cert-file certificate.pem --k
 
 It will be accessible on: [https://localhost:8443](https://localhost:8443)
 
+There is a bash script that automates this:
+```
+ENV_FILE=.env.dev ./runserver.sh
+
 ### Automated tests
 
-There are some automated tests in Django. First, start the docker compose setup, which will run a Mockoon instance:
+There are some automated tests that run entirely in Django without the need for external dependencies or services (e.g., Mockoon).  The test environment variables must be used `.env.test.`:
 
 ```bash
-docker compose up
-```
-
-Then run the tests:
-
-```bash
-python manage.py test
+ENV_FILE=.env.test python manage.py test
 ```
 
 ### Adding new dependencies
