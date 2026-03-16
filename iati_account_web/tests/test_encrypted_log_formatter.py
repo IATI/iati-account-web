@@ -8,6 +8,8 @@ from iati_account_web.audit_log_formatter import EncryptedFormatter, decode_and_
 
 class EncryptedLogFormatterTestCase(TestCase):
     def setUp(self):
+        # Generate a private/public key pair for testing - the key is serialised
+        # to a buffer so it can be read by the formatter.
         self.PRIVATE_KEY = rsa.generate_private_key(public_exponent=65537, key_size=2048)
         self.PUBLIC_KEY_BYTES = self.PRIVATE_KEY.public_key().public_bytes(
             encoding=serialization.Encoding.PEM, format=serialization.PublicFormat.SubjectPublicKeyInfo
@@ -31,11 +33,7 @@ class EncryptedLogFormatterTestCase(TestCase):
 
     def test_log_formatter(self) -> None:
         """Test encryption and decryption of log messages"""
-        # Generate a private/public key pair for testing - they key is serialised
-        # to a buffer so it can be read by the formatter.
 
-        # For each test case we just need to decrypt the symmetric key, then use that key
-        # to decrypt the log message.
         for encrypted_entry, original_entry in self.TEST_DATA:
             decrypted_message = decode_and_decrypt_log_entry(encrypted_entry, self.PRIVATE_KEY)
             self.assertEqual(decrypted_message, original_entry)
