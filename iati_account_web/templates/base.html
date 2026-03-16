@@ -45,7 +45,7 @@
             </li>
             {% if user.is_iati_superadmin %}
               <li class="iati-mobile-nav__item">
-                <a href="#" class="iati-mobile-nav__link">Superadmin</a>
+                <a href="{% url 'superadmin:home' %}" class="iati-mobile-nav__link">Superadmin</a>
               </li>
             {% endif %}
           </ul>
@@ -152,7 +152,7 @@
                   </li>
                   {% if user.is_iati_superadmin %}
                     <li>
-                      <a href="#" class="iati-tool-nav-link">Superadmin</a>
+                      <a href="{% url 'superadmin:home' %}" class="iati-tool-nav-link">Superadmin</a>
                     </li>
                   {% endif %}
                 </ul>

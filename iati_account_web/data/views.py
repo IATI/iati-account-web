@@ -26,7 +26,7 @@ from iati_account_web.ryd_handling.reporting_orgs import (
     parse_dataset_list_to_objects,
     parse_org_list_to_objects,
 )
-from iati_account_web.settings import USER_ROLE_LOOKUP
+from iati_account_web.settings import COUNTRY_LIST, USER_ROLE_LOOKUP
 
 audit_logger = logging.getLogger("audit")
 app_logger = logging.getLogger("iati_account")
@@ -126,6 +126,7 @@ def join_reporting_org(request: HttpRequest) -> HttpResponse:  # noqa: C901
         context = {
             "discoverable_reporting_orgs": discoverable_reporting_orgs,
             "form": form,
+            "COUNTRY_LIST": COUNTRY_LIST,
         }
         return HttpResponse(template.render(context, request))
 

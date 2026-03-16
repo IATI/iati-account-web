@@ -3,16 +3,8 @@
 {% load filters.country_from_countrycode %}
 
 {% block extra_head %}
-<style>
-.selected-org {
-    background-color: var(--color-purple-90) !important;
-    color: white;
-}
-</style>
+
 <script>
-
-selectedOrgRow = null;
-
 function filterTable() {
     const tableBody = document.getElementById("discoverableReportingOrgsTable");
     const rows = tableBody.querySelectorAll("tr");
@@ -48,59 +40,30 @@ function filterTable() {
         noResultsWarning.style.display = "none";
     }
 }
-
-function selectOrg(orgRow) {
-    if (selectedOrgRow !== null) {
-        selectedOrgRow.querySelectorAll("td").forEach((element, index) => {
-            element.classList.remove("selected-org");
-        })
-        selectedOrgRow = null;
-    }
-    if (orgRow !== null) {
-        selectedOrgRow = orgRow;
-        selectedOrgRow.querySelectorAll("td").forEach((element, index) => {
-            element.classList.add("selected-org");
-        })
-    }
-    document.getElementById("foundOrgBox").style.display = "block";
-    document.getElementById("id_human_readable_name").value = selectedOrgRow.children[0].innerHTML;
-    document.getElementById("id_org_id").value = selectedOrgRow.dataset.orgId;
-    document.getElementById("joinOrgButton").disabled = false;
-}
 </script>
-
 {% endblock %}
 {% block title %}
-IATI Account: Find your organisation
+IATI Account: Superadmin
 {% endblock %}
 
 {% block breadcrumbs %}
 <nav class="iati-breadcrumb">
   <span class="iati-breadcrumb__previous">
     <i class="iati-icon iati-icon--chevron-left"></i>
-    <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
+    <a href="{% url 'superadmin:home' %}" class="iati-breadcrumb-link">Home</a>
   </span>
   <ol class="iati-breadcrumb__list">
-    <li class="iati-breadcrumb-pageTitle">
-        <a href="{% url 'welcome:home' %}" class="iati-breadcrumb-link">Home</a>
-    </li>
-    <li class="iati-breadcrumb-item">
-        <a href="{% url 'data:home' %}" class="iati-breadcrumb-link">My Data</a>
-    </li>
     <li class="iati-breadcrumb-item iati-breadcrumb-item--current">
-        <a aria-current="page" class="iati-breadcrumb-link">Join a Reporting Organisation</a>
+        <a aria-current="page" class="iati-breadcrumb-link">Home</a>
     </li>
   </ol>
 </nav>
 {% endblock %}
 
-
 {% block body %}
-<h2>Find your organisation</h2>
-<p>Search for your organisation below and click on the organisation in the table.</p>
-<form method="post" action="{% url 'data:join-reporting-org' %}">
-    {% csrf_token %}
-
+<h2>Superadmin</h2>
+<h3>Find an organisation</h3>
+<form>
     <div class="iati-form__inner">
         <div class="iati-form__item">
             <label for="nameFilter" class="iati-form__label">Enter some text to filter by organisation name</label>
@@ -119,16 +82,6 @@ IATI Account: Find your organisation
             </div>
         </div>
     </div><br/>
-    <div class="iati-form__inner" id="foundOrgBox" style="display: none;">
-        <div class="iati-form__item">
-            <label for="{{ form.human_readable_name.id_for_label }}" class="iati-form__label">
-                {{ form.human_readable_name.label }}:
-            </label>
-            {{ form.human_readable_name }}
-            {{ form.org_id }}
-        </div><br/>
-        <button id="joinOrgButton" class="iati-form__submit iati-button iati-button--submit" type="submit" disabled>Join Organisation</button>
-    </div><br/>
 
     <div class="iati-table">
     <table id="discoverableReportingOrgsTable" class="iati-table__table" style="table-layout: fixed;">
@@ -141,8 +94,8 @@ IATI Account: Find your organisation
         </thead>
         <tbody>
             {% for org in discoverable_reporting_orgs %}
-                <tr id="id_{{ org.oid }}" data-org-id="{{ org.oid }}" onclick="selectOrg(this)">
-                    <td>{{ org.human_readable_name }}</td>
+                <tr id="id_{{ org.oid }}" data-org-id="{{ org.oid }}">
+                    <td><a href="{% url 'data:reporting-org-detail' oid=org.oid %}">{{ org.human_readable_name }}</a></td>
                     <td data-country-code="{{ org.hq_country }}">{{ org.hq_country|country_from_countrycode }}</td>
                     <td>{{ org.organisation_identifier }}</td>
                 </tr>
@@ -151,7 +104,6 @@ IATI Account: Find your organisation
     </table>
     </div>
     <p id="displayResultsWarning" style="display: none;">No organisations found.</p>
-
 </form>
 
 {% endblock %}

@@ -35,4 +35,5 @@ urlpatterns += i18n_patterns(
     path("", include("iati_account_web.welcome.urls")),
     path("account/", include("iati_account_web.account.urls")),
     path("data/", include("iati_account_web.data.urls")),
+    path("superadmin/", include("iati_account_web.superadmin.urls")),
 )

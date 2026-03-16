@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.12 - 2026-03-16
+
+### Fixed
+
+- Fixed broken country filtering when users try to join a reporting organisation.
+
+### Added
+
+- Added timezones to logs.
+- Basic superadmin view, allowing users to search for a reporting organisation and navigate to that organisation.
+- Improved testing framework for verifying authenticated and controlled access to the superadmin view.
+- Tests now run in CI.
+
+### Changes
+
+- Lengthened timeout duration for login sessions.
+- Improved handling of permission denied exceptions.
+
 ## 0.4.11 - 2026-02-23
 
 ### Fixed

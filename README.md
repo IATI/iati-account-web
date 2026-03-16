@@ -17,14 +17,23 @@ Support | [IATI Support Website](https://iatistandard.org/en/guidance/get-suppor
 
 ## Overview
 
-This application currently is a skeleton that will form the basis of IATI Account Web.  At the moment the application supports single sign on to Asgardeo and displaying the resulting
-user model and claims that have been obtained from the identity service.
+This application is the main tool through which IATI users can self-service their accounts, create and delete reporting organisations, and manage dataset urls that are part of the IATI corpus.
 
-Running this application locally and opening `https://localhost:8000` allows the user to login to Asgardeo using one of our development accounts.
+Running this application locally and opening `https://localhost:8443` allows the user to login to Asgardeo using one of our development accounts.
 
 ## Development
 
 ### Running locally
+
+Configuration is through environment variables.  The application will get environment variables from the local environment, or through a ".env" file that is specified through the environment variable ENV_FILE.
+
+To run, the application needs a database. When running locally it will (create) and
+use a new SQLite database automatically by default, but migrations need to be
+run before starting the server:
+
+```bash
+ENV_FILE=.env.dev python manage.py migrate
+```
 
 Running this application locally and logging in to Asgardeo should not be done under HTTP as client secrets and user details will be passed via easily intercepted communications.  Local development should be done using SSL/TLS.
 
@@ -37,14 +46,6 @@ openssl req -x509 -newkey rsa:4096 -keyout private-key.pem -out certificate.pem 
 deo.io"
 ```
 
-The application also needs a database. When running locally it will (create) and
-use a new SQLite database automatically by default, but migrations need to be
-run before starting the server:
-
-```bash
-python manage.py migrate
-```
-
 Now the Django app can be run over HTTPS using
 
 ```
@@ -53,18 +54,16 @@ python manage.py runserver_plus "127.0.0.1:8443" --cert-file certificate.pem --k
 
 It will be accessible on: [https://localhost:8443](https://localhost:8443)
 
+There is a bash script that automates this:
+```
+ENV_FILE=.env.dev ./runserver.sh
+
 ### Automated tests
 
-There are some automated tests in Django. First, start the docker compose setup, which will run a Mockoon instance:
+There are some automated tests that run entirely in Django without the need for external dependencies or services (e.g., Mockoon).  The test environment variables must be used `.env.test.`:
 
 ```bash
-docker compose up
-```
-
-Then run the tests:
-
-```bash
-python manage.py test
+ENV_FILE=.env.test python manage.py test
 ```
 
 ### Adding new dependencies
