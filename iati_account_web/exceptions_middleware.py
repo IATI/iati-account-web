@@ -4,6 +4,7 @@ import string
 import time
 import traceback
 
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.template.response import TemplateResponse
 from iati_account_web.exceptions import (
@@ -28,7 +29,7 @@ class IATIAccountExceptionHandlerMiddleware:
     def __call__(self, request: HttpRequest) -> HttpResponse:
         return self.get_response(request)
 
-    def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse:
+    def process_exception(self, request: HttpRequest, exception: Exception) -> HttpResponse:  # noqa: C901
         """Map exceptions to standard HTTP responses
 
         Parameters
@@ -73,6 +74,9 @@ class IATIAccountExceptionHandlerMiddleware:
 
         if isinstance(exception, RegisterYourData404):
             return TemplateResponse(request, "errors/404.html", {"tracking": tracking})
+
+        if isinstance(exception, PermissionDenied):
+            return TemplateResponse(request, "errors/permission_denied.html", {"tracking": tracking})
 
         return TemplateResponse(request, "errors/unknown.html", {"tracking": tracking})
 

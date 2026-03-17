@@ -33,6 +33,7 @@ env = environ.Env(
     OIDC_OP_JWKS_ENDPOINT=(str, None),
     OIDC_RP_CLIENT_ID=(str, None),
     OIDC_RP_CLIENT_SECRET=(str, None),
+    OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS=(int, 3600),
     SERVER_URL_BASE=(str, None),
     IDENTITY_SERVICE_BASE_URL=(str, None),
     IDENTITY_SERVICE_CLIENT_ID=(str, None),
@@ -65,9 +66,11 @@ env = environ.Env(
     POSTGRES_PORT=(str, None),
     ALLOWED_HOSTS=(list, []),
     SERVE_PROM_APP_METRICS=(bool, False),
+    ENV_FILE=(str, None),
 )
 
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
+if env("ENV_FILE") is not None:
+    environ.Env.read_env(os.path.join(BASE_DIR, env("ENV_FILE")))
 
 IATI_ACCOUNT_VERSION = get_version_from_pyproject(os.path.join(BASE_DIR, "pyproject.toml"))
 
@@ -82,10 +85,12 @@ LOGGING = {
     "formatters": {
         "verbose": {
             "format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}",
+            "datefmt": "%Y-%m-%dT%H:%M:%S%z",
             "style": "{",
         },
         "audit": {
             "format": "{levelname} {asctime} | {module}.{funcName}:{lineno} | {message}",
+            "datefmt": "%Y-%m-%dT%H:%M:%S%z",
             "style": "{",
         },
     },
@@ -128,6 +133,7 @@ OIDC_OP_USER_ENDPOINT = env("OIDC_OP_USER_ENDPOINT")
 OIDC_OP_JWKS_ENDPOINT = env("OIDC_OP_JWKS_ENDPOINT")
 OIDC_RP_CLIENT_ID = env("OIDC_RP_CLIENT_ID")
 OIDC_RP_CLIENT_SECRET = env("OIDC_RP_CLIENT_SECRET")
+OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = env("OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS")
 OIDC_USERNAME_ALGO = "iati_account_web.oidc.generate_username"
 OIDC_STORE_ACCESS_TOKEN = True
 OIDC_STORE_ID_TOKEN = True
@@ -149,6 +155,7 @@ SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_AGE = env("OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS")
 
 ALLOWED_HOSTS: list[str] = env("ALLOWED_HOSTS")
 
@@ -159,6 +166,7 @@ INSTALLED_APPS = [
     "iati_account_web.welcome.apps.WelcomeConfig",
     "iati_account_web.account.apps.AccountConfig",
     "iati_account_web.data.apps.DataConfig",
+    "iati_account_web.superadmin.apps.SuperadminConfig",
     "django.contrib.auth",
     "mozilla_django_oidc",
     "django.contrib.contenttypes",
@@ -202,6 +210,9 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "iati_account_web.context_processors.iati_account_data",
             ],
+            "libraries": {
+                "filters.country_from_countrycode": "iati_account_web.templatetags.filters",
+            },
         },
     },
 ]

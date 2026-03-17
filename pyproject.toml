@@ -1,6 +1,6 @@
 [project]
 name = "iati-account-web"
-version = "0.4.11"
+version = "0.4.12"
 requires-python = ">= 3.12.11"
 readme = "README.md"
 authors = [{name="IATI Secretariat", email="support@iatistandard.org"}]
@@ -35,6 +35,7 @@ dev = [
     "pip-tools",
     "pyopenssl",
     "pytest",
+    "responses",
     "werkzeug"
 ]
 
