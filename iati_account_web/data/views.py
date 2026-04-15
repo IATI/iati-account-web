@@ -763,10 +763,7 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
         )
         raise exc
 
-    fields_editable_status: dict[str, bool] = {
-        f: this_user.can_edit_dataset for f in updateable_fields if f != "visibility"
-    }
-    fields_editable_status["visibility"] = this_user.can_change_dataset_visibility
+    fields_editable_status: dict[str, bool] = {f: this_user.can_edit_dataset for f in updateable_fields}
 
     form = DatasetDetailsForm(instance=dataset)
     if request.POST:
