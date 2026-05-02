@@ -79,11 +79,4 @@ IATI Account: Home
   </div>
 {% endif %}
 
-<hr/>
-
-<form action="{% url 'oidc_logout' %}" method="post" class="iati-form">
-  {% csrf_token %}
-  <button id="logout" class="iati-button iati-button--submit" type="submit">Logout</button>
-</form>
-
 {% endblock %}
