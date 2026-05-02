@@ -81,8 +81,8 @@ class AccountOnboardingForm(forms.ModelForm):
             "language_es": get_language_info("es")["name_translated"],
             "country": _("Country"),
             "timezone": _("Time Zone"),
-            "use_cases_publishing": _("To publish IATI data"),
-            "use_cases_using_data": _("To use IATI data"),
+            "use_cases_publishing": _("To publish IATI data for my organisation"),
+            "use_cases_using_data": _("To use an IATI tool (unrelated to data publishing)"),
             "use_cases_mailinglist": _("To join an IATI mailing list"),
         }
 
