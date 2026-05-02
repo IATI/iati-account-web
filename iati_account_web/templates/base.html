@@ -72,7 +72,10 @@
           </li>
           <li class="iati-mobile-nav__item">
             {% if user.is_authenticated %}
-              <form method="post" action="{% url 'oidc_logout' %}">
+            <p>
+              Signed in user:<br/> {{ user.email }}
+            </p>
+            <form method="post" action="{% url 'oidc_logout' %}">
                 {% csrf_token %}
                 <a class="iati-mobile-nav__link" onclick="this.parentNode.submit();">Logout</a>
               </form>
@@ -110,7 +113,22 @@
                 {% if user.is_authenticated %}
                   <form action="{% url 'oidc_logout' %}" method="post">
                     {% csrf_token %}
-                    <button class="iati-button iati-button--submit iati-button--compact" type="submit">Logout</button>
+                    <div class="iati-account-user">
+                      <div class="iati-account-user--icon">
+                        <img src="{% static 'img/icon-user.svg' %}" style="width: 20px; height:20px;"/>
+                      </div>
+                      <div class="iati-account-user--stack">
+                        <div>
+                          <span class="iati-account-user--name">{{ user.unformatted_name }}</span>
+                        </div>
+                        <div>
+                          <span class="iati-account-user--email title="{{ user.email }}"><strong> {{user.email }}</strong></span>
+                        </div>
+                      </div>
+                      <div>
+                        <button class="iati-button iati-button--logout" type="submit">Logout</button>
+                      </div>
+                    </div>
                   </form>
                 {% else %}
                   <form>
