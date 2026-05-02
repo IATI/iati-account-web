@@ -46,6 +46,9 @@ class AccountSelfServiceForm(forms.ModelForm):
             "timezone": forms.Select(attrs={"class": "iati-select__control"}),
         }
 
+    def language_fields(self):
+        return [self["language_en"], self["language_fr"], self["language_es"]]
+
 
 class AccountOnboardingForm(forms.ModelForm):
     class Meta:
@@ -97,3 +100,13 @@ class AccountOnboardingForm(forms.ModelForm):
             "use_cases_using_data": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
             "use_cases_mailinglist": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
         }
+
+    def language_fields(self):
+        return [self["language_en"], self["language_fr"], self["language_es"]]
+
+    def use_case_fields(self):
+        return [
+            self["use_cases_publishing"],
+            self["use_cases_using_data"],
+            self["use_cases_mailinglist"],
+        ]

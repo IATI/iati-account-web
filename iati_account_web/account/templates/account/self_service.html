@@ -61,36 +61,19 @@ IATI Account: My Account
     <div class="iati-form__inner">
         <h3 id="langauges">Which languages are you able to use?</h3>
         <p>This informs how we make our services accessible to you.</p>
-        <div class="iati-form__item">
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-                <div>
-                    {{ form.language_en }}
-                </div>
-                <div>
-                    <label for="{{ form.language_en.id_for_label }}" class="iati-form__label">{{ form.language_en.label }}</label>
-                </div>
-            </div>
-        </div>
-        <div class="iati-form__item">
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-                <div>
-                    {{ form.language_fr }}
-                </div>
-                <div>
-                    <label for="{{ form.language_fr.id_for_label }}" class="iati-form__label">{{ form.language_fr.label }}</label>
+
+        {% for field in form.language_fields %}
+            <div class="iati-form__item">
+                <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+                    <div>
+                        {{ field }}
+                    </div>
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="iati-form__label">{{ field.label }}</label>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="iati-form__item">
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-                <div>
-                    {{ form.language_es }}
-                </div>
-                <div>
-                    <label for="{{ form.language_es.id_for_label }}" class="iati-form__label">{{ form.language_es.label }}</label>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div><br/>
 
     <div class="iati-form__inner">
