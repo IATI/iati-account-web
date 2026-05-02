@@ -166,3 +166,25 @@
     max-width: 200px;
     line-height: 1;
 }
+
+.iati-account-profile--list {
+    list-style: none;
+}
+
+.iati-account-profile--list li::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+}
+
+.iati-account-profile--list li.iati-account-profile--list-item-incomplete::before {
+    content: var(--icon-incomplete);
+}
+
+.iati-account-profile--list li.iati-account-profile--list-item-complete::before {
+    content: var(--icon-complete);
+}
