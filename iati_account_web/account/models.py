@@ -27,6 +27,7 @@ class IATIUser(AbstractUser):
     use_cases_publishing = models.BooleanField(default=False)
     use_cases_using_data = models.BooleanField(default=False)
     use_cases_mailinglist = models.BooleanField(default=False)
+    use_cases_forum = models.BooleanField(default=False)
     has_been_onboarded = models.BooleanField(default=False)
     has_been_provisioned = models.BooleanField(default=False)
     registry_id = models.CharField(max_length=36, blank=True, default="")
@@ -60,12 +61,16 @@ class IATIUser(AbstractUser):
         str
         """
         return " ".join(
-            [
-                "migration" if self.use_cases_migration else "",
-                "publishing" if self.use_cases_publishing else "",
-                "usingdata" if self.use_cases_using_data else "",
-                "mailinglist" if self.use_cases_mailinglist else "",
-            ]
+            filter(
+                None,
+                [
+                    "migration" if self.use_cases_migration else None,
+                    "publishing" if self.use_cases_publishing else None,
+                    "usingdata" if self.use_cases_using_data else None,
+                    "mailinglist" if self.use_cases_mailinglist else None,
+                    "forum" if self.use_cases_forum else None,
+                ],
+            )
         )
 
     def set_first_registration_use_cases(self, s: str) -> None:
@@ -79,6 +84,7 @@ class IATIUser(AbstractUser):
         self.use_cases_publishing = False
         self.use_cases_using_data = False
         self.use_cases_mailinglist = False
+        self.use_cases_forum = False
         if "migration" in s:
             self.use_cases_migration = True
         if "publishing" in s:
@@ -87,6 +93,8 @@ class IATIUser(AbstractUser):
             self.use_cases_using_data = True
         if "mailinglist" in s:
             self.use_cases_mailinglist = True
+        if "forum" in s:
+            self.use_cases_forum = True
 
     @property
     def languages(self) -> str:
@@ -100,7 +108,14 @@ class IATIUser(AbstractUser):
         str
         """
         return " ".join(
-            ["en" if self.language_en else "", "fr" if self.language_fr else "", "es" if self.language_es else ""]
+            filter(
+                None,
+                [
+                    "en" if self.language_en else None,
+                    "fr" if self.language_fr else None,
+                    "es" if self.language_es else None,
+                ],
+            )
         )
 
     def set_languages(self, s: str):
