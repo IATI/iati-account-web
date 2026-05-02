@@ -67,6 +67,7 @@ class AccountOnboardingForm(forms.ModelForm):
             "use_cases_publishing",
             "use_cases_using_data",
             "use_cases_mailinglist",
+            "use_cases_forum",
         ]
 
         labels = {
@@ -84,6 +85,7 @@ class AccountOnboardingForm(forms.ModelForm):
             "use_cases_publishing": _("To publish IATI data for my organisation"),
             "use_cases_using_data": _("To use an IATI tool (unrelated to data publishing)"),
             "use_cases_mailinglist": _("To join an IATI mailing list"),
+            "use_cases_forum": _("To participate in the IATI Connect forum"),
         }
 
         widgets = {
@@ -99,6 +101,7 @@ class AccountOnboardingForm(forms.ModelForm):
             "use_cases_publishing": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
             "use_cases_using_data": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
             "use_cases_mailinglist": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
+            "use_cases_forum": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
         }
 
     def language_fields(self):
@@ -108,5 +111,5 @@ class AccountOnboardingForm(forms.ModelForm):
         return [
             self["use_cases_publishing"],
             self["use_cases_using_data"],
-            self["use_cases_mailinglist"],
+            self["use_cases_forum"],
         ]
