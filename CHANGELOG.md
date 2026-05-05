@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.14 - 2026-05-05
+
+### Added
+
+#### User experience
+
+- Additional use cases for a user to select when registering.
+- Visibility of the logged in user at the top of each page.
+- List of IATI tools to the landing page.
+- Unit test of the user model.
+- Plausible analytics.
+
+### Changes
+
+- Hidden mailing list options (for now).
+- Text in the onboarding survey.
+- Removed logout buttom from the bottom of the landing page to reduce confusion/duplication.
+- Improved user feedback for incomplete profiles.
+- Improved layout of form items in account onboarding/self-service pages.
+- Refactored the claim mapper in the user model.
+- Simplified the onboarding/self-service forms code and templates.
+- Updated to latest version of the IATI design system.
+
 ## 0.4.13 - 2026-04-20
 
 ### Added
