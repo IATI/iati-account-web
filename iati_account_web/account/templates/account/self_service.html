@@ -41,9 +41,9 @@ IATI Account: My Account
         </div>
     </div><br/>
 
+    <h3 id="names">Your name</h3>
+    <p>Please check your name and let us know how you want to be addressed.</p>
     <div class="iati-form__inner">
-        <h3 id="names">Your name</h3>
-        <p>Please check your name and let us know how you want to be addressed.</p>
         <div class="iati-form__item">
             <label for="{{ form.unformatted_name.id_for_label }}" class="iati-form__label">{{ form.unformatted_name.label }}:</label>
             {{ form.unformatted_name }}
@@ -58,10 +58,9 @@ IATI Account: My Account
         </div>
     </div><br/>
 
+    <h3 id="langauges">Which languages are you able to use?</h3>
+    <p>This informs how we make our services accessible to you.</p>
     <div class="iati-form__inner">
-        <h3 id="langauges">Which languages are you able to use?</h3>
-        <p>This informs how we make our services accessible to you.</p>
-
         {% for field in form.language_fields %}
             <div class="iati-form__item">
                 <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
@@ -76,9 +75,9 @@ IATI Account: My Account
         {% endfor %}
     </div><br/>
 
+    <h3 id="geolocation">Where are you located in the world?</h3>
+    <p>This helps us understand the geographical reach of IATI and where you’re based.</p>
     <div class="iati-form__inner">
-        <h3 id="geolocation">Where are you located in the world?</h3>
-        <p>This helps us understand the geographical reach of IATI and where you’re based.</p>
         <div class="iati-form__item">
             <div class="iati-select">
                 <label for="{{ form.country.id_for_label }}" class="iati-select__label">
