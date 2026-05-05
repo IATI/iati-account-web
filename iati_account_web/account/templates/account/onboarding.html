@@ -45,13 +45,14 @@ IATI Account: Welcome to your new IATI Account
             <label for="userEmail" class="iati-form__label">Email address: {{ user.email }}</label>
         </div>
     </div><br/>
+
+    <h3>Your name</h3>
+    {% if user.use_cases_migration %}
+        <p>As part of migrating your account from the old IATI Registry we've extracted the following for your name.  Please check your name and let us know how you want to be addressed.</p>
+    {% else %}
+        <p>Please check your name and let us know how you want to be addressed.</p>
+    {% endif %}
     <div class="iati-form__inner">
-        <h3>Your name</h3>
-        {% if user.use_cases_migration %}
-            <p>As part of migrating your account from the old IATI Registry we've extracted the following for your name.  Please check your name and let us know how you want to be addressed.</p>
-        {% else %}
-            <p>Please check your name and let us know how you want to be addressed.</p>
-        {% endif %}
         <div class="iati-form__item">
             <label for="{{ form.unformatted_name.id_for_label }}" class="iati-form__label">{{ form.unformatted_name.label }}:</label>
             {{ form.unformatted_name }}
@@ -62,81 +63,48 @@ IATI Account: Welcome to your new IATI Account
         </div>
     </div><br/>
 
+    {% if user.use_cases_migration %}
+        <h3>What will you use your IATI Account for?</h3>
+    {% else %}
+        <h3>Why have you registered with IATI?</h3>
+    {% endif %}
+    <p>This will help us signpost you to the most relevant services.</p>
     <div class="iati-form__inner" id="firstRegistrationUseCases">
-        {% if user.use_cases_migration %}
-            <h3>What will you use your IATI Account for?</h3>
-        {% else %}
-            <h3>Why have you registered with IATI?</h3>
-        {% endif %}
-        <p>This will help us signpost you to the most relevant services.</p>
-
-        <div class="iati-form__item">
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-                <div>
-                    {{ form.use_cases_publishing }}
-                </div>
-                <div>
-                    <label for="{{ form.use_cases_publishing.id_for_label }}" class="iati-form__label">{{ form.use_cases_publishing.label }}</label>
+        {% for field in form.use_case_fields %}
+            <div class="iati-form__item">
+                <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+                    <div>
+                        {{ field }}
+                    </div>
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="iati-form__label">{{ field.label }}</label>
+                    </div>
                 </div>
             </div>
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-                <div>
-                    {{ form.use_cases_using_data }}
-                </div>
-                <div>
-                    <label for="{{ form.use_cases_using_data.id_for_label }}" class="iati-form__label">{{ form.use_cases_using_data.label }}</label>
-                </div>
-            </div>
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-                <div>
-                    {{ form.use_cases_mailinglist }}
-                </div>
-                <div>
-                    <label for="{{ form.use_cases_mailinglist.id_for_label }}" class="iati-form__label">{{ form.use_cases_mailinglist.label }}</label>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div><br/>
 
+
+    <h3>Which languages are you able to use?</h3>
+    <p>This informs how we make our services accessible to you.</p>
     <div class="iati-form__inner" id="preferredLanguages">
-        <h3>Which languages are you able to use?</h3>
-        <p>This informs how we make our services accessible to you.</p>
-
-        <div class="iati-form__item">
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-                <div>
-                    {{ form.language_en }}
-                </div>
-                <div>
-                    <label for="{{ form.language_en.id_for_label }}" class="iati-form__label">{{ form.language_en.label }}</label>
-                </div>
-            </div>
-        </div>
-        <div class="iati-form__item">
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-                <div>
-                    {{ form.language_fr }}
-                </div>
-                <div>
-                    <label for="{{ form.language_fr.id_for_label }}" class="iati-form__label">{{ form.language_fr.label }}</label>
+        {% for field in form.language_fields %}
+            <div class="iati-form__item">
+                <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
+                    <div>
+                        {{ field }}
+                    </div>
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="iati-form__label">{{ field.label }}</label>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="iati-form__item">
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-                <div>
-                    {{ form.language_es }}
-                </div>
-                <div>
-                    <label for="{{ form.language_es.id_for_label }}" class="iati-form__label">{{ form.language_es.label }}</label>
-                </div>
-            </div>
-        </div>
+        {% endfor %}
     </div><br/>
 
+    <h3>Where are you located in the world?</h3>
+    <p>This helps us understand the geographical reach of IATI and where you’re based.</p>
     <div class="iati-form__inner" id="locale">
-        <h3>Where are you located in the world?</h3>
-        <p>This helps us understand the geographical reach of IATI and where you’re based.</p>
         <div class="iati-form__item">
             <div class="iati-select">
                 <label for="{{ form.country.id_for_label }}" class="iati-select__label">
@@ -155,20 +123,6 @@ IATI Account: Welcome to your new IATI Account
                 <div class="iati-select__control-wrapper">
                     {{ form.timezone}}
                 </div> 
-            </div>
-        </div>
-    </div><br/>
-
-    <div class="iati-form__inner">
-        <h3>Which mailing lists do you want to subscribe to?</h3>
-        <div class="iati-form__item">
-            <div style="display: flex; flex-direction: row; flex-wrap: wrap;">
-                <div>
-                    {{ form.mailinglist_subscriber }}
-                </div>
-                <div>
-                    <label for="{{ form.mailinglist_subscriber.id_for_label }}" class="iati-form__label">{{ form.mailinglist_subscriber.label }}</label>
-                </div>
             </div>
         </div>
     </div><br/>
