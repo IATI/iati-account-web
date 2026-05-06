@@ -46,7 +46,7 @@ class UserAndRole(models.Model):
 
     @property
     def can_edit_dataset(self):
-        if self.role in ("admin", "editor", "super_admin", "provider_admin"):
+        if self.role in ("admin", "editor", "contributor", "super_admin", "provider_admin"):
             return True
         return False
 

@@ -169,7 +169,9 @@ IATI Account: My Data
                 <div>
                     <button id="saveChangesButton" class="iati-form__submit iati-button iati-button--submit" type="button" style="display: none;" onclick="saveChangesAction()">Save</button>
                     <button id="discardChangesButton" class="iati-form__submit iati-button" type="button" style="display: none;" onclick="discardChangesAction()">Discard Changes</button>
-                    <button id="deleteButton" class="iati-form__submit iati-button" type="button" onclick="deleteAction()">Delete</button>
+                    {% if this_user.can_delete_dataset %}
+                        <button id="deleteButton" class="iati-form__submit iati-button" type="button" onclick="deleteAction()">Delete</button>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>
