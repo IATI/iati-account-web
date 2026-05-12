@@ -770,7 +770,16 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
 
     form = DatasetDetailsForm(instance=dataset)
     if request.POST:
-        form = form = DatasetDetailsForm(request.POST, instance=dataset)
+        form = DatasetDetailsForm(request.POST, instance=dataset)
+
+    # Set field editability based on user role. This must happen before
+    # is_valid() so disabled fields fall back to the instance value rather
+    # than failing required-field validation when the disabled HTML control
+    # was not submitted.
+    for field_name, editable in fields_editable_status.items():
+        form.fields[field_name].disabled = not editable
+
+    if request.POST:
         app_logger.debug(f"Updating a dataset - form validation state: {form.is_valid()}")
         if form.is_valid():
             try:
@@ -836,11 +845,6 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
                 messages.WARNING,
                 "There was a problem in updating the new dataset.  Please correct the " "errors below and try again.",
             )
-
-    # Here we have an organisation change form and we need to set the editability
-    # of certain fields depending on the user role.
-    for field_name, editable in fields_editable_status.items():
-        form.fields[field_name].disabled = not editable
 
     # Build the context and then render the page.
     context = {

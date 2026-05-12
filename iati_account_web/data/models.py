@@ -46,13 +46,13 @@ class UserAndRole(models.Model):
 
     @property
     def can_edit_dataset(self):
-        if self.role in ("admin", "editor", "super_admin", "provider_admin"):
+        if self.role in ("admin", "editor", "contributor", "super_admin", "provider_admin"):
             return True
         return False
 
     @property
     def can_change_dataset_visibility(self):
-        if self.role in ("admin", "super_admin", "provider_admin"):
+        if self.role in ("admin", "editor", "super_admin", "provider_admin"):
             return True
         return False
 
