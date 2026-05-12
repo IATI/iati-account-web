@@ -1,6 +1,7 @@
 import logging
 
 import libsuitecrm
+from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.template import loader
@@ -147,7 +148,7 @@ def __provision_add_roles(request: HttpRequest) -> bool:
 
     audit_logger.debug(f"Provisioning: Adding iati_register_your_data role to user {request.user.log_label}")
     try:
-        request.user.add_role_to_user_in_identity_service(env("IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA"))
+        request.user.add_role_to_user_in_identity_service(settings.IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA)
 
     except Exception as exc:
         audit_logger.error(f"Provisioning: Failed to add role for user {request.user.log_label} with exception {exc}")

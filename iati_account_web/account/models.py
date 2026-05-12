@@ -2,11 +2,12 @@ import logging
 
 import oauthlib
 import requests_oauthlib
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from iati_account_web.constants import TIMEZONE_LIST
 from iati_account_web.exceptions import IdentityServiceConnectionError, IdentityServicePatchError
-from iati_account_web.settings import COUNTRY_LIST, IDENTITY_SERVICE_SCIM2_SCOPES, env
+from iati_account_web.settings import COUNTRY_LIST
 from requests import ConnectionError, HTTPError, Timeout
 
 app_logger = logging.getLogger("iati_account")
@@ -172,13 +173,14 @@ class IATIUser(AbstractUser):
             self.is_iati_superadmin = True
 
     @staticmethod
-    def _connect_to_identity_service(scope: str = IDENTITY_SERVICE_SCIM2_SCOPES) -> dict[str, str] | None:
+    def _connect_to_identity_service(scope: str = settings.IDENTITY_SERVICE_SCIM2_SCOPES) -> dict[str, str] | None:
         """Connect to and get an access token from the identity service
 
         Parameters
         ----------
         scope : str, optional
-            List of scopes to request from the identity service, default is IDENTITY_SERVICE_SCIM2_SCOPES.
+            List of scopes to request from the identity service, default is IDENTITY_SERVICE_SCIM2_SCOPES
+            from settings.
 
         Returns
         -------
@@ -188,15 +190,15 @@ class IATIUser(AbstractUser):
         # Get an access token from Asgardeo.
         try:
             client = oauthlib.oauth2.BackendApplicationClient(
-                client_id=env("IDENTITY_SERVICE_CLIENT_ID"),
+                client_id=settings.IDENTITY_SERVICE_CLIENT_ID,
                 scope=scope,
             )
             session = requests_oauthlib.OAuth2Session(client=client)
 
             access_token = session.fetch_token(
-                token_url=env("IDENTITY_SERVICE_BASE_URL") + "oauth2/token",
-                client_id=env("IDENTITY_SERVICE_CLIENT_ID"),
-                client_secret=env("IDENTITY_SERVICE_CLIENT_SECRET"),
+                token_url=settings.IDENTITY_SERVICE_BASE_URL + "oauth2/token",
+                client_id=settings.IDENTITY_SERVICE_CLIENT_ID,
+                client_secret=settings.IDENTITY_SERVICE_CLIENT_SECRET,
             ).get("access_token", None)
         except Exception as exc:
             app_logger.debug(f"An exception was raised while fetching access token from Asgardeo (exception {exc})")
@@ -288,7 +290,7 @@ class IATIUser(AbstractUser):
         # Do the patch operation.
         try:
             response = idp["session"].patch(
-                f"{env("IDENTITY_SERVICE_BASE_URL")}scim2/Users/{self.oidc_sub}",
+                f"{settings.IDENTITY_SERVICE_BASE_URL}scim2/Users/{self.oidc_sub}",
                 json=payload,
                 headers={"Content-Type": "application/scim+json"},
             )
@@ -322,7 +324,7 @@ class IATIUser(AbstractUser):
         # Do the patch operation.
         try:
             response = idp["session"].patch(
-                f"{env("IDENTITY_SERVICE_BASE_URL")}scim2/Users/{self.oidc_sub}",
+                f"{settings.IDENTITY_SERVICE_BASE_URL}scim2/Users/{self.oidc_sub}",
                 json=payload,
                 headers={"Content-Type": "application/scim+json"},
             )
@@ -355,7 +357,7 @@ class IATIUser(AbstractUser):
 
         try:
             response = idp["session"].patch(
-                f"{env("IDENTITY_SERVICE_BASE_URL")}/scim2/v3/Roles/{role_id}/Users",
+                f"{settings.IDENTITY_SERVICE_BASE_URL}/scim2/v3/Roles/{role_id}/Users",
                 json={
                     "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
                     "Operations": [{"op": "add", "value": [{"value": self.oidc_sub}]}],
