@@ -3,15 +3,13 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from django.db import models
+from iati_account_web.constants import REPORTING_SOURCE_TYPE_LIST, USER_ROLE_LIST, VISIBILITY_LIST
 from iati_account_web.exceptions import RegisterYourDataResponseParsingIssue
 from iati_account_web.settings import (
     COUNTRY_LIST,
     LICENCE_LIST,
     ORGANISATION_TYPE_LIST,
     REGION_LIST,
-    REPORTING_SOURCE_TYPE_LIST,
-    USER_ROLE_LIST,
-    VISIBILITY_LIST,
 )
 
 
