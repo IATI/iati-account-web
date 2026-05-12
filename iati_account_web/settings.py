@@ -18,7 +18,7 @@ import environ
 import pytz
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from iati_account_web.helpers import _codelist_helper, get_version_from_pyproject
+from iati_account_web.helpers import _codelist_helper
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -72,7 +72,7 @@ env = environ.Env(
 if env("ENV_FILE") is not None:
     environ.Env.read_env(os.path.join(BASE_DIR, env("ENV_FILE")))
 
-IATI_ACCOUNT_VERSION = get_version_from_pyproject(os.path.join(BASE_DIR, "pyproject.toml"))
+PYPROJECT_TOML_PATH = os.path.join(BASE_DIR, "pyproject.toml")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 SECRET_KEY = env("SECRET_KEY")
