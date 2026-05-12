@@ -1,4 +1,4 @@
-from iati_account_web.settings import IATI_ACCOUNT_VERSION
+from iati_account_web.constants import IATI_ACCOUNT_VERSION
 
 
 def iati_account_data(request):
