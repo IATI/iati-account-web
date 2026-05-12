@@ -15,7 +15,6 @@ import secrets
 from pathlib import Path
 
 import environ
-import pytz
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from iati_account_web.helpers import _codelist_helper
@@ -317,34 +316,3 @@ COUNTRY_LIST, COUNTRY_CODE_LOOKUP = _codelist_helper(env("COUNTRY_CODELIST_JSON"
 ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = _codelist_helper(env("ORGANISATION_TYPE_CODELIST_JSON"))
 REGION_LIST, REGION_LOOKUP = _codelist_helper(env("REGION_CODELIST_JSON"))
 LICENCE_LIST, LICENCE_LOOKUP = _codelist_helper(env("LICENCE_JSON"))
-
-# Format a list of timezones using the internal list in pytz.  These
-# are used to allow end users to select their timezone.
-TIMEZONE_LIST = [("", "--")]
-for tz in pytz.common_timezones:
-    tz_parts = tz.replace("_", " ").split("/")
-    if len(tz_parts) == 1:
-        TIMEZONE_LIST.append((tz, f"{tz}"))
-    elif len(tz_parts) == 2:
-        region, city = tz_parts[0], tz_parts[1]
-        TIMEZONE_LIST.append((tz, f"{city} - {region}"))
-    elif len(tz_parts) == 3:
-        region, country, city = tz_parts[0], tz_parts[1], tz_parts[2]
-        TIMEZONE_LIST.append((tz, f"{city} - {country}/{region}"))
-    else:
-        raise ValueError()
-
-# Additional choice fields
-REPORTING_SOURCE_TYPE_LIST = [("primary_source", "Primary Source"), ("secondary_source", "Secondary Source")]
-REPORTING_SOURCE_TYPE_LOOKUP = {x[0]: x[1] for x in REPORTING_SOURCE_TYPE_LIST}
-VISIBILITY_LIST = [("private", "Private"), ("public", "Public")]
-VISIBILITY_LOOKUP = {x[0]: x[1] for x in VISIBILITY_LIST}
-USER_ROLE_LIST = [
-    ("admin", "Admin"),
-    ("editor", "Editor"),
-    ("contributor", "Contributor"),
-    ("provider_admin", "Provider Admin"),
-    ("contributor_pending", "Pending"),
-    ("super_admin", "Superadmin"),
-]
-USER_ROLE_LOOKUP = {x[0]: x[1] for x in USER_ROLE_LIST}
