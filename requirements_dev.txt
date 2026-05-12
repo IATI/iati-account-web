@@ -94,6 +94,8 @@ packaging==25.0
     #   black
     #   build
     #   pytest
+parameterized==0.9.0
+    # via iati-account-web (pyproject.toml)
 pathspec==0.12.1
     # via
     #   black
