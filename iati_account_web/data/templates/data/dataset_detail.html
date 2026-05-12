@@ -91,15 +91,7 @@ IATI Account: My Data
     {% endif %}
 </h2>
 <p>You are viewing/editing this dataset for this organisation as 
-    {% if this_user.role == "admin" %}
-        an <span class="iati-account-lozenge iati-account-lozenge-teal-90">ADMIN</span>.
-    {% elif this_user.role == "editor" %}
-        an <span class="iati-account-lozenge iati-account-lozenge-purple-90">EDITOR</span>.
-    {% elif this_user.role == "contributor" %}
-        a <span class="iati-account-lozenge iati-account-lozenge-grey-90">CONTRIBUTOR</span>.
-    {% elif this_user.role == "super_admin" %}
-        a <span class="iati-account-lozenge iati-account-lozenge-red-90">SUPERADMIN</span>.
-    {% endif %}
+    {% include 'data/components/user_role_lozenge.html' %}
 </p>
 
 <div>
@@ -177,7 +169,9 @@ IATI Account: My Data
                 <div>
                     <button id="saveChangesButton" class="iati-form__submit iati-button iati-button--submit" type="button" style="display: none;" onclick="saveChangesAction()">Save</button>
                     <button id="discardChangesButton" class="iati-form__submit iati-button" type="button" style="display: none;" onclick="discardChangesAction()">Discard Changes</button>
-                    <button id="deleteButton" class="iati-form__submit iati-button" type="button" onclick="deleteAction()">Delete</button>
+                    {% if this_user.can_delete_dataset %}
+                        <button id="deleteButton" class="iati-form__submit iati-button" type="button" onclick="deleteAction()">Delete</button>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>

@@ -7,10 +7,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link href="https://cdn.jsdelivr.net/npm/iati-design-system@4.5.1/dist/css/iati.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/iati-design-system@4.9.0/dist/css/iati.min.css" rel="stylesheet" />
     <link href="{% static 'iati-account.css' %}" rel="stylesheet" />
 
-    <script src="https://cdn.jsdelivr.net/npm/iati-design-system@4.5.1/dist/js/iati.js"></script>
+    <style>
+      :root {
+        --icon-incomplete: url("{% static 'img/icon-right-double-chevron.svg' %}");
+        --icon-complete: url("{% static 'img/icon-tick.svg' %}");
+      }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/iati-design-system@4.9.0/dist/js/iati.js"></script>
+
+    <!-- Privacy-friendly analytics by Plausible -->
+    <script async src="https://plausible.io/js/pa-DMCWMNhG5ofGba9NFvGGJ.js"></script>
+    <script>
+      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+      plausible.init()
+    </script>
 
     {% block extra_head %}
     {% endblock %}
@@ -65,7 +79,10 @@
           </li>
           <li class="iati-mobile-nav__item">
             {% if user.is_authenticated %}
-              <form method="post" action="{% url 'oidc_logout' %}">
+            <p>
+              Signed in user:<br/> {{ user.email }}
+            </p>
+            <form method="post" action="{% url 'oidc_logout' %}">
                 {% csrf_token %}
                 <a class="iati-mobile-nav__link" onclick="this.parentNode.submit();">Logout</a>
               </form>
@@ -103,7 +120,22 @@
                 {% if user.is_authenticated %}
                   <form action="{% url 'oidc_logout' %}" method="post">
                     {% csrf_token %}
-                    <button class="iati-button iati-button--submit iati-button--compact" type="submit">Logout</button>
+                    <div class="iati-account-user">
+                      <div class="iati-account-user--icon">
+                        <img src="{% static 'img/icon-user.svg' %}" style="width: 20px; height:20px;"/>
+                      </div>
+                      <div class="iati-account-user--stack">
+                        <div>
+                          <span class="iati-account-user--name">{{ user.unformatted_name }}</span>
+                        </div>
+                        <div>
+                          <span class="iati-account-user--email title="{{ user.email }}"><strong> {{user.email }}</strong></span>
+                        </div>
+                      </div>
+                      <div>
+                        <button class="iati-button iati-button--logout" type="submit">Logout</button>
+                      </div>
+                    </div>
                   </form>
                 {% else %}
                   <form>

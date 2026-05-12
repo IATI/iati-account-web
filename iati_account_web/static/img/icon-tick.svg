@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="20"
+   height="20"
+   viewBox="0 0 20 20"
+   version="1.1"
+   id="icon_user"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs442" />
+  <path
+     style="fill:none;stroke:#155366;stroke-width:1.6;stroke-dasharray:none;stroke-opacity:1"
+     d="m 5.0106333,12.175946 c 0.4587947,0.38455 2.0605553,3.544729 2.804456,2.185996 2.3407677,-4.340334 3.8496857,-6.2479476 7.1812837,-9.2653512"
+     id="path229" />
+  <ellipse
+     style="fill:none;stroke:#155366;stroke-width:1.3003;stroke-dasharray:none;stroke-opacity:1"
+     id="path1110"
+     cx="10"
+     cy="10"
+     rx="9.3498478"
+     ry="9.3498487" />
+</svg>

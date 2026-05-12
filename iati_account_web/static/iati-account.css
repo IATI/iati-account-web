@@ -118,3 +118,73 @@
     margin-left: 4px !important;
 }
 
+.iati-button.iati-button--logout {
+  background-color: var(--color-purple-90);
+  color: #fff;
+}
+.iati-button.iati-button--logout:active {
+  background-color: var(--color-purple-90);
+  color: #fff;
+}
+.iati-button.iati-button--logout:hover {
+  background-color: var(--color-purple-70);
+  color: #fff;
+}
+
+.iati-account-user {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 200px) max-content;
+    align-items: center;
+    gap: 10px;
+}
+.iati-account-user--icon {
+    vertical-align: middle;
+}
+.iati-account-user--stack {
+    display: grid;
+}
+.iati-account-user--email {
+    font-size: 0.8rem;
+    color: var(--color-grey-60);
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    max-width: 200px;
+    line-height: 1;
+}
+.iati-account-user--name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-grey-90);
+    display: inline-block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    max-width: 200px;
+    line-height: 1;
+}
+
+.iati-account-profile--list {
+    list-style: none;
+}
+
+.iati-account-profile--list li::before {
+    content: "";
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    vertical-align: middle;
+}
+
+.iati-account-profile--list li.iati-account-profile--list-item-incomplete::before {
+    content: var(--icon-incomplete);
+}
+
+.iati-account-profile--list li.iati-account-profile--list-item-complete::before {
+    content: var(--icon-complete);
+}
