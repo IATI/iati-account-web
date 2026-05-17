@@ -249,6 +249,7 @@ else:
 
 # Prom settings.
 PROMETHEUS_METRIC_NAMESPACE = "iatiaccount"
+SERVE_PROM_APP_METRICS = env("SERVE_PROM_APP_METRICS")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
