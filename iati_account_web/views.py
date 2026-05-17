@@ -12,7 +12,6 @@ from iati_account_web.metrics import (
     PROM_USER_PROVISIONING_COUNTER,
     PROM_USER_PROVISIONING_GAUGE,
 )
-from iati_account_web.settings import env
 from libsuitecrm import SuiteCRM
 
 app_logger = logging.getLogger("iati_account")
@@ -175,7 +174,9 @@ def __provision_create_person_in_crm(request: HttpRequest) -> bool:
     audit_logger.debug(f"Provisioning: trying to create person in the CRM for user {request.user.log_label}")
     try:
         app_logger.debug("Provisioning: connecting to SuiteCRM")
-        crm = SuiteCRM(env("CRM_BASE_URL"), client_id=env("CRM_CLIENT_ID"), client_secret=env("CRM_CLIENT_SECRET"))
+        crm = SuiteCRM(
+            settings.CRM_BASE_URL, client_id=settings.CRM_CLIENT_ID, client_secret=settings.CRM_CLIENT_SECRET
+        )
         crm.fetch_access_token()
 
         app_logger.debug("Provisioning: creating Person record")
