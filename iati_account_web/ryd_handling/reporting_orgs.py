@@ -1,6 +1,6 @@
+from django.conf import settings
 from iati_account_web.data.models import Dataset, DiscoverableReportingOrganisation, ReportingOrganisation, UserAndRole
 from iati_account_web.ryd_handling import RegisterYourDataSession
-from iati_account_web.settings import env
 
 
 def parse_user_list_to_objects(users_and_roles: list[dict], oid: str) -> list[UserAndRole]:
@@ -110,7 +110,7 @@ def get_all_discoverable_reporting_orgs(session: RegisterYourDataSession) -> lis
     while r["pagination"]["links"]["next"] is not None:
         r = session.get(
             "/discoverable-reporting-orgs",
-            params={"page": page, "page_size": env("REGISTER_YOUR_DATA_DISCOVERABLE_REPORTING_ORGS_PAGE_SIZE")},
+            params={"page": page, "page_size": settings.REGISTER_YOUR_DATA_DISCOVERABLE_REPORTING_ORGS_PAGE_SIZE},
         )
         orgs += r["data"]
         page += 1
