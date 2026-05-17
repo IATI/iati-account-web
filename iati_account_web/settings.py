@@ -18,6 +18,7 @@ import environ
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 from iati_account_web.helpers import _codelist_helper
+from iati_account_web.oidc.discovery import LazyOpenIdConfiguration
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,15 +27,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 env = environ.Env(
     DEBUG=(bool, False),
     SECRET_KEY=(str, secrets.token_urlsafe(50)),
-    OIDC_OP_AUTHORIZATION_ENDPOINT=(str, None),
-    OIDC_OP_TOKEN_ENDPOINT=(str, None),
-    OIDC_OP_USER_ENDPOINT=(str, None),
-    OIDC_OP_JWKS_ENDPOINT=(str, None),
     OIDC_RP_CLIENT_ID=(str, None),
     OIDC_RP_CLIENT_SECRET=(str, None),
     OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS=(int, 3600),
     SERVER_URL_BASE=(str, None),
     IDENTITY_SERVICE_BASE_URL=(str, None),
+    IDENTITY_SERVICE_WELL_KNOWN_ENDPOINT=(str, None),
     IDENTITY_SERVICE_CLIENT_ID=(str, None),
     IDENTITY_SERVICE_CLIENT_SECRET=(str, None),
     IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA=(str, None),
@@ -125,11 +123,13 @@ if env("AUDIT_LOG_PUBLIC_KEY_FILE") is not None and env("AUDIT_LOG_PUBLIC_KEY_FI
         del LOGGING["formatters"]["audit"]["format"]
         LOGGING["formatters"]["audit"]["public_key"] = public_key_fh.read()
 
+
 # OIDC settings for communicating with the identity server.
-OIDC_OP_AUTHORIZATION_ENDPOINT = env("OIDC_OP_AUTHORIZATION_ENDPOINT")
-OIDC_OP_TOKEN_ENDPOINT = env("OIDC_OP_TOKEN_ENDPOINT")
-OIDC_OP_USER_ENDPOINT = env("OIDC_OP_USER_ENDPOINT")
-OIDC_OP_JWKS_ENDPOINT = env("OIDC_OP_JWKS_ENDPOINT")
+OIDC_OP_DISCOVERY_ENDPOINT = env("IDENTITY_SERVICE_BASE_URL") + "oauth2/token/.well-known/openid-configuration"
+OIDC_OP_AUTHORIZATION_ENDPOINT = LazyOpenIdConfiguration("authorization_endpoint", OIDC_OP_DISCOVERY_ENDPOINT)
+OIDC_OP_TOKEN_ENDPOINT = LazyOpenIdConfiguration("token_endpoint", OIDC_OP_DISCOVERY_ENDPOINT)
+OIDC_OP_USER_ENDPOINT = LazyOpenIdConfiguration("userinfo_endpoint", OIDC_OP_DISCOVERY_ENDPOINT)
+OIDC_OP_JWKS_ENDPOINT = LazyOpenIdConfiguration("jwks_uri", OIDC_OP_DISCOVERY_ENDPOINT)
 OIDC_RP_CLIENT_ID = env("OIDC_RP_CLIENT_ID")
 OIDC_RP_CLIENT_SECRET = env("OIDC_RP_CLIENT_SECRET")
 OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS = env("OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS")
