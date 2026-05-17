@@ -7,6 +7,7 @@ from urllib.parse import parse_qs, urlparse
 
 import requests
 import responses
+from django.conf import settings
 from iati_account_web.account.models import IATIUser
 from iati_account_web.settings import COUNTRY_CODE_LOOKUP
 
@@ -253,7 +254,7 @@ class ForceIatiLoginMixin:
         """
         if self.user is None:
             self.create_user()
-        self.client.force_login(self.user, backend="iati_account_web.oidc.IATIAccountOIDCAuthBackend")
+        self.client.force_login(self.user, backend=settings.AUTHENTICATION_BACKENDS[0])
         session = self.client.session
         session["oidc_id_token"] = self.iati_oidc_id_token
         session["oidc_id_token_expiration"] = self.iati_oidc_claims["exp"]

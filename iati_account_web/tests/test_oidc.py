@@ -3,7 +3,7 @@ import urllib.parse
 from django.conf import settings
 from django.shortcuts import reverse
 from django.test import TestCase
-from iati_account_web.oidc import generate_username, logout_uri
+from iati_account_web.oidc.utils import generate_username, logout_uri
 
 
 class OIDCTestCase(TestCase):
