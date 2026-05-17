@@ -41,6 +41,7 @@ class IatiInfrastructureMock:
     def register_all(self) -> None:
         """Register all the callbacks in this infrastructure mock"""
         self.register_ryd_callbacks()
+        self.register_idp_callbacks()
 
     def register_ryd_callbacks(self) -> None:
         """Register all the Register Your Data callbacks in this infrastructure mock"""
@@ -49,6 +50,21 @@ class IatiInfrastructureMock:
             f"{self.RYD_BASE_URL}/discoverable-reporting-orgs",
             callback=self._get_discoverable_reporting_orgs_callback,
             content_type="application/json",
+        )
+
+    def register_idp_callbacks(self) -> None:
+        """Register all the Identity Service callbacks in this infrastructure mock"""
+        responses.add(
+            method=responses.GET,
+            url=settings.OIDC_OP_DISCOVERY_ENDPOINT,
+            status=200,
+            json={
+                "authorization_endpoint": "https://testing.idp/t/test/oauth2/authorize",
+                "token_endpoint": "https://testing.idp/t/test/oauth2/token",
+                "userinfo_endpoint": "https://testing.idp/t/test/oauth2/userinfo",
+                "jwks_uri": "https://testing.idp/t/test/oauth2/jwks",
+                "end_session_endpoint": "https://testing.idp/t/test/oauth2/end_session",
+            },
         )
 
     def _generate_discoverable_reporting_orgs(self) -> None:
