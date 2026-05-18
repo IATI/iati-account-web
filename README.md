@@ -25,17 +25,31 @@ Running this application locally and opening `https://localhost:8443` allows the
 
 ### Running locally
 
-Configuration is through environment variables.  The application will get environment variables from the local environment, or through a ".env" file that is specified through the environment variable ENV_FILE.
+Configuration is through environment variables.  The application will get environment variables from the local environment, or through a `.env` file that is specified through the environment variable ENV_FILE.  The provided `.env.example` and `.env.test` should form the basis for setting up a `.env` file for development purposes.
 
-To run, the application needs a database. When running locally it will (create) and
-use a new SQLite database automatically by default, but migrations need to be
-run before starting the server:
+#### Database requirements
+
+To run, the application needs a database.  This is configured using the `DATABASE_URL` environment variable.  If this is empty IATI Account will default to creating and using a new local SQLite database, but migrations need to be run before starting the server:
 
 ```bash
 ENV_FILE=.env.dev python manage.py migrate
 ```
 
-Running this application locally and logging in to Asgardeo should not be done under HTTP as client secrets and user details will be passed via easily intercepted communications.  Local development should be done using SSL/TLS.
+IATI Account can also be run and tested locally using PostgreSQL running in a container.  For example, start a container
+
+```bash
+docker run --name iatiaccountdb -e POSTGRES_PASSWORD=password -e POSTGRES_USER=iatiaccount -e POSTGRES_DB=iatiaccount -p 5432:5432 postgres -d
+```
+
+Then add the connection string to your `.env` file:
+
+```
+DATABASE_URL=postgres://iatiaccount:password@localhost:5432/iatiaccount
+```
+
+#### SSL/TLS
+
+Running this application locally and logging in to Asgardeo should **not be done under HTTP** as client secrets and user details will be passed via easily intercepted communications.  Local development should be done using SSL/TLS.
 
 The development dependencies include `django_extensions` and `werkzeug` that together with using `runserver_plus` can launch a local server with SSL.  To do this, we first need to generate a certificate and private key.
 
@@ -96,11 +110,7 @@ ENV_FILE=.env.test python manage.py test
 | `OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS` | Duration after which the ID token expires and needs to be obtained again by logging into the identity server. |
 | `OIDC_RP_CLIENT_ID`         | Client ID for the identity service (used for end user OIDC login). |
 | `OIDC_RP_CLIENT_SECRET`     | Client secret for the identity service (used for end user OIDC login). |
-| `POSTGRES_NAME`             | Name for the PSQL database. |
-| `POSTGRES_USER`             | User for the PSQL database. |
-| `POSTGRES_PASSWORD`         | Password for the PSQL database. |
-| `POSTGRES_HOST`             | Host for the PSQL database. |
-| `POSTGRES_PORT`             | Port for the PSQL database. |
+| `DATABASE_URL`              | Connection string for the PSQL database. |
 | `REGISTER_YOUR_DATA_ALLOW_REDIRECTS` | Whether to allow redirects when communicating with Register Your Data. |
 | `REGISTER_YOUR_DATA_BASE_URL` | Base URL for the Register Your Data API. |
 | `REGISTER_YOUR_DATA_DISCOVERABLE_REPORTING_ORGS_PAGE_SIZE` | Page size when fetching discoverable reporting orgs. |
