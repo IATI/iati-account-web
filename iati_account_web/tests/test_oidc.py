@@ -1,3 +1,4 @@
+import unittest
 import urllib.parse
 from typing import Any
 
@@ -26,7 +27,10 @@ class OIDCTestCase(TestCase):
         self.assertEqual(logout_uri(None), "https://testing.idp/t/test/oidc/logout?" + params)
 
 
-class OpenIDConfigTestCase(TestCase):
+class OpenIDConfigTestCase(unittest.TestCase):
+    def setUp(self):
+        responses.reset()
+
     @parameterized.expand(
         [
             (
@@ -105,7 +109,7 @@ class OpenIDConfigTestCase(TestCase):
 
     @responses.activate
     def test_lazy_initialisation(self):
-        DISCOVERY_ENDPOINT_URL = "https://testing.idp/t/testoauth2/token/.well-known/openid-configuration"
+        DISCOVERY_ENDPOINT_URL = "https://example.org/.well-known/openid-configuration"
         OIDC_CONFIG = {
             "authorization_endpoint": "auth",
             "token_endpoint": "token",
@@ -132,8 +136,8 @@ class OpenIDConfigTestCase(TestCase):
 
         # Check trying to change the URL.
         with self.assertRaises(RuntimeError) as cm:
-            end_session_endpoint = LazyOpenIdConfiguration("end_session_endpoint", "https://example.org")  # noqa: F841
+            end_session_endpoint = LazyOpenIdConfiguration("end_session_endpoint", "https://example.org/.different")  # noqa: F841
 
         self.assertIn("There is a conflict between the existing discovery endpoint", repr(cm.exception))
-        self.assertIn("https://example.org", repr(cm.exception))
-        self.assertIn(DISCOVERY_ENDPOINT_URL, repr(cm.exception))
+        self.assertIn("https://example.org/.different", repr(cm.exception))
+        self.assertIn("https://example.org/.well-known/openid-configuration", repr(cm.exception))

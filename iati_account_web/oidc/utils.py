@@ -48,4 +48,4 @@ def logout_uri(request: HttpRequest) -> str:
             "post_logout_redirect_uri": urllib.parse.urljoin(settings.SERVER_URL_BASE, reverse("logout")),
         }
     )
-    return f"{settings.IDENTITY_SERVICE_BASE_URL}/oidc/logout?" + params
+    return urllib.parse.urljoin(settings.IDENTITY_SERVICE_BASE_URL, "oidc/logout?" + params)

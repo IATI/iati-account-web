@@ -84,6 +84,7 @@ class LazyOpenIdConfiguration:
         discovery_endpoint : str
             URL of the .well-known endpoint, e.g., https://example.org/.well-known/openid-configuration.
         """
+        print(f"Initialising: {name} {discovery_endpoint}")
         self._name = name
 
         # Check the caller is not trying to change the discovery endpoint URL.

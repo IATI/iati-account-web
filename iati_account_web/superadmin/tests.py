@@ -8,12 +8,11 @@ from iati_account_web.tests.iati_mock import ForceIatiLoginMixin, IatiInfrastruc
 class TestNoSuperadminAccessForRegularUsers(TestCase, ForceIatiLoginMixin):
     def setUp(self):
         self.claims = self.create_user(iati_superadmin=False)
-
-    @responses.activate
-    def test_superadmin_home_page(self):
         iati_mock = IatiInfrastructureMock()
         iati_mock.register_all()
 
+    @responses.activate
+    def test_superadmin_home_page(self):
         # Test that the user is correctly not authenticated before we force login.
         with self.assertLogs("iati_account", level="DEBUG") as cm_log_app:
             response = self.client.get("/superadmin", follow=True)
@@ -44,11 +43,11 @@ class TestNoSuperadminAccessForRegularUsers(TestCase, ForceIatiLoginMixin):
 class TestSuperadminAccessForSuperadminUsers(TestCase, ForceIatiLoginMixin):
     def setUp(self):
         self.claims = self.create_user(iati_superadmin=True)
+        iati_mock = IatiInfrastructureMock()
+        iati_mock.register_all()
 
     @responses.activate
     def test_superadmin_home_page(self):
-        iati_mock = IatiInfrastructureMock()
-        iati_mock.register_all()
 
         # Test that the user is correctly not authenticated before we force login.
         with self.assertLogs("iati_account", level="DEBUG") as cm_log_app:

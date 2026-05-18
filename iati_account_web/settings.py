@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os.path
 import secrets
 from pathlib import Path
+import urllib.parse
 
 import environ
 from django.urls import reverse_lazy
@@ -125,7 +126,7 @@ if env("AUDIT_LOG_PUBLIC_KEY_FILE") is not None and env("AUDIT_LOG_PUBLIC_KEY_FI
 
 
 # OIDC settings for communicating with the identity server.
-OIDC_OP_DISCOVERY_ENDPOINT = env("IDENTITY_SERVICE_BASE_URL") + "oauth2/token/.well-known/openid-configuration"
+OIDC_OP_DISCOVERY_ENDPOINT = urllib.parse.urljoin(env("IDENTITY_SERVICE_BASE_URL"), "oauth2/token/.well-known/openid-configuration")
 OIDC_OP_AUTHORIZATION_ENDPOINT = LazyOpenIdConfiguration("authorization_endpoint", OIDC_OP_DISCOVERY_ENDPOINT)
 OIDC_OP_TOKEN_ENDPOINT = LazyOpenIdConfiguration("token_endpoint", OIDC_OP_DISCOVERY_ENDPOINT)
 OIDC_OP_USER_ENDPOINT = LazyOpenIdConfiguration("userinfo_endpoint", OIDC_OP_DISCOVERY_ENDPOINT)
