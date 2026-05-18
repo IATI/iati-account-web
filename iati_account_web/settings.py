@@ -53,11 +53,6 @@ env = environ.Env(
     REGISTER_YOUR_DATA_STRIP_AUTH_CHECK=(bool, False),
     REGISTER_YOUR_DATA_DISCOVERABLE_REPORTING_ORGS_PAGE_SIZE=(int, 500),
     STATIC_ROOT=(str, None),
-    POSTGRES_NAME=(str, None),
-    POSTGRES_USER=(str, None),
-    POSTGRES_PASSWORD=(str, None),
-    POSTGRES_HOST=(str, None),
-    POSTGRES_PORT=(str, None),
     ALLOWED_HOSTS=(list, []),
     SERVE_PROM_APP_METRICS=(bool, False),
     ENV_FILE=(str, None),
@@ -239,19 +234,8 @@ WSGI_APPLICATION = "iati_account_web.wsgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-if env("POSTGRES_NAME"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django_prometheus.db.backends.postgresql",
-            "NAME": env("POSTGRES_NAME"),
-            "USER": env("POSTGRES_USER"),
-            "PASSWORD": env("POSTGRES_PASSWORD"),
-            "HOST": env("POSTGRES_HOST"),
-            "PORT": env("POSTGRES_PORT"),
-        }
-    }
+if "DATABASE_URL" in env:
+    DATABASES = {"default": env.db("DATABASE_URL", engine="django_prometheus.db.backends.postgresql")}
 else:
     DATABASES = {
         "default": {
