@@ -5,9 +5,8 @@ import requests_oauthlib
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from iati_account_web.constants import TIMEZONE_LIST
+from iati_account_web.constants import COUNTRY_LIST, TIMEZONE_LIST
 from iati_account_web.exceptions import IdentityServiceConnectionError, IdentityServicePatchError
-from iati_account_web.settings import COUNTRY_LIST
 from requests import ConnectionError, HTTPError, Timeout
 
 app_logger = logging.getLogger("iati_account")

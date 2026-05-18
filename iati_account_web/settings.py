@@ -17,7 +17,6 @@ from pathlib import Path
 import environ
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from iati_account_web.helpers import _codelist_helper
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -177,6 +176,12 @@ REGISTER_YOUR_DATA_DISCOVERABLE_REPORTING_ORGS_PAGE_SIZE = env(
 )
 REGISTER_YOUR_DATA_STRIP_AUTH_CHECK = env("REGISTER_YOUR_DATA_STRIP_AUTH_CHECK")
 
+# Codelist and licence file paths.
+COUNTRY_CODELIST_PATH = os.path.join(BASE_DIR, "Country.json")
+ORGANISATION_TYPE_CODELIST_PATH = os.path.join(BASE_DIR, "OrganisationType.json")
+REGION_CODELIST_PATH = os.path.join(BASE_DIR, "Region.json")
+LICENCE_PATH = os.path.join(BASE_DIR, "Licence.json")
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -327,11 +332,3 @@ IDENTITY_SERVICE_SCIM2_SCOPES = " ".join(
         "internal_role_mgt_users_update",
     ]
 )
-
-# Format codelists into lists and lookups.
-# NOTE: for the moment, this does not worry about the activity state of
-# the codelist entry.
-COUNTRY_LIST, COUNTRY_CODE_LOOKUP = _codelist_helper(env("COUNTRY_CODELIST_JSON"))
-ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = _codelist_helper(env("ORGANISATION_TYPE_CODELIST_JSON"))
-REGION_LIST, REGION_LOOKUP = _codelist_helper(env("REGION_CODELIST_JSON"))
-LICENCE_LIST, LICENCE_LOOKUP = _codelist_helper(env("LICENCE_JSON"))

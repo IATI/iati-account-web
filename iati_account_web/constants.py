@@ -1,3 +1,4 @@
+import json
 import logging
 import tomllib
 
@@ -19,6 +20,38 @@ def get_version_from_pyproject() -> str:
     except Exception as exc:
         app_logger.error("Cannot retrieve software version from pyproject.toml")
         raise exc
+
+
+def codelist_helper(filename: str) -> (list[tuple[str, str]], dict[str, str]):
+    """Helper to load a codelist JSON file and generate a choice list and lookup
+
+    Parameters
+    ----------
+    filename : str
+        JSON codelist filename.
+
+    Returns
+    -------
+    list[tuple[str,str]]
+        Choice list for use in forms.
+    dict[str, str]
+        Lookup mapping codes to names.
+    """
+
+    choice_list = [("", "--")]
+    lookup = {}
+    if filename is not None:
+        with open(filename, "r") as fh:
+            data = json.load(fh)
+
+            choice_list += [(x["code"], x["name"]) for x in data.get("data", [])]
+            choice_list.sort(key=lambda x: x[1])
+
+            lookup = {x["code"]: x["name"] for x in data.get("data", [])}
+
+    lookup[""] = ""
+
+    return choice_list, lookup
 
 
 IATI_ACCOUNT_VERSION = get_version_from_pyproject()
@@ -53,3 +86,11 @@ USER_ROLE_LIST = [
     ("super_admin", "Superadmin"),
 ]
 USER_ROLE_LOOKUP = {x[0]: x[1] for x in USER_ROLE_LIST}
+
+# Format codelists into lists and lookups.
+# NOTE: for the moment, this does not worry about the activity state of
+# the codelist entry.
+COUNTRY_LIST, COUNTRY_CODE_LOOKUP = codelist_helper(settings.COUNTRY_CODELIST_PATH)
+ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = codelist_helper(settings.ORGANISATION_TYPE_CODELIST_PATH)
+REGION_LIST, REGION_LOOKUP = codelist_helper(settings.REGION_CODELIST_PATH)
+LICENCE_LIST, LICENCE_LOOKUP = codelist_helper(settings.LICENCE_PATH)
