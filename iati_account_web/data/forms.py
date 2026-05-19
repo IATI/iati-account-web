@@ -225,7 +225,7 @@ class OrgUserForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["role"].choices = [
-            choice for choice in self.fields["role"].choices if choice[0] != "provider_admin"
+            choice for choice in self.fields["role"].choices if choice[0] not in ["provider_admin", "super_admin"]
         ]
 
     @property
