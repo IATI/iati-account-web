@@ -1,44 +1,10 @@
-import json
 import logging
-import tomllib
 from collections import namedtuple
 
 from django.http import HttpRequest
 from django.shortcuts import redirect
 
 app_logger = logging.getLogger("iati_account")
-
-
-def _codelist_helper(filename: str) -> (list[tuple[str, str]], dict[str, str]):
-    """Helper to load a codelist JSON file and generate a choice list and lookup
-
-    Parameters
-    ----------
-    filename : str
-        JSON codelist filename.
-
-    Returns
-    -------
-    list[tuple[str,str]]
-        Choice list for use in forms.
-    dict[str, str]
-        Lookup mapping codes to names.
-    """
-
-    choice_list = [("", "--")]
-    lookup = {}
-    if filename is not None:
-        with open(filename, "r") as fh:
-            data = json.load(fh)
-
-            choice_list += [(x["code"], x["name"]) for x in data.get("data", [])]
-            choice_list.sort(key=lambda x: x[1])
-
-            lookup = {x["code"]: x["name"] for x in data.get("data", [])}
-
-    lookup[""] = ""
-
-    return choice_list, lookup
 
 
 PreFlightStatus = namedtuple("PreFlightStatus", ["not_okay_to_continue", "okay_to_continue", "redirect"])
@@ -77,17 +43,3 @@ def preflight_checks(request: HttpRequest, check_onboarding: bool = True) -> Pre
         )
 
     return PreFlightStatus(not_okay_to_continue=False, okay_to_continue=True, redirect=None)
-
-
-def get_version_from_pyproject(filename: str) -> str:
-    try:
-        fh = open(filename, "rb")
-        data = tomllib.load(fh)
-        if "project" not in data:
-            raise RuntimeError("Cannot understand pyproject.toml structure")
-        if "version" not in data["project"]:
-            raise RuntimeError("Cannot understand pyproject.toml structure")
-        return data["project"]["version"]
-    except Exception as exc:
-        app_logger.error("Cannot retrieve software version from pyproject.toml")
-        raise exc

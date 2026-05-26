@@ -8,7 +8,7 @@ from urllib.parse import parse_qs, urlparse
 import requests
 import responses
 from iati_account_web.account.models import IATIUser
-from iati_account_web.settings import COUNTRY_CODE_LOOKUP
+from iati_account_web.constants import COUNTRY_CODE_LOOKUP
 
 
 class IatiInfrastructureMock:

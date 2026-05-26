@@ -15,10 +15,8 @@ import secrets
 from pathlib import Path
 
 import environ
-import pytz
 from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
-from iati_account_web.helpers import _codelist_helper, get_version_from_pyproject
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,20 +48,11 @@ env = environ.Env(
     CRM_BASE_URL=(str, None),
     CRM_CLIENT_ID=(str, None),
     CRM_CLIENT_SECRET=(str, None),
-    COUNTRY_CODELIST_JSON=(str, None),
-    ORGANISATION_TYPE_CODELIST_JSON=(str, None),
-    REGION_CODELIST_JSON=(str, None),
-    LICENCE_JSON=(str, None),
     REGISTER_YOUR_DATA_BASE_URL=(str, None),
     REGISTER_YOUR_DATA_ALLOW_REDIRECTS=(bool, False),
     REGISTER_YOUR_DATA_STRIP_AUTH_CHECK=(bool, False),
     REGISTER_YOUR_DATA_DISCOVERABLE_REPORTING_ORGS_PAGE_SIZE=(int, 500),
     STATIC_ROOT=(str, None),
-    POSTGRES_NAME=(str, None),
-    POSTGRES_USER=(str, None),
-    POSTGRES_PASSWORD=(str, None),
-    POSTGRES_HOST=(str, None),
-    POSTGRES_PORT=(str, None),
     ALLOWED_HOSTS=(list, []),
     SERVE_PROM_APP_METRICS=(bool, False),
     ENV_FILE=(str, None),
@@ -72,7 +61,7 @@ env = environ.Env(
 if env("ENV_FILE") is not None:
     environ.Env.read_env(os.path.join(BASE_DIR, env("ENV_FILE")))
 
-IATI_ACCOUNT_VERSION = get_version_from_pyproject(os.path.join(BASE_DIR, "pyproject.toml"))
+PYPROJECT_TOML_PATH = os.path.join(BASE_DIR, "pyproject.toml")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 SECRET_KEY = env("SECRET_KEY")
@@ -150,6 +139,12 @@ LOGIN_REDIRECT_URL = reverse_lazy("post-login")
 LOGOUT_REDIRECT_URL = "/"
 OIDC_OP_LOGOUT_URL_METHOD = "iati_account_web.oidc.logout_uri"
 AUTHENTICATION_BACKENDS = ("iati_account_web.oidc.IATIAccountOIDCAuthBackend",)
+SERVER_URL_BASE = env("SERVER_URL_BASE")
+
+IDENTITY_SERVICE_BASE_URL = env("IDENTITY_SERVICE_BASE_URL")
+IDENTITY_SERVICE_CLIENT_ID = env("IDENTITY_SERVICE_CLIENT_ID")
+IDENTITY_SERVICE_CLIENT_SECRET = env("IDENTITY_SERVICE_CLIENT_SECRET")
+IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA = env("IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA")
 
 SECURE_SSL_REDIRECT = False
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -159,6 +154,24 @@ SESSION_COOKIE_AGE = env("OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS")
 
 ALLOWED_HOSTS: list[str] = env("ALLOWED_HOSTS")
 
+# CRM settings
+CRM_BASE_URL = env("CRM_BASE_URL")
+CRM_CLIENT_ID = env("CRM_CLIENT_ID")
+CRM_CLIENT_SECRET = env("CRM_CLIENT_SECRET")
+
+# Register Your Data settings
+REGISTER_YOUR_DATA_ALLOW_REDIRECTS = env("REGISTER_YOUR_DATA_ALLOW_REDIRECTS")
+REGISTER_YOUR_DATA_BASE_URL = env("REGISTER_YOUR_DATA_BASE_URL")
+REGISTER_YOUR_DATA_DISCOVERABLE_REPORTING_ORGS_PAGE_SIZE = env(
+    "REGISTER_YOUR_DATA_DISCOVERABLE_REPORTING_ORGS_PAGE_SIZE"
+)
+REGISTER_YOUR_DATA_STRIP_AUTH_CHECK = env("REGISTER_YOUR_DATA_STRIP_AUTH_CHECK")
+
+# Codelist and licence file paths.
+COUNTRY_CODELIST_PATH = os.path.join(BASE_DIR, "Country.json")
+ORGANISATION_TYPE_CODELIST_PATH = os.path.join(BASE_DIR, "OrganisationType.json")
+REGION_CODELIST_PATH = os.path.join(BASE_DIR, "Region.json")
+LICENCE_PATH = os.path.join(BASE_DIR, "Licence.json")
 
 # Application definition
 
@@ -221,19 +234,8 @@ WSGI_APPLICATION = "iati_account_web.wsgi.application"
 
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
-if env("POSTGRES_NAME"):
-    DATABASES = {
-        "default": {
-            "ENGINE": "django_prometheus.db.backends.postgresql",
-            "NAME": env("POSTGRES_NAME"),
-            "USER": env("POSTGRES_USER"),
-            "PASSWORD": env("POSTGRES_PASSWORD"),
-            "HOST": env("POSTGRES_HOST"),
-            "PORT": env("POSTGRES_PORT"),
-        }
-    }
+if "DATABASE_URL" in env:
+    DATABASES = {"default": env.db("DATABASE_URL", engine="django_prometheus.db.backends.postgresql")}
 else:
     DATABASES = {
         "default": {
@@ -244,6 +246,7 @@ else:
 
 # Prom settings.
 PROMETHEUS_METRIC_NAMESPACE = "iatiaccount"
+SERVE_PROM_APP_METRICS = env("SERVE_PROM_APP_METRICS")
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -309,42 +312,3 @@ IDENTITY_SERVICE_SCIM2_SCOPES = " ".join(
         "internal_role_mgt_users_update",
     ]
 )
-
-# Format codelists into lists and lookups.
-# NOTE: for the moment, this does not worry about the activity state of
-# the codelist entry.
-COUNTRY_LIST, COUNTRY_CODE_LOOKUP = _codelist_helper(env("COUNTRY_CODELIST_JSON"))
-ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = _codelist_helper(env("ORGANISATION_TYPE_CODELIST_JSON"))
-REGION_LIST, REGION_LOOKUP = _codelist_helper(env("REGION_CODELIST_JSON"))
-LICENCE_LIST, LICENCE_LOOKUP = _codelist_helper(env("LICENCE_JSON"))
-
-# Format a list of timezones using the internal list in pytz.  These
-# are used to allow end users to select their timezone.
-TIMEZONE_LIST = [("", "--")]
-for tz in pytz.common_timezones:
-    tz_parts = tz.replace("_", " ").split("/")
-    if len(tz_parts) == 1:
-        TIMEZONE_LIST.append((tz, f"{tz}"))
-    elif len(tz_parts) == 2:
-        region, city = tz_parts[0], tz_parts[1]
-        TIMEZONE_LIST.append((tz, f"{city} - {region}"))
-    elif len(tz_parts) == 3:
-        region, country, city = tz_parts[0], tz_parts[1], tz_parts[2]
-        TIMEZONE_LIST.append((tz, f"{city} - {country}/{region}"))
-    else:
-        raise ValueError()
-
-# Additional choice fields
-REPORTING_SOURCE_TYPE_LIST = [("primary_source", "Primary Source"), ("secondary_source", "Secondary Source")]
-REPORTING_SOURCE_TYPE_LOOKUP = {x[0]: x[1] for x in REPORTING_SOURCE_TYPE_LIST}
-VISIBILITY_LIST = [("private", "Private"), ("public", "Public")]
-VISIBILITY_LOOKUP = {x[0]: x[1] for x in VISIBILITY_LIST}
-USER_ROLE_LIST = [
-    ("admin", "Admin"),
-    ("editor", "Editor"),
-    ("contributor", "Contributor"),
-    ("provider_admin", "Provider Admin"),
-    ("contributor_pending", "Pending"),
-    ("super_admin", "Superadmin"),
-]
-USER_ROLE_LOOKUP = {x[0]: x[1] for x in USER_ROLE_LIST}

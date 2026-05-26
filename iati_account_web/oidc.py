@@ -1,9 +1,9 @@
 import urllib.parse
 
+from django.conf import settings
 from django.http import HttpRequest
 from django.shortcuts import reverse
 from iati_account_web.account.models import IATIUser
-from iati_account_web.settings import OIDC_RP_CLIENT_ID, env
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 
 
@@ -46,11 +46,11 @@ def logout_uri(request: HttpRequest) -> str:
 
     params = urllib.parse.urlencode(
         {
-            "client_id": OIDC_RP_CLIENT_ID,
-            "post_logout_redirect_uri": urllib.parse.urljoin(env("SERVER_URL_BASE"), reverse("logout")),
+            "client_id": settings.OIDC_RP_CLIENT_ID,
+            "post_logout_redirect_uri": urllib.parse.urljoin(settings.SERVER_URL_BASE, reverse("logout")),
         }
     )
-    return f"{env("IDENTITY_SERVICE_BASE_URL")}/oidc/logout?" + params
+    return f"{settings.IDENTITY_SERVICE_BASE_URL}/oidc/logout?" + params
 
 
 class IATIAccountOIDCAuthBackend(OIDCAuthenticationBackend):  # type: ignore[misc]

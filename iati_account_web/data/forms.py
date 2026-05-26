@@ -4,8 +4,8 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import formset_factory
 from django.utils.translation import gettext_lazy as _
+from iati_account_web.constants import USER_ROLE_LOOKUP
 from iati_account_web.data.models import Dataset, ReportingOrganisation, UserAndRole
-from iati_account_web.settings import USER_ROLE_LOOKUP
 
 ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-z0-9-_]+$")
 
@@ -225,7 +225,7 @@ class OrgUserForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["role"].choices = [
-            choice for choice in self.fields["role"].choices if choice[0] != "provider_admin"
+            choice for choice in self.fields["role"].choices if choice[0] not in ["provider_admin", "super_admin"]
         ]
 
     @property

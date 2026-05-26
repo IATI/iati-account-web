@@ -2,6 +2,7 @@ import logging
 from json import JSONDecodeError
 from urllib.parse import urljoin, urlparse
 
+from django.conf import settings
 from iati_account_web.exceptions import (
     RegisterYourData404,
     RegisterYourDataBadRequest,
@@ -11,7 +12,6 @@ from iati_account_web.exceptions import (
     RegisterYourDataResponseParsingIssue,
     RegisterYourDataServerIssue,
 )
-from iati_account_web.settings import env
 from requests import HTTPError, Response, Session, Timeout
 
 app_logger = logging.getLogger("iati_account")
@@ -34,10 +34,10 @@ class RegisterYourDataSession(Session):
         self.headers["Authorization"] = f"Bearer {access_token}"
         if allow_redirects:
             app_logger.info("Initialised RYD Session with allow_redirects, but this functionality is deprecated.")
-        self._allow_redirects = env("REGISTER_YOUR_DATA_ALLOW_REDIRECTS")
-        if env("REGISTER_YOUR_DATA_STRIP_AUTH_CHECK"):
+        self._allow_redirects = settings.REGISTER_YOUR_DATA_ALLOW_REDIRECTS
+        if settings.REGISTER_YOUR_DATA_STRIP_AUTH_CHECK:
             self.should_strip_auth = self._strip_auth_check
-        self._base_url = env("REGISTER_YOUR_DATA_BASE_URL").rstrip("/") + "/"
+        self._base_url = settings.REGISTER_YOUR_DATA_BASE_URL.rstrip("/") + "/"
 
     @staticmethod
     def _strip_auth_check(old_url: str, new_url: str) -> bool:
