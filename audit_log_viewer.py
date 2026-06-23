@@ -32,7 +32,10 @@ def main():
         fh = sys.stdin
 
     for line in fh:
-        print(decode_and_decrypt_log_entry(line, private_key))
+        try:
+            print(decode_and_decrypt_log_entry(line, private_key))
+        except ValueError as e:
+            print(f"***** ERROR: Error in audit_log_viewer.py decrypting log file line: {str(e)}")
 
 
 if __name__ == "__main__":
