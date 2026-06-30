@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.19 - 2026-06-29
+
+### Fixed
+
+- Bug where an organisation's provider admin users were being shown to superadmins, which was then causing the form to fail validation because the full details for provider admins weren't being populated in the form.
+
 ## 0.4.18 - 2026-05-19
 
 ### Changes
