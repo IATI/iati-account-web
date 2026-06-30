@@ -240,6 +240,7 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
                         "oid": reporting_org.oid,
                     }
                     for x in reporting_org_user_data
+                    if x["role"] != "provider_admin"
                 ],
             )
 
@@ -341,6 +342,7 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
             initial=[
                 {"uid": x["id"], "name": x["name"], "email": x["email"], "role": x["role"], "oid": reporting_org.oid}
                 for x in reporting_org_user_data
+                if x["role"] != "provider_admin"
             ],
         )
 
