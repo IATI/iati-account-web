@@ -25,17 +25,31 @@ Running this application locally and opening `https://localhost:8443` allows the
 
 ### Running locally
 
-Configuration is through environment variables.  The application will get environment variables from the local environment, or through a ".env" file that is specified through the environment variable ENV_FILE.
+Configuration is through environment variables.  The application will get environment variables from the local environment, or through a `.env` file that is specified through the environment variable ENV_FILE.  The provided `.env.example` and `.env.test` should form the basis for setting up a `.env` file for development purposes.
 
-To run, the application needs a database. When running locally it will (create) and
-use a new SQLite database automatically by default, but migrations need to be
-run before starting the server:
+#### Database requirements
+
+To run, the application needs a database.  This is configured using the `DATABASE_URL` environment variable.  If this is empty IATI Account will default to creating and using a new local SQLite database, but migrations need to be run before starting the server:
 
 ```bash
 ENV_FILE=.env.dev python manage.py migrate
 ```
 
-Running this application locally and logging in to Asgardeo should not be done under HTTP as client secrets and user details will be passed via easily intercepted communications.  Local development should be done using SSL/TLS.
+IATI Account can also be run and tested locally using PostgreSQL running in a container.  For example, start a container
+
+```bash
+docker run --name iatiaccountdb -e POSTGRES_PASSWORD=password -e POSTGRES_USER=iatiaccount -e POSTGRES_DB=iatiaccount -p 5432:5432 postgres -d
+```
+
+Then add the connection string to your `.env` file:
+
+```
+DATABASE_URL=postgres://iatiaccount:password@localhost:5432/iatiaccount
+```
+
+#### SSL/TLS
+
+Running this application locally and logging in to Asgardeo should **not be done under HTTP** as client secrets and user details will be passed via easily intercepted communications.  Local development should be done using SSL/TLS.
 
 The development dependencies include `django_extensions` and `werkzeug` that together with using `runserver_plus` can launch a local server with SSL.  To do this, we first need to generate a certificate and private key.
 
@@ -57,6 +71,8 @@ It will be accessible on: [https://localhost:8443](https://localhost:8443)
 There is a bash script that automates this:
 ```
 ENV_FILE=.env.dev ./runserver.sh
+```
+
 
 ### Automated tests
 
@@ -65,6 +81,44 @@ There are some automated tests that run entirely in Django without the need for 
 ```bash
 ENV_FILE=.env.test python manage.py test
 ```
+
+### Environment variables
+| Variable                    | Description                                                  |
+| --------------------------- | ------------------------------------------------------------ |
+| `ALLOWED_HOSTS`             | Comma separated list of allowed hosts. |
+| `APP_LOG_FILE`              | Path to the application log file. |
+| `AUDIT_LOG_FILE`            | Path to the audit log file. |
+| `AUDIT_LOG_PUBLIC_KEY_FILE` | Path to a public key file used to encrypt the audit log.  This can be empty, in which case the audit log will be unencrypted. |
+| `APP_LOG_LEVEL`             | Logging level for the application log. |
+| `AUDIT_LOG_LEVEL`           | Logging level for the audit log. |
+| `DJANGO_LOG_LEVEL`          | Logging level for the Django log. |
+| `OIDC_LOG_LEVEL`            | Logging level for the OIDC plugin log. |
+| `REQUESTS_LOG_LEVEL`        | Logging level for the request library log. |
+| `CRM_BASE_URL`              | Base URL for the CRM. |
+| `CRM_CLIENT_ID`             | Client ID for the CRM connection. |
+| `CRM_CLIENT_SECRET`         | Client secret for the CRM connection. |
+| `DEBUG`                     | Debug setting for Django. |
+| `ENV_FILE`                  | Path to a .env file to load. |
+| `IDENTITY_SERVICE_BASE_URL` | Base URL for the identity service (used to backend account communication). |
+| `IDENTITY_SERVICE_CLIENT_ID` | Client ID for the identity service connection. |
+| `IDENTITY_SERVICE_CLIENT_SECRET` | Client secret for the identity service connection. |
+| `IDENTITY_SERVICE_ROLE_ID_IATI_REGISTER_YOUR_DATA` | UUID for the `iati_register_your_data` role in the identity service. |
+| `OIDC_OP_AUTHORIZATION_ENDPOINT` | Identity service authorisation endpoint URL. |
+| `OIDC_OP_JWKS_ENDPOINT`     | Identity service JWKS endpoint URL. |
+| `OIDC_OP_TOKEN_ENDPOINT`    | Identity service token endpoint URL. |
+| `OIDC_OP_USER_ENDPOINT`     | Identity service user info endpoint URL. |
+| `OIDC_RENEW_ID_TOKEN_EXPIRY_SECONDS` | Duration after which the ID token expires and needs to be obtained again by logging into the identity server. |
+| `OIDC_RP_CLIENT_ID`         | Client ID for the identity service (used for end user OIDC login). |
+| `OIDC_RP_CLIENT_SECRET`     | Client secret for the identity service (used for end user OIDC login). |
+| `DATABASE_URL`              | Connection string for the PSQL database. |
+| `REGISTER_YOUR_DATA_ALLOW_REDIRECTS` | Whether to allow redirects when communicating with Register Your Data. |
+| `REGISTER_YOUR_DATA_BASE_URL` | Base URL for the Register Your Data API. |
+| `REGISTER_YOUR_DATA_DISCOVERABLE_REPORTING_ORGS_PAGE_SIZE` | Page size when fetching discoverable reporting orgs. |
+| `REGISTER_YOUR_DATA_STRIP_AUTH_CHECK` | Strip authorisation information during redirects when communicating with Register Your Data. |
+| `SECRET_KEY`                | Django secret key. |
+| `SERVE_PROM_APP_METRICS`    | Flag to start serving prometheus metrics. |
+| `SERVER_URL_BASE`           | Base URL for the application. |
+| `STATIC_ROOT`               | Location for static files. |
 
 ### Adding new dependencies
 

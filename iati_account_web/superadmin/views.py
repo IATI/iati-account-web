@@ -3,12 +3,12 @@ import logging
 from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.template import loader
+from iati_account_web.constants import COUNTRY_LIST
 from iati_account_web.helpers import preflight_checks
 from iati_account_web.ryd_handling import RegisterYourDataSession
 from iati_account_web.ryd_handling.reporting_orgs import (
     get_all_discoverable_reporting_orgs,
 )
-from iati_account_web.settings import COUNTRY_LIST
 
 audit_logger = logging.getLogger("audit")
 app_logger = logging.getLogger("iati_account")

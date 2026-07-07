@@ -1,5 +1,5 @@
 from django import template
-from iati_account_web.settings import COUNTRY_CODE_LOOKUP
+from iati_account_web.constants import COUNTRY_CODE_LOOKUP
 
 register = template.Library()
 

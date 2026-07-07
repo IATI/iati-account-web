@@ -7,6 +7,7 @@ from django.core.exceptions import SuspiciousOperation
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template import loader
+from iati_account_web.constants import COUNTRY_LIST, USER_ROLE_LOOKUP
 from iati_account_web.data.forms import (
     CreateDatasetForm,
     CreateOrganisationForm,
@@ -26,7 +27,6 @@ from iati_account_web.ryd_handling.reporting_orgs import (
     parse_dataset_list_to_objects,
     parse_org_list_to_objects,
 )
-from iati_account_web.settings import COUNTRY_LIST, USER_ROLE_LOOKUP
 
 audit_logger = logging.getLogger("audit")
 app_logger = logging.getLogger("iati_account")
@@ -240,6 +240,7 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
                         "oid": reporting_org.oid,
                     }
                     for x in reporting_org_user_data
+                    if x["role"] != "provider_admin"
                 ],
             )
 
@@ -341,6 +342,7 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
             initial=[
                 {"uid": x["id"], "name": x["name"], "email": x["email"], "role": x["role"], "oid": reporting_org.oid}
                 for x in reporting_org_user_data
+                if x["role"] != "provider_admin"
             ],
         )
 

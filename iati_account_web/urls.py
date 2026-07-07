@@ -15,9 +15,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
 from django.conf.urls.i18n import i18n_patterns
 from django.urls import include, path
-from iati_account_web.settings import env
 
 from .views import logout, post_login, provision_account
 
@@ -27,7 +27,7 @@ urlpatterns = [
     path("identity/logout", logout, name="logout"),
     path("identity/provisioning", provision_account, name="provisioning"),
 ]
-if env("SERVE_PROM_APP_METRICS"):
+if settings.SERVE_PROM_APP_METRICS:
     urlpatterns.append(path("", include("django_prometheus.urls")))
 
 urlpatterns += i18n_patterns(
