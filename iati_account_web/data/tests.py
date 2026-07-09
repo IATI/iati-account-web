@@ -2,11 +2,13 @@ import json
 import uuid
 
 from django.test import TestCase
-from iati_account_web.data.models import Dataset
+from iati_account_web.data.models import Dataset, Tool
+from iati_account_web.exceptions import RegisterYourDataResponseParsingIssue
 from iati_account_web.ryd_handling.reporting_orgs import (
     parse_dataset_list_to_objects,
     parse_discoverable_org_list_to_objects,
     parse_org_list_to_objects,
+    parse_tool_list_to_objects,
     parse_user_list_to_objects,
 )
 
@@ -131,3 +133,36 @@ class DatasetModelTestCase(TestCase):
         self.assertEqual(datasets[0].human_readable_name, "Amundsen BA Activity File 1")
         self.assertEqual(datasets[1].human_readable_name, "Amundsen BA Activity File 2")
         self.assertEqual(datasets[2].human_readable_name, "Amundsen BA Organisation File")
+
+
+class ToolModelTestCase(TestCase):
+    def test_can_parse_one(self):
+        test_data = {
+            "id": "abcd1234-1111-4b1a-9c11-000000000001",
+            "name": "Zephyr Publisher",
+            "provider": "Northgate Systems",
+        }
+        tool = Tool.from_ryd(test_data)
+        self.assertEqual(tool.tool_id, test_data["id"])
+        self.assertEqual(tool.name, test_data["name"])
+        self.assertEqual(tool.provider, test_data["provider"])
+
+    def test_raises_when_required_fields_missing(self):
+        tool_id = "abcd1234-1111-4b1a-9c11-000000000001"
+        with self.assertRaises(RegisterYourDataResponseParsingIssue):
+            Tool.from_ryd({"name": "Zephyr Publisher", "provider": "Northgate Systems"})
+        with self.assertRaises(RegisterYourDataResponseParsingIssue):
+            Tool.from_ryd({"id": tool_id, "provider": "Northgate Systems"})
+        with self.assertRaises(RegisterYourDataResponseParsingIssue):
+            Tool.from_ryd({"id": tool_id, "name": "Zephyr Publisher"})
+
+    def test_can_parse_from_json_response(self):
+        fh = open("iati_account_web/test_artefacts/ryd_responses/reporting_orgs/get_org_tools_200.json", "r")
+        api_response_data = json.load(fh)["data"]
+        fh.close()
+        tools = parse_tool_list_to_objects(api_response_data, sort_list=True)
+
+        self.assertEqual(len(tools), 3)
+        self.assertEqual(tools[0].name, "Aurora Registry Tool")
+        self.assertEqual(tools[1].name, "Meridian Data Portal")
+        self.assertEqual(tools[2].name, "Zephyr Publisher")

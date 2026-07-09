@@ -1,5 +1,11 @@
 from django.conf import settings
-from iati_account_web.data.models import Dataset, DiscoverableReportingOrganisation, ReportingOrganisation, UserAndRole
+from iati_account_web.data.models import (
+    Dataset,
+    DiscoverableReportingOrganisation,
+    ReportingOrganisation,
+    Tool,
+    UserAndRole,
+)
 from iati_account_web.ryd_handling import RegisterYourDataSession
 
 
@@ -89,6 +95,26 @@ def parse_dataset_list_to_objects(datasets: list[dict], sort_list: bool = False)
     result = [Dataset.from_ryd(x) for x in datasets]
     if sort_list:
         result.sort(key=lambda x: x.human_readable_name)
+    return result
+
+
+def parse_tool_list_to_objects(tools: list[dict], sort_list: bool = False) -> list[Tool]:
+    """Parse a list of tools into Tool objects
+
+    Parameters
+    ----------
+    tools : list[dict]
+        List of tool dictionaries as obtained from RYD.
+    sort_list : bool, optional
+        If true, the list is sorted by name, by default False
+
+    Returns
+    -------
+    list[Tool]
+    """
+    result = [Tool.from_ryd(x) for x in tools]
+    if sort_list:
+        result.sort(key=lambda x: x.name)
     return result
 
 

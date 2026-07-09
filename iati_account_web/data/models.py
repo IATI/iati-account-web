@@ -28,7 +28,9 @@ class UserAndRole(models.Model):
     super_admin = models.BooleanField(default=False)
 
     @classmethod
-    def from_ryd(cls, role_string: str, uid: str, oid: str, email: str | None = None, name: str | None = None) -> UserAndRole:
+    def from_ryd(
+        cls, role_string: str, uid: str, oid: str, email: str | None = None, name: str | None = None
+    ) -> UserAndRole:
         if role_string.lower() == "contributor_pending":
             return cls(role="contributor_pending", pending=True, uid=uid, oid=oid, email=email, name=name)
         elif role_string.lower() == "provider_admin":
@@ -289,3 +291,43 @@ class Dataset(models.Model):
             "url": _get_field("url"),
             "licence_id": _get_field("licence_id"),
         }
+
+
+class Tool(models.Model):
+    class Meta:
+        managed = False
+
+    tool_id = models.UUIDField(null=False)
+    name = models.CharField(null=False)
+    provider = models.CharField(null=False)
+
+    @classmethod
+    def from_ryd(cls, tool_dict: dict) -> Tool:
+        """Parse a dictionary of tool data from RYD and generate a new Tool object
+
+        Parameters
+        ----------
+        tool_dict : dict
+            Dictionary from RYD response.
+
+        Returns
+        -------
+        Tool
+
+        Raises
+        ------
+        RegisterYourDataResponseParsingIssue
+            If there are issues in the parsing of the dictionary.
+        """
+
+        if "id" not in tool_dict:
+            raise RegisterYourDataResponseParsingIssue("Tool is missing its UUID")
+        if not tool_dict.get("name"):
+            raise RegisterYourDataResponseParsingIssue(f"Tool {tool_dict["id"]} is missing its name")
+        if not tool_dict.get("provider"):
+            raise RegisterYourDataResponseParsingIssue(f"Tool {tool_dict["id"]} is missing its provider")
+        return cls(
+            tool_id=tool_dict["id"],
+            name=tool_dict["name"],
+            provider=tool_dict["provider"],
+        )
