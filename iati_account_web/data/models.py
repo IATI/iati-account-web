@@ -28,7 +28,7 @@ class UserAndRole(models.Model):
     super_admin = models.BooleanField(default=False)
 
     @classmethod
-    def from_ryd(cls, role_string: str, uid: str, oid: str, email: str = None, name: str = None) -> UserAndRole:
+    def from_ryd(cls, role_string: str, uid: str, oid: str, email: str | None = None, name: str | None = None) -> UserAndRole:
         if role_string.lower() == "contributor_pending":
             return cls(role="contributor_pending", pending=True, uid=uid, oid=oid, email=email, name=name)
         elif role_string.lower() == "provider_admin":
@@ -259,7 +259,7 @@ class Dataset(models.Model):
         )
 
     @property
-    def last_update_date(self) -> datetime:
+    def last_update_date(self) -> datetime | None:
         if self.last_metadata_update_date or self.last_url_update_date:
             update_dates = [
                 (
@@ -278,7 +278,7 @@ class Dataset(models.Model):
         return None
 
     def get_ryd_post_payload(self):
-        def _get_field(field_name: str) -> str:
+        def _get_field(field_name: str) -> str | None:
             return self.__getattribute__(field_name) if self.__getattribute__(field_name) else None
 
         return {
