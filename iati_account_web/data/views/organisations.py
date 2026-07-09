@@ -139,7 +139,7 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
     # Parse user data into a set of UserAndRole objects.
     users_and_roles = {
         UUID(x["id"]): UserAndRole.from_ryd(
-            role_string=x["role"], uid=x["id"], oid=oid, name=x["name"], email=["email"]
+            role_string=x["role"], uid=x["id"], oid=oid, name=x["name"], email=x["email"]
         )
         for x in reporting_org_user_data
     }
