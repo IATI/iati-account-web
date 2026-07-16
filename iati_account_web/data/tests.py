@@ -143,7 +143,7 @@ class ToolModelTestCase(TestCase):
             "provider": "Northgate Systems",
         }
         tool = Tool.from_ryd(test_data)
-        self.assertEqual(tool.tool_id, test_data["id"])
+        self.assertEqual(tool.tool_id, uuid.UUID(test_data["id"]))
         self.assertEqual(tool.name, test_data["name"])
         self.assertEqual(tool.provider, test_data["provider"])
 
