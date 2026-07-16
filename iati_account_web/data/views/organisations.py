@@ -10,13 +10,15 @@ from django.shortcuts import redirect
 from django.template import loader
 from iati_account_web.constants import COUNTRY_LIST, USER_ROLE_LOOKUP
 from iati_account_web.data.forms import (
+    AddToolAuthorisationForm,
     CreateOrganisationForm,
     JoinOrganisationForm,
     OrganisationDeleteForm,
     OrganisationDetailsForm,
     OrgUserFormSet,
+    ToolFormSet,
 )
-from iati_account_web.data.models import ReportingOrganisation, UserAndRole
+from iati_account_web.data.models import ReportingOrganisation, Tool, UserAndRole
 from iati_account_web.exceptions import RegisterYourDataFieldValidationError, RegisterYourDataRecordAlreadyExists
 from iati_account_web.helpers import preflight_checks
 from iati_account_web.ryd_handling import RegisterYourDataSession
@@ -123,6 +125,8 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
     try:
         reporting_org_data = session.get(f"/reporting-orgs/{oid}").get("data", {})
         reporting_org_user_data = session.get(f"/reporting-orgs/{oid}/users").get("data", {})
+        reporting_org_tool_data = session.get(f"/reporting-orgs/{oid}/tools").get("data", {})
+        all_third_party_tools_data = session.get("/tools").get("data", [])
     except Exception as exc:
         audit_logger.error(
             f"Could not access RYD for user {request.user.log_label} "
@@ -135,6 +139,14 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
     this_user = UserAndRole.from_ryd(
         reporting_org_data["user_role"], request.user.registry_id, reporting_org_data["id"], None, None
     )
+
+    org_authorised_tools: list[Tool] = [Tool.from_ryd(t) for t in reporting_org_tool_data]
+    org_authorised_tools_by_id: dict[UUID, Tool] = {t.tool_id: t for t in org_authorised_tools}
+
+    # Tools a user can newly authorise = the full RYD /tools catalogue minus
+    # those already authorised for this org.
+    all_tools_by_id: dict[UUID, Tool] = {UUID(str(t["id"])): Tool.from_ryd(t) for t in all_third_party_tools_data}
+    addable_tools: list[Tool] = [t for t in all_tools_by_id.values() if t.tool_id not in org_authorised_tools_by_id]
 
     # Parse user data into a set of UserAndRole objects.
     users_and_roles = {
@@ -151,9 +163,11 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
     )
 
     # Handle form submission.  We can receive submissions from either the organisation
-    # change form, or the user role form.
+    # change form, the manage users form, or the manage tools form
     form = None
     user_formset = None
+    tool_formset = None
+    add_tool_form = None
     if request.POST:
 
         if "saveOrgChanges" in request.POST:
@@ -197,6 +211,7 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
             # from RYD but not in the form as this could occur in normal operation.
             user_formset = OrgUserFormSet(
                 request.POST,
+                prefix="users",
                 initial=[
                     {
                         "uid": x["id"],
@@ -297,6 +312,107 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
 
             else:
                 raise SuspiciousOperation("User formset for changing user roles in an organisation is invalid")
+
+        elif "saveToolChanges" in request.POST:
+            # The revoke-tool-authorisations form was submitted.  Build and
+            # validate the formset, then revoke authorisation for each tool
+            # marked for removal. Compare against the authoritative tool list
+            # re-fetched from RYD (above) and reject any submitted tool that is
+            # not in it.
+            tool_formset = ToolFormSet(
+                request.POST,
+                prefix="tools",
+                initial=[{"tool_id": t.tool_id} for t in org_authorised_tools],
+            )
+
+            # Look tools up by id from the authoritative server-side list so
+            # both the authorisation guard and the user-facing name come from
+            # trusted data
+
+            if tool_formset.is_valid():
+                tool_revoked = False
+                for this_tool_form in tool_formset:
+                    form_tool_id: UUID = this_tool_form.cleaned_data["tool_id"]
+
+                    if this_tool_form.cleaned_data["DELETE"]:
+                        if form_tool_id not in org_authorised_tools_by_id:
+                            audit_logger.error(
+                                f"User {request.user.log_label} tried to revoke authorisation for "
+                                f"tool {form_tool_id} but it is not in the list of authorised tools for "
+                                f"organisation {oid}"
+                            )
+                            raise SuspiciousOperation
+
+                        tool_being_revoked: Tool = all_tools_by_id[form_tool_id]
+
+                        try:
+                            session.delete(f"/reporting-orgs/{oid}/tools/{str(form_tool_id)}")
+                            tool_revoked = True
+                            audit_logger.info(
+                                f"User {request.user.log_label} revoked authorisation for tool "
+                                f"{tool_being_revoked.name} (tool id: {tool_being_revoked.tool_id}) for "
+                                f"organisation {oid}"
+                            )
+                            messages.add_message(
+                                request,
+                                messages.SUCCESS,
+                                f"You have successfully revoked authorisation for {tool_being_revoked.name}.",
+                            )
+                        except Exception as exc:
+                            audit_logger.error(
+                                f"Could not revoke authorisation for tool {tool_being_revoked.name} (tool id: "
+                                f"{tool_being_revoked.tool_id}) in request by {request.user.log_label} with error "
+                                f"{exc}"
+                            )
+                            messages.add_message(
+                                request,
+                                messages.ERROR,
+                                f"There was an error in revoking authorisation for {tool_being_revoked.name}. "
+                                "Please try again later, and if the error persists please contact IATI Support.",
+                            )
+
+                # If we successfully revoked anything, redirect back to refresh the re-fetched tool list.
+                if tool_revoked:
+                    return redirect("data:reporting-org-detail", oid=oid)
+            else:
+                raise SuspiciousOperation("Tool formset for revoking tool authorisations is invalid")
+
+        elif "addToolAuthorisation" in request.POST:
+            # The "authorise a new tool" form was submitted.  Rebuild it with the same addable
+            # tools so the ChoiceField validates the submission against the server-side list.
+            add_tool_form = AddToolAuthorisationForm(request.POST, available_tools=addable_tools)
+            if add_tool_form.is_valid():
+                chosen_tool = {str(t.tool_id): t for t in addable_tools}[add_tool_form.cleaned_data["tool_id"]]
+
+                try:
+                    session.post(
+                        f"/reporting-orgs/{oid}/tools",
+                        json={"tid": str(chosen_tool.tool_id)},
+                    )
+                    audit_logger.info(
+                        f"User {request.user.log_label} authorised tool {chosen_tool.name} "
+                        f"(tool id: {chosen_tool.tool_id}) for organisation {oid}"
+                    )
+                    messages.add_message(
+                        request,
+                        messages.SUCCESS,
+                        f"You have successfully authorised {chosen_tool.name}.",
+                    )
+                except Exception as exc:
+                    audit_logger.error(
+                        f"Could not authorise tool {chosen_tool.name} (tool id: {chosen_tool.tool_id} "
+                        f"in request by {request.user.log_label} with error {exc}"
+                    )
+                    messages.add_message(
+                        request,
+                        messages.ERROR,
+                        f"There was an error in authorising {chosen_tool.name}. "
+                        "Please try again later, and if the error persists please contact IATI Support.",
+                    )
+
+                return redirect("data:reporting-org-detail", oid=oid)
+            # If invalid (nothing chosen, or a tool not in the addable list), fall through to
+            # re-render the page with the bound form so its errors are shown.
         else:
             audit_logger.error("Could not tell which form was submitted")
             raise SuspiciousOperation
@@ -305,12 +421,25 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
         form = OrganisationDetailsForm(instance=reporting_org)
     if user_formset is None:
         user_formset = OrgUserFormSet(
+            prefix="users",
             initial=[
                 {"uid": x["id"], "name": x["name"], "email": x["email"], "role": x["role"], "oid": reporting_org.oid}
                 for x in reporting_org_user_data
                 if x["role"] != "provider_admin"
             ],
         )
+    if tool_formset is None:
+        tool_formset = ToolFormSet(
+            prefix="tools",
+            initial=[{"tool_id": t.tool_id} for t in org_authorised_tools],
+        )
+    if add_tool_form is None:
+        add_tool_form = AddToolAuthorisationForm(available_tools=addable_tools)
+
+    # Pair each tool sub-form (which carries only the hidden tool_id + the
+    # revoke checkbox) with its server-side Tool object, so the template can
+    # display the name/provider from trusted data
+    tool_rows = list(zip(tool_formset, org_authorised_tools))
 
     # Here we have an organisation change form and we need to set the editability
     # of certain fields depending on the user role.
@@ -334,6 +463,9 @@ def organisation_detail(request: HttpRequest, oid: str) -> HttpResponse:  # noqa
     context = {
         "org_form": form,
         "user_formset": user_formset,
+        "tool_formset": tool_formset,
+        "tool_rows": tool_rows,
+        "add_tool_form": add_tool_form,
         "org": reporting_org,
         "this_user": this_user,
         "show_delete_org_button": True if this_user.role == "admin" or this_user.super_admin else False,

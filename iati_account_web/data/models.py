@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from iati_account_web.constants import (
     COUNTRY_LIST,
@@ -326,8 +327,12 @@ class Tool(models.Model):
             raise RegisterYourDataResponseParsingIssue(f"Tool {tool_dict["id"]} is missing its name")
         if not tool_dict.get("provider"):
             raise RegisterYourDataResponseParsingIssue(f"Tool {tool_dict["id"]} is missing its provider")
-        return cls(
-            tool_id=tool_dict["id"],
-            name=tool_dict["name"],
-            provider=tool_dict["provider"],
-        )
+
+        object = cls(tool_id=tool_dict["id"], name=tool_dict["name"], provider=tool_dict["provider"])
+
+        try:
+            object.full_clean(validate_unique=False, validate_constraints=False)
+        except ValidationError as exc:
+            raise RegisterYourDataResponseParsingIssue(f"Tool data from RYD could not be parsed: {exc}") from exc
+
+        return object

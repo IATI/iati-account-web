@@ -131,7 +131,8 @@ OIDC_RP_SCOPES = (
     "openid email iati_account profile roles ryd "
     "ryd:reporting_org ryd:reporting_org:create ryd:reporting_org:update ryd:reporting_org:delete "
     "ryd:dataset ryd:dataset:update ryd:dataset:delete "
-    "ryd:reporting_org:user ryd:reporting_org:user:update"
+    "ryd:reporting_org:user ryd:reporting_org:user:update "
+    "ryd:reporting_org:tool ryd:reporting_org:tool:update "
 )
 OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_VERIFY_SSL = True

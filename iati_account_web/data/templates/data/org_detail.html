@@ -8,6 +8,7 @@
 <script>
     orgFormHasChanges = false;
     userFormHasChanges = false;
+    toolFormHasChanges = false;
 
     function orgFormChangedAction() {
         orgFormHasChanges = true;
@@ -18,7 +19,7 @@
 
     function discardOrgChangesAction() {
         orgFormHasChanges = false;
-        if (!userFormHasChanges) window.onbeforeunload = null;
+        if (!userFormHasChanges && !toolFormHasChanges) window.onbeforeunload = null;
         document.getElementById("saveOrgChangesButton").style.display = "none";
         document.getElementById("discardOrgChangesButton").style.display = "none";
         document.getElementById("organisationDetailsForm").reset();
@@ -40,7 +41,7 @@
 
     function discardUserChangesAction() {
         userFormHasChanges = false;
-        if (!orgFormHasChanges) window.onbeforeunload = null;
+        if (!orgFormHasChanges && !toolFormHasChanges) window.onbeforeunload = null;
         document.getElementById("userFormActionButtons").style.display = "none";
         document.getElementById("userForm").reset();
     };
@@ -50,6 +51,19 @@
         window.onbeforeunload = function() {return true;};
         userRolesFormChanged = true;
         document.getElementById("userFormActionButtons").style.display = "block";
+    };
+
+    function toolFormChangedAction() {
+        toolFormHasChanges = true;
+        window.onbeforeunload = function() {return true;};
+        document.getElementById("toolFormActionButtons").style.display = "block";
+    };
+
+    function discardToolChangesAction() {
+        toolFormHasChanges = false;
+        if (!orgFormHasChanges && !userFormHasChanges) window.onbeforeunload = null;
+        document.getElementById("toolFormActionButtons").style.display = "none";
+        document.getElementById("toolForm").reset();
     };
 
     function deleteOrganisationCheckInput(org_name) {
@@ -413,6 +427,66 @@ IATI Account: My Data
                 <button id="discardUserChangesButton" class="iati-button" type="button" onclick="discardUserChangesAction()">Discard Changes</button>
             </div>
         </form>
+    </div>
+
+    <div id="thirdPartyToolInformation" class="iati-section iati-section--fill">
+        <h2 class="iati-section__title">Third Party Tool Authorisations</h2>
+        <form method="post" id="toolForm" action="{% url 'data:reporting-org-detail' oid=org.oid %}" onsubmit="window.onbeforeunload = null;" onchange="toolFormChangedAction()">
+            {% csrf_token %}
+            {{ tool_formset.management_form }}
+            <div class="iati-table">
+                <table class="iati-table__table">
+                    <thead>
+                        <tr>
+                            <th>Tool</th>
+                            <th>Provider</th>
+                            <th>Revoke authorisation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tool_form, tool in tool_rows %}
+                        <tr>
+                            <td style="display:none;">{{ tool_form.tool_id }}</td>
+                            <td>{{ tool.name }}</td>
+                            <td>{{ tool.provider }}</td>
+                            <td>{{ tool_form.DELETE }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3">This organisation has not authorised any third party tools.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div id="toolFormActionButtons" class="iati-form__inner" style="display: none;">
+                <button id="saveToolChangesButton" class="iati-form__submit iati-button iati-button--submit" type="submit" name="saveToolChanges">Save Changes</button>
+                <button id="discardToolChangesButton" class="iati-button" type="button" onclick="discardToolChangesAction()">Discard Changes</button>
+            </div>
+        </form>
+        </div>
+
+        <div id="thirdPartyToolAuthoriseNewTool" class="iati-section iati-section--fill">
+        <h3 class="iati-section__title">Authorise a new third party tool</h3>
+        <form method="post" id="addToolForm" action="{% url 'data:reporting-org-detail' oid=org.oid %}" onsubmit="window.onbeforeunload = null;">
+            {% csrf_token %}
+            <div class="iati-form__inner">
+                {% if add_tool_form.tool_id.field.choices %}
+                <div class="iati-form__item">
+                    <label for="{{ add_tool_form.tool_id.id_for_label }}" class="iati-form__label">Tool:</label>
+                    {{ add_tool_form.tool_id }}
+                    <div>
+                        {% if add_tool_form.tool_id.errors %}{% for error in add_tool_form.tool_id.errors %}
+                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                        {% endfor %}{% endif %}
+                    </div>
+                </div>
+                <button id="addToolAuthorisationButton" class="iati-form__submit iati-button iati-button--submit" type="submit" name="addToolAuthorisation">Authorise Tool</button>
+                {% else %}
+                <p>All available tools have already been authorised for this organisation.</p>
+                {% endif %}
+            </div>
+        </form>
     </div><br/>
 
     </article>
@@ -458,6 +532,9 @@ IATI Account: My Data
                 {% endif %}
                 <li class="iati-jump-menu__item">
                     <a class="iati-jump-menu__link" href="#userInformation">View/Edit Users</a>
+                </li>
+                <li class="iati-jump-menu__item">
+                    <a class="iati-jump-menu__link" href="#thirdPartyToolInformation">Third Party Tools</a>
                 </li>
             </ul>
         </nav>
