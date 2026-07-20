@@ -53,16 +53,16 @@
         document.getElementById("userFormActionButtons").style.display = "block";
     };
 
-    function toolFormChangedAction() {
+    function revokeToolFormChangedAction() {
         toolFormHasChanges = true;
         window.onbeforeunload = function() {return true;};
-        document.getElementById("toolFormActionButtons").style.display = "block";
+        document.getElementById("revokeToolFormActionButtons").style.display = "block";
     };
 
-    function discardToolChangesAction() {
+    function discardRevokeToolChangesAction() {
         toolFormHasChanges = false;
         if (!orgFormHasChanges && !userFormHasChanges) window.onbeforeunload = null;
-        document.getElementById("toolFormActionButtons").style.display = "none";
+        document.getElementById("revokeToolFormActionButtons").style.display = "none";
         document.getElementById("toolForm").reset();
     };
 
@@ -431,7 +431,7 @@ IATI Account: My Data
 
     <div id="thirdPartyToolInformation" class="iati-section iati-section--fill">
         <h2 class="iati-section__title">Third Party Tool Authorisations</h2>
-        <form method="post" id="toolForm" action="{% url 'data:reporting-org-detail' oid=org.oid %}" onsubmit="window.onbeforeunload = null;" onchange="toolFormChangedAction()">
+        <form method="post" id="toolForm" action="{% url 'data:revoke-tool' oid=org.oid %}" onsubmit="window.onbeforeunload = null;" onchange="revokeToolFormChangedAction()">
             {% csrf_token %}
             {{ tool_formset.management_form }}
             <div class="iati-table">
@@ -449,7 +449,7 @@ IATI Account: My Data
                             <td style="display:none;">{{ tool_form.tool_id }}</td>
                             <td>{{ tool.name }}</td>
                             <td>{{ tool.provider }}</td>
-                            <td>{{ tool_form.DELETE }}</td>
+                            <td>{% if this_user.can_authorise_and_revoke_tools %}{{ tool_form.DELETE }} {% endif %}</td>
                         </tr>
                         {% empty %}
                         <tr>
@@ -459,35 +459,39 @@ IATI Account: My Data
                     </tbody>
                 </table>
             </div>
-            <div id="toolFormActionButtons" class="iati-form__inner" style="display: none;">
+            <div id="revokeToolFormActionButtons" class="iati-form__inner" style="display: none;">
                 <button id="saveToolChangesButton" class="iati-form__submit iati-button iati-button--submit" type="submit" name="saveToolChanges">Save Changes</button>
-                <button id="discardToolChangesButton" class="iati-button" type="button" onclick="discardToolChangesAction()">Discard Changes</button>
+                <button id="discardToolChangesButton" class="iati-button" type="button" onclick="discardRevokeToolChangesAction()">Discard Changes</button>
             </div>
         </form>
         </div>
 
+        {% if this_user.can_authorise_and_revoke_tools %}
         <div id="thirdPartyToolAuthoriseNewTool" class="iati-section iati-section--fill">
-        <h3 class="iati-section__title">Authorise a new third party tool</h3>
-        <form method="post" id="addToolForm" action="{% url 'data:reporting-org-detail' oid=org.oid %}" onsubmit="window.onbeforeunload = null;">
-            {% csrf_token %}
-            <div class="iati-form__inner">
-                {% if add_tool_form.tool_id.field.choices %}
-                <div class="iati-form__item">
-                    <label for="{{ add_tool_form.tool_id.id_for_label }}" class="iati-form__label">Tool:</label>
-                    {{ add_tool_form.tool_id }}
-                    <div>
-                        {% if add_tool_form.tool_id.errors %}{% for error in add_tool_form.tool_id.errors %}
-                            <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
-                        {% endfor %}{% endif %}
+            <h3 class="iati-section__title">Authorise a new third party tool</h3>
+            <form method="post" id="authoriseToolForm" action="{% url 'data:authorise-tool' oid=org.oid %}" onsubmit="window.onbeforeunload = null;">
+                {% csrf_token %}
+                <div class="iati-form__inner">
+                    {% if authorise_tool_form.tool_id.field.choices %}
+                    <div class="iati-form__item">
+                        <label for="{{ authorise_tool_form.tool_id.id_for_label }}" class="iati-form__label">Tool:</label>
+                        {{ authorise_tool_form.tool_id }}
+                        <div>
+                            {% if authorise_tool_form.tool_id.errors %}{% for error in authorise_tool_form.tool_id.errors %}
+                                <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
+                            {% endfor %}{% endif %}
+                        </div>
                     </div>
+                    <button id="authoriseToolButton" class="iati-form__submit iati-button iati-button--submit" type="submit" name="authoriseTool">Authorise Tool</button>
+                    {% else %}
+                    <p>All available tools have already been authorised for this organisation.</p>
+                    {% endif %}
                 </div>
-                <button id="addToolAuthorisationButton" class="iati-form__submit iati-button iati-button--submit" type="submit" name="addToolAuthorisation">Authorise Tool</button>
-                {% else %}
-                <p>All available tools have already been authorised for this organisation.</p>
-                {% endif %}
-            </div>
-        </form>
-    </div><br/>
+            </form>
+        </div><br/>
+
+        {% endif %}
+        
 
     </article>
 

@@ -15,12 +15,16 @@ from iati_account_web.data.views.organisations import (
     join_reporting_org,
     organisation_delete,
     organisation_detail,
+    organisation_tool_authorise,
+    organisation_tool_revoke,
 )
 
 __all__ = [
     "home",
     "join_reporting_org",
     "organisation_detail",
+    "organisation_tool_authorise",
+    "organisation_tool_revoke",
     "create_organisation",
     "organisation_delete",
     "dataset_list",
