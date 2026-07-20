@@ -71,6 +71,12 @@ class UserAndRole(models.Model):
             return True
         return False
 
+    @property
+    def can_authorise_and_revoke_tools(self):
+        if self.role in ("admin", "super_admin", "editor"):
+            return True
+        return False
+
 
 class ReportingOrganisation(models.Model):
     class Meta:

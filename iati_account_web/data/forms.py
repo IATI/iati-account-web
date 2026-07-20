@@ -253,7 +253,7 @@ class ToolForm(forms.ModelForm):
 ToolFormSet = formset_factory(ToolForm, extra=0, can_delete=True)
 
 
-class AddToolAuthorisationForm(forms.Form):
+class AuthoriseToolForm(forms.Form):
     """Form for authorising a new third-party tool for a reporting org.
 
     The selectable tools are populated at instantiation from the tools available
