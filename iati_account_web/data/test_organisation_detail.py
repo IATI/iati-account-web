@@ -60,6 +60,8 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
         # Provisioned + onboarded by default, so preflight_checks passes once logged in.
         self.create_user(iati_superadmin=False)
         self.url = reverse("data:reporting-org-detail", kwargs={"oid": ORG_ID})
+        self.authorise_tool_url = reverse("data:authorise-tool", kwargs={"oid": ORG_ID})
+        self.revoke_tool_url = reverse("data:revoke-tool", kwargs={"oid": ORG_ID})
 
     def _register_ryd_reads(self):
         """Register the four RYD GET endpoints the view fetches on every request."""
@@ -68,8 +70,16 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
         responses.add(responses.GET, f"{RYD}/reporting-orgs/{ORG_ID}/tools", json=_wrap_in_ryd_envelope(ORG_TOOLS))
         responses.add(responses.GET, f"{RYD}/tools", json=_wrap_in_ryd_envelope(ALL_TOOLS))
 
-    def test_redirects_to_login_when_unauthenticated(self):
+    def test_organisation_detail_view_redirects_to_login_when_unauthenticated(self):
         response = self.client.get(self.url)
+        self.assertRedirects(response, reverse("oidc_authentication_init"), fetch_redirect_response=False)
+
+    def test_authorise_tool_redirects_to_login_when_unauthenticated(self):
+        response = self.client.get(self.authorise_tool_url)
+        self.assertRedirects(response, reverse("oidc_authentication_init"), fetch_redirect_response=False)
+
+    def test_revoke_tool_redirects_to_login_when_unauthenticated(self):
+        response = self.client.get(self.revoke_tool_url)
         self.assertRedirects(response, reverse("oidc_authentication_init"), fetch_redirect_response=False)
 
     @responses.activate
@@ -81,7 +91,7 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "data/org_detail.html")
-        for key in ("org_form", "user_formset", "tool_formset", "tool_rows", "add_tool_form"):
+        for key in ("org_form", "user_formset", "tool_formset", "tool_rows", "authorise_tool_form"):
             self.assertIn(key, response.context)
         self.assertContains(response, "Third Party Tool Authorisations")
         self.assertContains(response, "Tool A")  # authorised tool shown in the revoke table
@@ -93,21 +103,34 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
         responses.add(responses.POST, f"{RYD}/reporting-orgs/{ORG_ID}/tools", json=_wrap_in_ryd_envelope({}))
         self.force_oidc_login()
 
-        response = self.client.post(self.url, {"addToolAuthorisation": "", "tool_id": TOOL_B_ID}, follow=True)
+        response = self.client.post(self.authorise_tool_url, {"authoriseTool": "", "tool_id": TOOL_B_ID}, follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(any("successfully authorised" in str(m).lower() for m in response.context["messages"]))
 
     @responses.activate
-    def test_authorising_a_tool_not_offered_rerenders_with_error(self):
+    def test_authorising_a_badly_formed_tool_id_rerenders_with_error(self):
         self._register_ryd_reads()
         self.force_oidc_login()
 
-        response = self.client.post(self.url, {"addToolAuthorisation": "", "tool_id": "not-a-valid-choice"})
+        response = self.client.post(self.authorise_tool_url, {"authoriseTool": "", "tool_id": "not-a-valid-choice"})
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "data/org_detail.html")
-        self.assertTrue(response.context["add_tool_form"].errors)
+        self.assertTrue(response.context["authorise_tool_form"].errors)
+
+    @responses.activate
+    def test_authorising_a_non_addable_tool_rerenders_with_error(self):
+        self._register_ryd_reads()
+        self.force_oidc_login()
+
+        response = self.client.post(
+            self.authorise_tool_url, {"authoriseTool": "", "tool_id": "225d21e1-eefb-4e57-9650-cc85b04ca89d"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "data/org_detail.html")
+        self.assertTrue(response.context["authorise_tool_form"].errors)
 
     @responses.activate
     def test_revoking_a_tool_not_authorised_is_rejected(self):
@@ -115,17 +138,27 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
         self.force_oidc_login()
 
         # TOOL_B is in the catalogue but not authorised for this org, so revoking it is rejected.
-        response = self.client.post(self.url, _make_revoke_payload(TOOL_B_ID))
+        response = self.client.post(self.revoke_tool_url, _make_revoke_payload(TOOL_B_ID))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "errors/unknown.html")
 
     @responses.activate
-    def test_unrecognised_post_is_rejected(self):
+    def test_unrecognised_post_to_edit_organisation_is_rejected(self):
         self._register_ryd_reads()
         self.force_oidc_login()
 
         response = self.client.post(self.url, {"somethingUnexpected": ""})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "errors/unknown.html")
+
+    @responses.activate
+    def test_unrecognised_post_to_revoke_tool_is_rejected(self):
+        self._register_ryd_reads()
+        self.force_oidc_login()
+
+        response = self.client.post(self.revoke_tool_url, {"somethingUnexpected": ""})
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "errors/unknown.html")
@@ -138,7 +171,7 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
         )
         self.force_oidc_login()
 
-        response = self.client.post(self.url, _make_revoke_payload(TOOL_A_ID), follow=True)
+        response = self.client.post(self.revoke_tool_url, _make_revoke_payload(TOOL_A_ID), follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(any("successfully revoked" in str(m).lower() for m in response.context["messages"]))
