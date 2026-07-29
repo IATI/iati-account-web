@@ -95,7 +95,7 @@ class ReportingOrganisation(models.Model):
     human_readable_name = models.CharField(blank=False)
     number_of_published_datasets = models.IntegerField()
     organisation_identifier = models.CharField(blank=True)
-    organisation_type = models.CharField(choices=ORGANISATION_TYPE_LIST, blank=True)
+    organisation_type = models.CharField(choices=ORGANISATION_TYPE_LIST, blank=False)
     phone = models.CharField(blank=True)
     region = models.CharField(choices=REGION_LIST, blank=True)
     registry_approved = models.BooleanField(default=False)

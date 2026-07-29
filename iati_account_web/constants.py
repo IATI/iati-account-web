@@ -90,7 +90,11 @@ for tz in pytz.common_timezones:
         raise ValueError()
 
 # Additional choice fields
-REPORTING_SOURCE_TYPE_LIST = [("primary_source", "Primary Source"), ("secondary_source", "Secondary Source")]
+REPORTING_SOURCE_TYPE_LIST = [
+    ("", "--"),
+    ("primary_source", "Primary Source"),
+    ("secondary_source", "Secondary Source"),
+]
 REPORTING_SOURCE_TYPE_LOOKUP = {x[0]: x[1] for x in REPORTING_SOURCE_TYPE_LIST}
 VISIBILITY_LIST = [("private", "Private"), ("public", "Public")]
 VISIBILITY_LOOKUP = {x[0]: x[1] for x in VISIBILITY_LIST}
@@ -108,9 +112,11 @@ USER_ROLE_LOOKUP = {x[0]: x[1] for x in USER_ROLE_LIST}
 # NOTE: for the moment, this does not worry about the activity state of
 # the codelist entry.
 COUNTRY_LIST, COUNTRY_CODE_LOOKUP = codelist_helper(settings.COUNTRY_CODELIST_PATH)
-ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = codelist_helper(settings.ORGANISATION_TYPE_CODELIST_PATH)
+ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = codelist_helper(
+    settings.ORGANISATION_TYPE_CODELIST_PATH, include_blank=True
+)
 REGION_LIST, REGION_LOOKUP = codelist_helper(settings.REGION_CODELIST_PATH)
 LICENCE_LIST, LICENCE_LOOKUP = codelist_helper(settings.LICENCE_PATH)
 LICENCE_LIST_RECOMMENDED, LICENCE_LOOKUP_RECOMMENDED = codelist_helper(
-    settings.LICENCE_PATH, include_blank=False, filter_by_list="recommended"
+    settings.LICENCE_PATH, include_blank=True, filter_by_list="recommended"
 )

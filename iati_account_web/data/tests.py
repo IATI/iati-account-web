@@ -207,9 +207,3 @@ class DatasetDetailsFormLicenceTests(TestCase):
         choices = list(self._edit_form(current).fields["licence_id"].choices)  # type: ignore[attr-defined]
 
         self.assertEqual(len(choices), len(LICENCE_LIST_RECOMMENDED))
-
-    def test_empty_current_licence_adds_no_extra_option(self):
-        choices = dict(self._edit_form("").fields["licence_id"].choices)  # type: ignore[attr-defined]
-
-        self.assertEqual(len(choices), len(LICENCE_LIST_RECOMMENDED))
-        self.assertNotIn("", choices)

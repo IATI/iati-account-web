@@ -286,7 +286,7 @@ class AuthoriseToolForm(forms.Form):
 
     def __init__(self, *args, available_tools=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["tool_id"].choices = [
+        self.fields["tool_id"].choices = [  # type: ignore[attr-defined]
             (str(tool.tool_id), f"{tool.name} ({tool.provider})") for tool in available_tools or []
         ]
 
