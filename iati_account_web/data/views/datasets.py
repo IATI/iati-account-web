@@ -90,12 +90,13 @@ def create_dataset(request: AuthedHttpRequest, oid: str) -> HttpResponse:  # noq
         app_logger.debug(f"Creating dataset; form validation result {form.is_valid()}")
         if form.is_valid():
             try:
-                result = session.post(
+                _ = session.post(
                     "/datasets",
                     json={"owner_organisation_id": str(oid), **form.instance.get_ryd_post_payload()},
                 )
                 messages.add_message(request, messages.SUCCESS, "Dataset created successfully.")
-                return redirect("data:dataset-detail", oid=oid, dataset_id=result["data"]["id"])
+                return redirect("data:dataset-list", oid=oid)
+
             except RegisterYourDataRecordAlreadyExists:
                 messages.add_message(
                     request,
@@ -264,6 +265,7 @@ def dataset_detail(request: AuthedHttpRequest, oid: str, dataset_id: str) -> Htt
                 if len(set(form.changed_data) & set([f for f in updateable_fields if f != "url"])) > 0:
                     dataset.last_metadata_update_date = datetime.now(timezone.utc)
                 messages.add_message(request, messages.SUCCESS, "Dataset updated successfully.")
+                return redirect("data:dataset-list", oid=oid)
             except RegisterYourDataRecordAlreadyExists:
                 messages.add_message(
                     request,

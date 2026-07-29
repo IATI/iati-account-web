@@ -231,6 +231,7 @@ def organisation_detail(request: AuthedHttpRequest, oid: str) -> HttpResponse:  
                         f"User {request.user.log_label} changed fields {form.changed_data} in organisation {oid}"
                     )
                     messages.add_message(request, messages.SUCCESS, "Your changes were saved successfully.")
+                    return redirect("data:home")
                 except Exception as exc:
                     audit_logger.error(
                         f"Could not patch organisation {oid} in RYD for user {request.user.log_label} with error {exc}"
@@ -405,12 +406,12 @@ def create_organisation(request: HttpRequest) -> HttpResponse:  # noqa: C901
         if form.is_valid():
             session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
             try:
-                result = session.post(
+                _ = session.post(
                     "/reporting-orgs",
                     json=form.get_ryd_post_payload_from_cleaned_data(),
                 )
                 messages.add_message(request, messages.SUCCESS, "Reporting organisation created    successfully.")
-                return redirect("data:reporting-org-detail", oid=result["data"]["id"])
+                return redirect("data:home")
             except RegisterYourDataRecordAlreadyExists:
                 messages.add_message(
                     request,
