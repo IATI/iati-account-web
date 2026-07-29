@@ -6,8 +6,12 @@ functionality.
 
 import responses
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
+from iati_account_web.constants import LICENCE_LIST, LICENCE_LIST_RECOMMENDED, LICENCE_LOOKUP
+from iati_account_web.data.forms import OrganisationDetailsForm
+from iati_account_web.data.models import ReportingOrganisation
 from iati_account_web.tests.iati_mock import ForceIatiLoginMixin
 
 RYD = settings.REGISTER_YOUR_DATA_BASE_URL
@@ -175,3 +179,48 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTrue(any("successfully revoked" in str(m).lower() for m in response.context["messages"]))
+
+
+class OrganisationDetailsFormLicenceTests(TestCase):
+    """The org edit form offers the recommended licence list plus the org's current licence.
+
+    This keeps an org already on a non-recommended licence able to see it
+    selected, keep it, and pass validation, while any code outside the offered
+    set is rejected.
+    """
+
+    def _edit_form(self, current_licence):
+        return OrganisationDetailsForm(instance=ReportingOrganisation(default_licence_id=current_licence))
+
+    def _a_non_recommended_code(self):
+        recommended = {code for code, _ in LICENCE_LIST_RECOMMENDED}
+        return next(code for code, _ in LICENCE_LIST if code and code not in recommended)
+
+    def test_current_non_recommended_licence_is_appended_to_recommended_list(self):
+        current = self._a_non_recommended_code()
+
+        choices = list(self._edit_form(current).fields["default_licence_id"].choices)  # type: ignore[attr-defined]
+
+        self.assertEqual(len(choices), len(LICENCE_LIST_RECOMMENDED) + 1)
+        self.assertEqual(dict(choices)[current], LICENCE_LOOKUP[current])
+
+    def test_current_non_recommended_licence_is_accepted_but_junk_is_rejected(self):
+        current = self._a_non_recommended_code()
+        field = self._edit_form(current).fields["default_licence_id"]
+
+        self.assertEqual(field.clean(current), current)
+        with self.assertRaises(ValidationError):
+            field.clean("not-a-real-licence")
+
+    def test_current_recommended_licence_is_not_duplicated(self):
+        current = next(code for code, _ in LICENCE_LIST_RECOMMENDED if code)
+
+        choices = list(self._edit_form(current).fields["default_licence_id"].choices)  # type: ignore[attr-defined]
+
+        self.assertEqual(len(choices), len(LICENCE_LIST_RECOMMENDED))
+
+    def test_empty_current_licence_adds_no_extra_option(self):
+        choices = dict(self._edit_form("").fields["default_licence_id"].choices)  # type: ignore[attr-defined]
+
+        self.assertEqual(len(choices), len(LICENCE_LIST_RECOMMENDED))
+        self.assertNotIn("", choices)
