@@ -30,7 +30,8 @@ audit_logger = logging.getLogger("audit")
 app_logger = logging.getLogger("iati_account")
 
 
-def join_reporting_org(request: HttpRequest) -> HttpResponse:  # noqa: C901
+@require_preflight
+def join_reporting_org(request: AuthedHttpRequest) -> HttpResponse:  # noqa: C901
     """Generate the join organisation page.
 
     Parameters
@@ -41,10 +42,6 @@ def join_reporting_org(request: HttpRequest) -> HttpResponse:  # noqa: C901
     -------
     HttpResponse
     """
-
-    preflight = preflight_checks(request)
-    if not preflight.okay_to_continue:
-        return preflight.redirect
 
     session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
 
@@ -326,7 +323,7 @@ def organisation_detail(request: AuthedHttpRequest, oid: str) -> HttpResponse:  
                                 messages.ERROR,
                                 "You can only change the user roles to Admin, Editor or "
                                 f"Contributor, not {USER_ROLE_LOOKUP[user_form.cleaned_data["role"]]}",
-                            ),
+                            )
                         else:
                             try:
                                 session.put(
@@ -387,6 +384,7 @@ def organisation_detail(request: AuthedHttpRequest, oid: str) -> HttpResponse:  
     return HttpResponse(template.render(context, request))
 
 
+@require_preflight
 def create_organisation(request: HttpRequest) -> HttpResponse:  # noqa: C901
     """Generates the create organisation page and handles creation on form submission
 
@@ -398,9 +396,6 @@ def create_organisation(request: HttpRequest) -> HttpResponse:  # noqa: C901
     -------
     HttpResponse
     """
-    preflight = preflight_checks(request)
-    if preflight.not_okay_to_continue:
-        return preflight.redirect
 
     form = None
 
@@ -438,7 +433,8 @@ def create_organisation(request: HttpRequest) -> HttpResponse:  # noqa: C901
                     )
                 else:
                     audit_logger.error(
-                        f"Could not create reporting org in RYD for user {request.user.log_label} with error {exc}"
+                        "Could not create reporting org in RYD for user "
+                        f"{request.user.log_label} with error {exc}"  # type: ignore
                     )
                     messages.add_message(
                         request,
@@ -449,7 +445,8 @@ def create_organisation(request: HttpRequest) -> HttpResponse:  # noqa: C901
                     raise exc
             except Exception as exc:
                 audit_logger.error(
-                    f"Could not create reporting org in RYD for user {request.user.log_label} with error {exc}"
+                    "Could not create reporting org in RYD for user "
+                    f"{request.user.log_label} with error {exc}"  # type: ignore
                 )
                 messages.add_message(
                     request,
@@ -470,7 +467,7 @@ def create_organisation(request: HttpRequest) -> HttpResponse:  # noqa: C901
     return HttpResponse(template.render(context, request))
 
 
-def organisation_delete(request: HttpRequest, oid: str) -> HttpResponse:  # noqa: C901
+def organisation_delete(request: AuthedHttpRequest, oid: str) -> HttpResponse:  # noqa: C901
     """Respond to a user's request to delete an organisation.
 
     Parameters

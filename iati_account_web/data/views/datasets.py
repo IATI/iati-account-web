@@ -5,25 +5,23 @@ from datetime import datetime, timezone
 
 from django.contrib import messages
 from django.core.exceptions import SuspiciousOperation
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.template import loader
 from iati_account_web.data.forms import CreateDatasetForm, DatasetDeleteForm, DatasetDetailsForm
 from iati_account_web.data.models import Dataset, ReportingOrganisation, UserAndRole
 from iati_account_web.exceptions import RegisterYourDataFieldValidationError, RegisterYourDataRecordAlreadyExists
-from iati_account_web.helpers import preflight_checks
+from iati_account_web.helpers import preflight_checks, require_preflight
 from iati_account_web.ryd_handling import RegisterYourDataSession, parse_pagination_links
 from iati_account_web.ryd_handling.reporting_orgs import parse_dataset_list_to_objects
+from iati_account_web.typing import AuthedHttpRequest
 
 audit_logger = logging.getLogger("audit")
 app_logger = logging.getLogger("iati_account")
 
 
-def dataset_list(request: HttpRequest, oid: str) -> HttpResponse:
-
-    preflight = preflight_checks(request)
-    if not preflight.okay_to_continue:
-        return preflight.redirect
+@require_preflight
+def dataset_list(request: AuthedHttpRequest, oid: str) -> HttpResponse:
 
     page = request.GET.get("page", 1)
     page_size = request.GET.get("page_size", 24)
@@ -69,22 +67,19 @@ def dataset_list(request: HttpRequest, oid: str) -> HttpResponse:
     return HttpResponse(template.render(context, request))
 
 
-def create_dataset(request: HttpRequest, oid: str) -> HttpResponse:  # noqa: C901
+@require_preflight
+def create_dataset(request: AuthedHttpRequest, oid: str) -> HttpResponse:  # noqa: C901
     """Generates the create dataset page and handles POST responses
 
     Parameters
     ----------
-    request : HttpRequest
+    request : AuthedHttpRequest
     oid : str
 
     Returns
     -------
     HttpResponse
     """
-
-    preflight = preflight_checks(request)
-    if preflight.not_okay_to_continue:
-        return preflight.redirect
 
     session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
 
@@ -184,7 +179,8 @@ def create_dataset(request: HttpRequest, oid: str) -> HttpResponse:  # noqa: C90
     return HttpResponse(template.render(context, request))
 
 
-def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpResponse:  # noqa: C901
+@require_preflight
+def dataset_detail(request: AuthedHttpRequest, oid: str, dataset_id: str) -> HttpResponse:  # noqa: C901
     """Generate dataset detail page for editing/deleting datasets.
 
     Parameters
@@ -208,10 +204,6 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
         "url",
         "visibility",
     ]
-
-    preflight = preflight_checks(request)
-    if not preflight.okay_to_continue:
-        return preflight.redirect
 
     session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
 
@@ -338,7 +330,7 @@ def dataset_detail(request: HttpRequest, oid: str, dataset_id: str) -> HttpRespo
     return HttpResponse(template.render(context, request))
 
 
-def dataset_delete(request: HttpRequest, oid: str, dataset_id: str) -> HttpResponse:  # noqa: C901
+def dataset_delete(request: AuthedHttpRequest, oid: str, dataset_id: str) -> HttpResponse:  # noqa: C901
 
     # Do a small pre-flight check, as we need to check that the user is provisioned and
     # authenticated.
