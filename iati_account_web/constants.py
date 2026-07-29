@@ -1,6 +1,7 @@
 import json
 import logging
 import tomllib
+from typing import Any
 
 import pytz
 from django.conf import settings
@@ -22,13 +23,21 @@ def get_version_from_pyproject() -> str:
         raise exc
 
 
-def codelist_helper(filename: str) -> (list[tuple[str, str]], dict[str, str]):
+def codelist_helper(
+    filename: str, include_blank: bool = True, filter_by_list: str | None = None
+) -> tuple[list[tuple[str, str]], dict[str, str]]:
     """Helper to load a codelist JSON file and generate a choice list and lookup
 
     Parameters
     ----------
     filename : str
         JSON codelist filename.
+    include_blank : bool
+        Whether to include a blank option at top of list
+    filter_by_list : str | None
+        If set, then the entries read from JSON are filtered so that only those
+        with a 'code' value that appears in the list named by 'filter_by_list'
+        on the file's metadata object are included.
 
     Returns
     -------
@@ -38,18 +47,26 @@ def codelist_helper(filename: str) -> (list[tuple[str, str]], dict[str, str]):
         Lookup mapping codes to names.
     """
 
-    choice_list = [("", "--")]
-    lookup = {}
+    choice_list: list[tuple[str, str]]
+    lookup: dict[Any, Any]
+
     if filename is not None:
         with open(filename, "r") as fh:
             data = json.load(fh)
 
-            choice_list += [(x["code"], x["name"]) for x in data.get("data", [])]
-            choice_list.sort(key=lambda x: x[1])
+            if filter_by_list is not None:
+                filter = data.get("metadata", {}).get(filter_by_list, [])
+                choice_list = [(x["code"], x["name"]) for x in data.get("data", []) if x["code"] in filter]
+            else:
+                choice_list = [(x["code"], x["name"]) for x in data.get("data", [])]
 
             lookup = {x["code"]: x["name"] for x in data.get("data", [])}
 
-    lookup[""] = ""
+    if include_blank:
+        choice_list.append(("", "--"))
+        lookup[""] = ""
+
+    choice_list.sort(key=lambda x: x[1])
 
     return choice_list, lookup
 
@@ -94,3 +111,6 @@ COUNTRY_LIST, COUNTRY_CODE_LOOKUP = codelist_helper(settings.COUNTRY_CODELIST_PA
 ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = codelist_helper(settings.ORGANISATION_TYPE_CODELIST_PATH)
 REGION_LIST, REGION_LOOKUP = codelist_helper(settings.REGION_CODELIST_PATH)
 LICENCE_LIST, LICENCE_LOOKUP = codelist_helper(settings.LICENCE_PATH)
+LICENCE_LIST_RECOMMENDED, LICENCE_LOOKUP_RECOMMENDED = codelist_helper(
+    settings.LICENCE_PATH, include_blank=False, filter_by_list="recommended"
+)

@@ -1,16 +1,22 @@
 import re
+from typing import Any
 
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import formset_factory
 from django.utils.translation import gettext_lazy as _
-from iati_account_web.constants import USER_ROLE_LOOKUP
+from iati_account_web.constants import LICENCE_LIST_RECOMMENDED, LICENCE_LOOKUP, USER_ROLE_LOOKUP
 from iati_account_web.data.models import Dataset, ReportingOrganisation, Tool, UserAndRole
 
 ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-z0-9-_]+$")
 
 
 class OrganisationBaseForm(forms.ModelForm):
+    default_licence_id = forms.ChoiceField(
+        label=_("Default licence"),
+        widget=forms.Select(attrs={"class": "iati-select__control"}),
+    )
+
     def clean_data_portal_url(self):
         data_portal_url = self.cleaned_data["data_portal_url"]
         if (
@@ -49,7 +55,6 @@ class OrganisationDetailsForm(OrganisationBaseForm):
             "address": _("Postal address"),
             "contact_email": _("Contact email address"),
             "data_portal_url": _("Data portal"),
-            "default_licence_id": _("Default licence"),
             "description": _("Description"),
             "exclusions_policy_url": _("Exclusions policy website/document"),
             "fax": _("Fax number"),
@@ -70,7 +75,6 @@ class OrganisationDetailsForm(OrganisationBaseForm):
                 attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
             ),
             "data_portal_url": forms.URLInput(attrs={"class": "iati-form__input"}),
-            "default_licence_id": forms.Select(attrs={"class": "iati-select__control"}),
             "description": forms.Textarea(),
             "exclusions_policy_url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "fax": forms.TextInput(attrs={"class": "iati-form__input"}),
@@ -92,6 +96,14 @@ class OrganisationDetailsForm(OrganisationBaseForm):
             ),
             "website": forms.URLInput(attrs={"class": "iati-form__input"}),
         }
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        choices: list[tuple[str, str]] = list(LICENCE_LIST_RECOMMENDED)
+        current: str = self.instance.default_licence_id
+        if current and current not in {code for code, _ in choices}:
+            choices.append((current, LICENCE_LOOKUP.get(current, current)))
+        self.fields["default_licence_id"].choices = choices  # type: ignore[attr-defined]
 
     def get_ryd_patch_payload_from_cleaned_data(self) -> dict:
         """Generate patch payload for RYD from the cleaned data.
@@ -127,7 +139,6 @@ class CreateOrganisationForm(OrganisationBaseForm):
             "address": _("Postal address"),
             "contact_email": _("Contact email address"),
             "data_portal_url": _("Data portal"),
-            "default_licence_id": _("Default licence"),
             "description": _("Description"),
             "exclusions_policy_url": _("Exclusions policy website/document"),
             "fax": _("Fax number"),
@@ -148,7 +159,6 @@ class CreateOrganisationForm(OrganisationBaseForm):
                 attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}
             ),
             "data_portal_url": forms.URLInput(attrs={"class": "iati-form__input"}),
-            "default_licence_id": forms.Select(attrs={"class": "iati-select__control"}),
             "description": forms.Textarea(),
             "exclusions_policy_url": forms.URLInput(attrs={"class": "iati-form__input"}),
             "fax": forms.TextInput(attrs={"class": "iati-form__input"}),
@@ -169,6 +179,10 @@ class CreateOrganisationForm(OrganisationBaseForm):
             "website": forms.URLInput(attrs={"class": "iati-form__input"}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["default_licence_id"].choices = LICENCE_LIST_RECOMMENDED  # type: ignore
+
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
         if not ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX.match(short_name):
@@ -181,12 +195,14 @@ class CreateOrganisationForm(OrganisationBaseForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        if cleaned_data.get("hq_country") == "" and cleaned_data.get("region") == "":
+        if cleaned_data is not None and cleaned_data.get("hq_country") == "" and cleaned_data.get("region") == "":
             self.add_error("hq_country", "Must select either a country or a region")
             self.add_error("region", "Must select either a country or a region")
 
+        return cleaned_data
+
     def get_ryd_post_payload_from_cleaned_data(self):
-        def _get_field(field_name: str) -> str:
+        def _get_field(field_name: str) -> str | None:
             return self.cleaned_data[field_name] if self.cleaned_data[field_name] else None
 
         return {
@@ -284,6 +300,11 @@ class OrganisationDeleteForm(forms.Form):
 
 
 class DatasetDetailsForm(forms.ModelForm):
+    licence_id = forms.ChoiceField(
+        label=_("Licence"),
+        widget=forms.Select(attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}),
+    )
+
     class Meta:
         model = Dataset
         fields = "__all__"
@@ -299,7 +320,6 @@ class DatasetDetailsForm(forms.ModelForm):
             "source_type": _("Reporting source type"),
             "visibility": _("Visibility"),
             "url": _("URL"),
-            "licence_id": _("Licence"),
         }
         error_messages = {}
         widgets = {
@@ -316,10 +336,15 @@ class DatasetDetailsForm(forms.ModelForm):
                 attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
             ),
             "url": forms.URLInput(attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}),
-            "licence_id": forms.Select(
-                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
-            ),
         }
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        choices: list[tuple[str, str]] = list(LICENCE_LIST_RECOMMENDED)
+        current: str = self.instance.licence_id
+        if current and current not in {code for code, _ in choices}:
+            choices.append((current, LICENCE_LOOKUP.get(current, current)))
+        self.fields["licence_id"].choices = choices  # type: ignore[attr-defined]
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
@@ -338,6 +363,11 @@ class DatasetDetailsForm(forms.ModelForm):
 
 
 class CreateDatasetForm(forms.ModelForm):
+    licence_id = forms.ChoiceField(
+        label=_("Licence"),
+        widget=forms.Select(attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}),
+    )
+
     class Meta:
         model = Dataset
         fields = "__all__"
@@ -353,7 +383,6 @@ class CreateDatasetForm(forms.ModelForm):
             "short_name": _("Dataset short name"),
             "visibility": _("Visibility"),
             "url": _("URL"),
-            "licence_id": _("Licence"),
         }
         error_messages = {}
         widgets = {
@@ -370,10 +399,11 @@ class CreateDatasetForm(forms.ModelForm):
                 attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
             ),
             "url": forms.URLInput(attrs={"class": "iati-form__input", "style": "border-width: 2px !important;"}),
-            "licence_id": forms.Select(
-                attrs={"class": "iati-select__control", "style": "border-width: 2px !important;"}
-            ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["licence_id"].choices = LICENCE_LIST_RECOMMENDED  # type: ignore
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]

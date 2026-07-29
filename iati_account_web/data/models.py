@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from iati_account_web.constants import (
     COUNTRY_LIST,
-    LICENCE_LIST,
     ORGANISATION_TYPE_LIST,
     REGION_LIST,
     REPORTING_SOURCE_TYPE_LIST,
@@ -87,7 +86,7 @@ class ReportingOrganisation(models.Model):
     contact_email = models.EmailField(blank=False)
     created_date = models.DateTimeField(blank=True)
     data_portal_url = models.URLField(blank=True)
-    default_licence_id = models.CharField(choices=LICENCE_LIST, blank=True)
+    default_licence_id = models.CharField(blank=False)
     description = models.CharField(blank=True)
     exclusions_policy_url = models.URLField(blank=True)
     fax = models.CharField(blank=True)
@@ -239,7 +238,7 @@ class Dataset(models.Model):
     source_type = models.CharField(choices=REPORTING_SOURCE_TYPE_LIST)
     url = models.URLField(blank=False)
     visibility = models.CharField(choices=VISIBILITY_LIST, blank=False)
-    licence_id = models.CharField(choices=LICENCE_LIST)
+    licence_id = models.CharField()
     last_url_update_date = models.DateTimeField(blank=True)
     last_metadata_update_date = models.DateTimeField(blank=True)
 
