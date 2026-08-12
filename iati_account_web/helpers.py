@@ -1,7 +1,8 @@
+import functools
 import logging
 from collections import namedtuple
 
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 
 app_logger = logging.getLogger("iati_account")
@@ -43,3 +44,19 @@ def preflight_checks(request: HttpRequest, check_onboarding: bool = True) -> Pre
         )
 
     return PreFlightStatus(not_okay_to_continue=False, okay_to_continue=True, redirect=None)
+
+
+def require_preflight(view_func=None, *, check_onboarding=True):
+    """Run preflight_checks and short-circuit with redirect if the user can't continue."""
+
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(request: HttpRequest, *args, **kwargs) -> HttpResponse:
+            preflight = preflight_checks(request, check_onboarding=check_onboarding)
+            if not preflight.okay_to_continue:
+                return preflight.redirect
+            return func(request, *args, **kwargs)
+
+        return wrapper
+
+    return decorator(view_func) if callable(view_func) else decorator

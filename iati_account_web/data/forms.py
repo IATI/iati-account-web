@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.forms import formset_factory
 from django.utils.translation import gettext_lazy as _
 from iati_account_web.constants import USER_ROLE_LOOKUP
-from iati_account_web.data.models import Dataset, ReportingOrganisation, UserAndRole
+from iati_account_web.data.models import Dataset, ReportingOrganisation, Tool, UserAndRole
 
 ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-z0-9-_]+$")
 
@@ -234,6 +234,45 @@ class OrgUserForm(forms.ModelForm):
 
 
 OrgUserFormSet = formset_factory(OrgUserForm, extra=0, can_delete=True)
+
+
+class ToolForm(forms.ModelForm):
+    class Meta:
+        model = Tool
+        # tool_id is the only form field: it round-trips (hidden) purely to
+        # identify the Tool row, becuase the only operation the user can perform
+        # is to revoke the tool's authorisation (DELETE). The tool name/provider
+        # are display-only and rendered from the trusted server-side Tool
+        # objects.
+        fields = ["tool_id"]
+        widgets = {
+            "tool_id": forms.HiddenInput(),
+        }
+
+
+ToolFormSet = formset_factory(ToolForm, extra=0, can_delete=True)
+
+
+class AuthoriseToolForm(forms.Form):
+    """Form for authorising a new third-party tool for a reporting org.
+
+    The selectable tools are populated at instantiation from the tools available
+    via the RYD /tools endpoint, with those already authorised being removed by
+    the view handler.  The choices are built from server-side data, so a
+    submission which passes validation is inherently one the org is allowed to
+    authorise.
+    """
+
+    tool_id = forms.ChoiceField(
+        label="Tool",
+        widget=forms.Select(attrs={"class": "iati-select__control"}),
+    )
+
+    def __init__(self, *args, available_tools=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["tool_id"].choices = [
+            (str(tool.tool_id), f"{tool.name} ({tool.provider})") for tool in available_tools or []
+        ]
 
 
 class OrganisationDeleteForm(forms.Form):
