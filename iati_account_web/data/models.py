@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+from django.core.exceptions import ValidationError
 from django.db import models
 from iati_account_web.constants import (
     COUNTRY_LIST,
@@ -28,7 +29,9 @@ class UserAndRole(models.Model):
     super_admin = models.BooleanField(default=False)
 
     @classmethod
-    def from_ryd(cls, role_string: str, uid: str, oid: str, email: str = None, name: str = None) -> UserAndRole:
+    def from_ryd(
+        cls, role_string: str, uid: str, oid: str, email: str | None = None, name: str | None = None
+    ) -> UserAndRole:
         if role_string.lower() == "contributor_pending":
             return cls(role="contributor_pending", pending=True, uid=uid, oid=oid, email=email, name=name)
         elif role_string.lower() == "provider_admin":
@@ -65,6 +68,12 @@ class UserAndRole(models.Model):
     @property
     def can_change_user_roles(self):
         if self.role in ("admin", "super_admin"):
+            return True
+        return False
+
+    @property
+    def can_authorise_and_revoke_tools(self):
+        if self.role in ("admin", "super_admin", "editor"):
             return True
         return False
 
@@ -259,7 +268,7 @@ class Dataset(models.Model):
         )
 
     @property
-    def last_update_date(self) -> datetime:
+    def last_update_date(self) -> datetime | None:
         if self.last_metadata_update_date or self.last_url_update_date:
             update_dates = [
                 (
@@ -278,7 +287,7 @@ class Dataset(models.Model):
         return None
 
     def get_ryd_post_payload(self):
-        def _get_field(field_name: str) -> str:
+        def _get_field(field_name: str) -> str | None:
             return self.__getattribute__(field_name) if self.__getattribute__(field_name) else None
 
         return {
@@ -289,3 +298,47 @@ class Dataset(models.Model):
             "url": _get_field("url"),
             "licence_id": _get_field("licence_id"),
         }
+
+
+class Tool(models.Model):
+    class Meta:
+        managed = False
+
+    tool_id = models.UUIDField(null=False)
+    name = models.CharField(null=False)
+    provider = models.CharField(null=False)
+
+    @classmethod
+    def from_ryd(cls, tool_dict: dict) -> Tool:
+        """Parse a dictionary of tool data from RYD and generate a new Tool object
+
+        Parameters
+        ----------
+        tool_dict : dict
+            Dictionary from RYD response.
+
+        Returns
+        -------
+        Tool
+
+        Raises
+        ------
+        RegisterYourDataResponseParsingIssue
+            If there are issues in the parsing of the dictionary.
+        """
+
+        if "id" not in tool_dict:
+            raise RegisterYourDataResponseParsingIssue("Tool is missing its UUID")
+        if not tool_dict.get("name"):
+            raise RegisterYourDataResponseParsingIssue(f"Tool {tool_dict["id"]} is missing its name")
+        if not tool_dict.get("provider"):
+            raise RegisterYourDataResponseParsingIssue(f"Tool {tool_dict["id"]} is missing its provider")
+
+        object = cls(tool_id=tool_dict["id"], name=tool_dict["name"], provider=tool_dict["provider"])
+
+        try:
+            object.full_clean(validate_unique=False, validate_constraints=False)
+        except ValidationError as exc:
+            raise RegisterYourDataResponseParsingIssue(f"Tool data from RYD could not be parsed: {exc}") from exc
+
+        return object
