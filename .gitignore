@@ -12,7 +12,10 @@ __pycache__/
 db.sqlite3
 .env*
 !.env.example
-local-private-key.pem
-local-certificate.pem
 
-/logs/**
+*.pem
+
+/logs
+
+test-app.log
+test-audit.log

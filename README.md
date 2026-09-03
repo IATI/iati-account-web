@@ -56,14 +56,14 @@ The development dependencies include `django_extensions` and `werkzeug` that tog
 This can be done using `openssl`:
 
 ```
-openssl req -x509 -newkey rsa:4096 -keyout private-key.pem -out certificate.pem -sha256 -days 365 -nodes -subj "/C=GB/O=Open Data Services Co-operative Ltd./CN=api.eu.asgar
+openssl req -x509 -newkey rsa:4096 -keyout local-private-key.pem -out local-certificate.pem -sha256 -days 365 -nodes -subj "/C=GB/O=Open Data Services Co-operative Ltd./CN=api.eu.asgar
 deo.io"
 ```
 
 Now the Django app can be run over HTTPS using
 
 ```
-python manage.py runserver_plus "127.0.0.1:8443" --cert-file certificate.pem --key-file private-key.pem
+python manage.py runserver_plus "127.0.0.1:8443" --cert-file local-certificate.pem --key-file local-private-key.pem
 ```
 
 It will be accessible on: [https://localhost:8443](https://localhost:8443)
