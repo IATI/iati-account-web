@@ -10,6 +10,9 @@ __pycache__/
 
 # Local setup and development
 db.sqlite3
-.env
+.env*
+!.env.example
 local-private-key.pem
 local-certificate.pem
+
+/logs/**

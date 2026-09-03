@@ -1,6 +1,6 @@
 #! /bin/bash
 
-if [ ! -f "local-private-key.pem" ]; then
+if [[ ! -f "local-private-key.pem" ]] || [[ ! -f "local-certificate.pem" ]]; then
     openssl req -x509 -newkey rsa:4096 -keyout local-private-key.pem -out local-certificate.pem -sha256 -days 365 -nodes -subj "/C=GB/O=Open Data Services Co-operative Ltd./CN=api.eu.asgardeo.io"
 fi
 
