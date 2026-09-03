@@ -25,7 +25,7 @@ Running this application locally and opening `https://localhost:8443` allows the
 
 ### Running locally
 
-Configuration is through environment variables.  The application will get environment variables from the local environment, or through a `.env` file that is specified through the environment variable ENV_FILE.  The provided `.env.example` and `.env.test` should form the basis for setting up a `.env` file for development purposes.
+Configuration is through environment variables.  The application will get environment variables from the local environment, or through a `.env` file that is specified through the environment variable `ENV_FILE`.  The provided `.env.example` and `.env.test` should form the basis for setting up a dot env file for development purposes - the commands below assume that you have called this file `.env.dev`.
 
 #### Database requirements
 
@@ -41,7 +41,7 @@ IATI Account can also be run and tested locally using PostgreSQL running in a co
 docker run --name iatiaccountdb -e POSTGRES_PASSWORD=password -e POSTGRES_USER=iatiaccount -e POSTGRES_DB=iatiaccount -p 5432:5432 postgres -d
 ```
 
-Then add the connection string to your `.env` file:
+Then add the connection string to your `.env.dev` file:
 
 ```
 DATABASE_URL=postgres://iatiaccount:password@localhost:5432/iatiaccount
@@ -72,6 +72,10 @@ There is a bash script that automates this:
 ```
 ENV_FILE=.env.dev ./runserver.sh
 ```
+
+#### VS Code Debugging
+
+There is a configuration set up in VS Code to run the application in debug mode.  This uses the `launch.json` file in the `.vscode` directory.  The configuration uses the `runserver_plus` command to run the application in debug mode.
 
 
 ### Automated tests
