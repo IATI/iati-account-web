@@ -24,7 +24,7 @@ def get_version_from_pyproject() -> str:
 
 
 def codelist_helper(
-    filename: str, include_blank: bool = True, filter_by_list: str | None = None
+    filename: str, include_blank: bool = True, filter_by_list: str | None = None, use_display_name: bool = False
 ) -> tuple[list[tuple[str, str]], dict[str, str]]:
     """Helper to load a codelist JSON file and generate a choice list and lookup
 
@@ -38,6 +38,9 @@ def codelist_helper(
         If set, then the entries read from JSON are filtered so that only those
         with a 'code' value that appears in the list named by 'filter_by_list'
         on the file's metadata object are included.
+    use_display_name : bool
+        If set, then the 'display_name' field is used for the choice list
+        instead of the 'name' field.
 
     Returns
     -------
@@ -46,6 +49,12 @@ def codelist_helper(
     dict[str, str]
         Lookup mapping codes to names.
     """
+
+    def _get_name(x: dict[str, Any]) -> str:
+        if use_display_name:
+            return x["display_name"]
+        else:
+            return x["name"]
 
     choice_list: list[tuple[str, str]]
     lookup: dict[Any, Any]
@@ -56,11 +65,11 @@ def codelist_helper(
 
             if filter_by_list is not None:
                 filter = data.get("metadata", {}).get(filter_by_list, [])
-                choice_list = [(x["code"], x["name"]) for x in data.get("data", []) if x["code"] in filter]
+                choice_list = [(x["code"], _get_name(x)) for x in data.get("data", []) if x["code"] in filter]
             else:
-                choice_list = [(x["code"], x["name"]) for x in data.get("data", [])]
+                choice_list = [(x["code"], _get_name(x)) for x in data.get("data", [])]
 
-            lookup = {x["code"]: x["name"] for x in data.get("data", [])}
+            lookup = {x["code"]: _get_name(x) for x in data.get("data", [])}
 
     if include_blank:
         choice_list.append(("", "--"))
@@ -118,5 +127,5 @@ ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = codelist_helper(
 REGION_LIST, REGION_LOOKUP = codelist_helper(settings.REGION_CODELIST_PATH)
 LICENCE_LIST, LICENCE_LOOKUP = codelist_helper(settings.LICENCE_PATH)
 LICENCE_LIST_RECOMMENDED, LICENCE_LOOKUP_RECOMMENDED = codelist_helper(
-    settings.LICENCE_PATH, include_blank=True, filter_by_list="recommended"
+    settings.LICENCE_PATH, include_blank=True, filter_by_list="recommended", use_display_name=True
 )
