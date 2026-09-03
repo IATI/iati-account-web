@@ -126,6 +126,6 @@ ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = codelist_helper(
 )
 REGION_LIST, REGION_LOOKUP = codelist_helper(settings.REGION_CODELIST_PATH)
 LICENCE_LIST, LICENCE_LOOKUP = codelist_helper(settings.LICENCE_PATH)
-LICENCE_LIST_RECOMMENDED, LICENCE_LOOKUP_RECOMMENDED = codelist_helper(
+LICENCE_LIST_RECOMMENDED, _ = codelist_helper(
     settings.LICENCE_PATH, include_blank=True, filter_by_list="recommended", use_display_name=True
 )
