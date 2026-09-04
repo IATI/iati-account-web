@@ -137,10 +137,10 @@ class CreateOrganisationForm(OrganisationBaseForm):
         ]
         labels = {
             "address": _("Postal address"),
-            "contact_email": _("Contact email address"),
+            "contact_email": _("Organisation Contact email address"),
             "data_portal_url": _("Data portal"),
             "description": _("Description"),
-            "exclusions_policy_url": _("Exclusions policy website/document"),
+            "exclusions_policy_url": _("Link to exclusions policy"),
             "fax": _("Fax number"),
             "hq_country": _("Country"),
             "human_readable_name": _("Organisation name"),
