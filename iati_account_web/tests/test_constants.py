@@ -101,3 +101,44 @@ class CodelistHelperTestCase(unittest.TestCase):
         self.assertNotIn("", lookup)
 
         self.assertEqual(choice_list, [("a", "Adleman"), ("c", "Chomsky")])
+
+    def test_display_name_used_for_choice_list_and_lookup(self):
+        path = self._make_codelist_file(
+            [
+                {"code": "a", "name": "Adleman", "display_name": "Lovelace"},
+                {"code": "b", "name": "Babbage", "display_name": "Minsky"},
+            ]
+        )
+        choice_list, lookup = codelist_helper(path, include_blank=False, use_display_name=True)
+
+        self.assertEqual(choice_list, [("a", "Lovelace"), ("b", "Minsky")])
+        self.assertEqual(lookup, {"a": "Lovelace", "b": "Minsky"})
+
+    def test_display_name_used_when_filtered(self):
+        path = self._make_codelist_file(
+            [
+                {"code": "a", "name": "Adleman", "display_name": "Lovelace"},
+                {"code": "b", "name": "Babbage", "display_name": "Minsky"},
+                {"code": "c", "name": "Chomsky", "display_name": "Naur"},
+            ],
+            filter={"recommended": ["a", "c"]},
+        )
+
+        choice_list, lookup = codelist_helper(
+            path, include_blank=False, filter_by_list="recommended", use_display_name=True
+        )
+
+        self.assertEqual(choice_list, [("a", "Lovelace"), ("c", "Naur")])
+        self.assertEqual(lookup, {"a": "Lovelace", "b": "Minsky", "c": "Naur"})
+
+    def test_name_used_when_use_display_name_false(self):
+        path = self._make_codelist_file(
+            [
+                {"code": "a", "name": "Adleman", "display_name": "Lovelace"},
+                {"code": "b", "name": "Babbage", "display_name": "Minsky"},
+            ]
+        )
+        choice_list, lookup = codelist_helper(path, include_blank=False)
+
+        self.assertEqual(choice_list, [("a", "Adleman"), ("b", "Babbage")])
+        self.assertEqual(lookup, {"a": "Adleman", "b": "Babbage"})
