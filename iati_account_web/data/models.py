@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from iati_account_web.constants import (
     COUNTRY_LIST,
-    LICENCE_LIST,
     ORGANISATION_TYPE_LIST,
     REGION_LIST,
     REPORTING_SOURCE_TYPE_LIST,
@@ -87,7 +86,7 @@ class ReportingOrganisation(models.Model):
     contact_email = models.EmailField(blank=False)
     created_date = models.DateTimeField(blank=True)
     data_portal_url = models.URLField(blank=True)
-    default_licence_id = models.CharField(choices=LICENCE_LIST, blank=True)
+    default_licence_id = models.CharField(blank=False)
     description = models.CharField(blank=True)
     exclusions_policy_url = models.URLField(blank=True)
     fax = models.CharField(blank=True)
@@ -96,7 +95,7 @@ class ReportingOrganisation(models.Model):
     human_readable_name = models.CharField(blank=False)
     number_of_published_datasets = models.IntegerField()
     organisation_identifier = models.CharField(blank=True)
-    organisation_type = models.CharField(choices=ORGANISATION_TYPE_LIST, blank=True)
+    organisation_type = models.CharField(choices=ORGANISATION_TYPE_LIST, blank=False)
     phone = models.CharField(blank=True)
     region = models.CharField(choices=REGION_LIST, blank=True)
     registry_approved = models.BooleanField(default=False)
@@ -239,7 +238,7 @@ class Dataset(models.Model):
     source_type = models.CharField(choices=REPORTING_SOURCE_TYPE_LIST)
     url = models.URLField(blank=False)
     visibility = models.CharField(choices=VISIBILITY_LIST, blank=False)
-    licence_id = models.CharField(choices=LICENCE_LIST)
+    licence_id = models.CharField()
     last_url_update_date = models.DateTimeField(blank=True)
     last_metadata_update_date = models.DateTimeField(blank=True)
 

@@ -1,7 +1,10 @@
 import json
 import uuid
 
+from django.core.exceptions import ValidationError
 from django.test import TestCase
+from iati_account_web.constants import LICENCE_LIST, LICENCE_LIST_RECOMMENDED, LICENCE_LOOKUP
+from iati_account_web.data.forms import DatasetDetailsForm
 from iati_account_web.data.models import Dataset, Tool
 from iati_account_web.exceptions import RegisterYourDataResponseParsingIssue
 from iati_account_web.ryd_handling.reporting_orgs import (
@@ -166,3 +169,41 @@ class ToolModelTestCase(TestCase):
         self.assertEqual(tools[0].name, "Aurora Registry Tool")
         self.assertEqual(tools[1].name, "Meridian Data Portal")
         self.assertEqual(tools[2].name, "Zephyr Publisher")
+
+
+class DatasetDetailsFormLicenceTests(TestCase):
+    """The dataset edit form offers the recommended licence shortlist plus the dataset's own current licence.
+
+    This keeps a dataset already on a non-recommended licence able to see it selected, keep it, and pass
+    validation, while any code outside the offered set is rejected.
+    """
+
+    def _edit_form(self, current_licence):
+        return DatasetDetailsForm(instance=Dataset(licence_id=current_licence))
+
+    def _a_non_recommended_code(self):
+        recommended = {code for code, _ in LICENCE_LIST_RECOMMENDED}
+        return next(code for code, _ in LICENCE_LIST if code and code not in recommended)
+
+    def test_current_non_recommended_licence_is_appended_to_recommended_list(self):
+        current = self._a_non_recommended_code()
+
+        choices = list(self._edit_form(current).fields["licence_id"].choices)  # type: ignore[attr-defined]
+
+        self.assertEqual(len(choices), len(LICENCE_LIST_RECOMMENDED) + 1)
+        self.assertEqual(dict(choices)[current], LICENCE_LOOKUP[current])
+
+    def test_current_non_recommended_licence_is_accepted_but_junk_is_rejected(self):
+        current = self._a_non_recommended_code()
+        field = self._edit_form(current).fields["licence_id"]
+
+        self.assertEqual(field.clean(current), current)
+        with self.assertRaises(ValidationError):
+            field.clean("not-a-real-licence")
+
+    def test_current_recommended_licence_is_not_duplicated(self):
+        current = next(code for code, _ in LICENCE_LIST_RECOMMENDED if code)
+
+        choices = list(self._edit_form(current).fields["licence_id"].choices)  # type: ignore[attr-defined]
+
+        self.assertEqual(len(choices), len(LICENCE_LIST_RECOMMENDED))

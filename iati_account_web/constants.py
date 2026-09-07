@@ -1,6 +1,7 @@
 import json
 import logging
 import tomllib
+from typing import Any
 
 import pytz
 from django.conf import settings
@@ -22,13 +23,24 @@ def get_version_from_pyproject() -> str:
         raise exc
 
 
-def codelist_helper(filename: str) -> (list[tuple[str, str]], dict[str, str]):
+def codelist_helper(
+    filename: str, include_blank: bool = True, filter_by_list: str | None = None, use_display_name: bool = False
+) -> tuple[list[tuple[str, str]], dict[str, str]]:
     """Helper to load a codelist JSON file and generate a choice list and lookup
 
     Parameters
     ----------
     filename : str
         JSON codelist filename.
+    include_blank : bool
+        Whether to include a blank option at top of list
+    filter_by_list : str | None
+        If set, then the entries read from JSON are filtered so that only those
+        with a 'code' value that appears in the list named by 'filter_by_list'
+        on the file's metadata object are included.
+    use_display_name : bool
+        If set, then the 'display_name' field is used for the choice list
+        instead of the 'name' field.
 
     Returns
     -------
@@ -38,18 +50,32 @@ def codelist_helper(filename: str) -> (list[tuple[str, str]], dict[str, str]):
         Lookup mapping codes to names.
     """
 
-    choice_list = [("", "--")]
-    lookup = {}
+    def _get_name(x: dict[str, Any]) -> str:
+        if use_display_name:
+            return x["display_name"]
+        else:
+            return x["name"]
+
+    choice_list: list[tuple[str, str]]
+    lookup: dict[Any, Any]
+
     if filename is not None:
         with open(filename, "r") as fh:
             data = json.load(fh)
 
-            choice_list += [(x["code"], x["name"]) for x in data.get("data", [])]
-            choice_list.sort(key=lambda x: x[1])
+            if filter_by_list is not None:
+                filter = data.get("metadata", {}).get(filter_by_list, [])
+                choice_list = [(x["code"], _get_name(x)) for x in data.get("data", []) if x["code"] in filter]
+            else:
+                choice_list = [(x["code"], _get_name(x)) for x in data.get("data", [])]
 
-            lookup = {x["code"]: x["name"] for x in data.get("data", [])}
+            lookup = {x["code"]: _get_name(x) for x in data.get("data", [])}
 
-    lookup[""] = ""
+    if include_blank:
+        choice_list.append(("", "--"))
+        lookup[""] = ""
+
+    choice_list.sort(key=lambda x: x[1])
 
     return choice_list, lookup
 
@@ -73,7 +99,11 @@ for tz in pytz.common_timezones:
         raise ValueError()
 
 # Additional choice fields
-REPORTING_SOURCE_TYPE_LIST = [("primary_source", "Primary Source"), ("secondary_source", "Secondary Source")]
+REPORTING_SOURCE_TYPE_LIST = [
+    ("", "--"),
+    ("primary_source", "Primary Source"),
+    ("secondary_source", "Secondary Source"),
+]
 REPORTING_SOURCE_TYPE_LOOKUP = {x[0]: x[1] for x in REPORTING_SOURCE_TYPE_LIST}
 VISIBILITY_LIST = [("private", "Private"), ("public", "Public")]
 VISIBILITY_LOOKUP = {x[0]: x[1] for x in VISIBILITY_LIST}
@@ -91,6 +121,11 @@ USER_ROLE_LOOKUP = {x[0]: x[1] for x in USER_ROLE_LIST}
 # NOTE: for the moment, this does not worry about the activity state of
 # the codelist entry.
 COUNTRY_LIST, COUNTRY_CODE_LOOKUP = codelist_helper(settings.COUNTRY_CODELIST_PATH)
-ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = codelist_helper(settings.ORGANISATION_TYPE_CODELIST_PATH)
+ORGANISATION_TYPE_LIST, ORGANISATION_TYPE_LOOKUP = codelist_helper(
+    settings.ORGANISATION_TYPE_CODELIST_PATH, include_blank=True
+)
 REGION_LIST, REGION_LOOKUP = codelist_helper(settings.REGION_CODELIST_PATH)
 LICENCE_LIST, LICENCE_LOOKUP = codelist_helper(settings.LICENCE_PATH)
+LICENCE_LIST_RECOMMENDED, _ = codelist_helper(
+    settings.LICENCE_PATH, include_blank=True, filter_by_list="recommended", use_display_name=True
+)

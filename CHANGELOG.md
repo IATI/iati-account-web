@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.21 - 2026-07-29
+
+### Changed
+
+- Reduced the number of data licences available in the dropdown on both the
+  create/edit reporting organisation and the create/edit dataset pages.
+- Made the Organisation Type field mandatory  
+
+### Fixed
+
+- Made the create/edit reporting org and dataset pages redirect to the
+  list/overview page after a successful create/update.
+
 ## 0.4.20 - 2026-07-20
 
 ### Added

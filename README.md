@@ -25,7 +25,7 @@ Running this application locally and opening `https://localhost:8443` allows the
 
 ### Running locally
 
-Configuration is through environment variables.  The application will get environment variables from the local environment, or through a `.env` file that is specified through the environment variable ENV_FILE.  The provided `.env.example` and `.env.test` should form the basis for setting up a `.env` file for development purposes.
+Configuration is through environment variables.  The application will get environment variables from the local environment, or through a `.env` file that is specified through the environment variable `ENV_FILE`.  The provided `.env.example` and `.env.test` should form the basis for setting up a dot env file for development purposes - the commands below assume that you have called this file `.env.dev`.
 
 #### Database requirements
 
@@ -41,7 +41,7 @@ IATI Account can also be run and tested locally using PostgreSQL running in a co
 docker run --name iatiaccountdb -e POSTGRES_PASSWORD=password -e POSTGRES_USER=iatiaccount -e POSTGRES_DB=iatiaccount -p 5432:5432 postgres -d
 ```
 
-Then add the connection string to your `.env` file:
+Then add the connection string to your `.env.dev` file:
 
 ```
 DATABASE_URL=postgres://iatiaccount:password@localhost:5432/iatiaccount
@@ -56,14 +56,14 @@ The development dependencies include `django_extensions` and `werkzeug` that tog
 This can be done using `openssl`:
 
 ```
-openssl req -x509 -newkey rsa:4096 -keyout private-key.pem -out certificate.pem -sha256 -days 365 -nodes -subj "/C=GB/O=Open Data Services Co-operative Ltd./CN=api.eu.asgar
+openssl req -x509 -newkey rsa:4096 -keyout local-private-key.pem -out local-certificate.pem -sha256 -days 365 -nodes -subj "/C=GB/O=Open Data Services Co-operative Ltd./CN=api.eu.asgar
 deo.io"
 ```
 
 Now the Django app can be run over HTTPS using
 
 ```
-python manage.py runserver_plus "127.0.0.1:8443" --cert-file certificate.pem --key-file private-key.pem
+python manage.py runserver_plus "127.0.0.1:8443" --cert-file local-certificate.pem --key-file local-private-key.pem
 ```
 
 It will be accessible on: [https://localhost:8443](https://localhost:8443)
@@ -72,6 +72,10 @@ There is a bash script that automates this:
 ```
 ENV_FILE=.env.dev ./runserver.sh
 ```
+
+#### VS Code Debugging
+
+There is a configuration set up in VS Code to run the application in debug mode.  This uses the `launch.json` file in the `.vscode` directory.  The configuration uses the `runserver_plus` command to run the application in debug mode.
 
 
 ### Automated tests
