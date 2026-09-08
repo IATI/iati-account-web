@@ -171,8 +171,7 @@ class CreateOrganisationForm(OrganisationBaseForm):
                 "humanitarian activities on a website, you can include a link here."
             ),
             "description": _(
-                "Additional information on the organisation and its development "
-                "or humanitarian activities."
+                "Additional information on the organisation and its development " "or humanitarian activities."
             ),
             "exclusions_policy_url": _(
                 "A link to a policy on what data is excluded from this "
@@ -196,10 +195,7 @@ class CreateOrganisationForm(OrganisationBaseForm):
                 _("Learn more about organisation identifiers in IATI"),
             ),
             "phone": _("A telephone number to contact about the organisation's IATI data."),
-            "region": _(
-                "If your organisation operates in a particular region, you can "
-                "specify it here."
-            ),
+            "region": _("If your organisation operates in a particular region, you can " "specify it here."),
             "reporting_source_type": _(
                 "'Primary Source' means that this organisation is publishing its own "
                 "data. Select 'Secondary Source' only if this organisation is "
