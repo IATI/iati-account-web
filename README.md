@@ -63,7 +63,7 @@ deo.io"
 Now the Django app can be run over HTTPS using
 
 ```
-ENV_FILE=.env python manage.py runserver_plus "127.0.0.1:8443" --cert-file local-certificate.pem --key-file local-private-key.pem
+ENV_FILE=.env.dev python manage.py runserver_plus "127.0.0.1:8443" --cert-file local-certificate.pem --key-file local-private-key.pem
 ```
 
 It will be accessible on: [https://localhost:8443](https://localhost:8443)
