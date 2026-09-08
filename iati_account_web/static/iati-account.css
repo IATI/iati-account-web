@@ -188,3 +188,59 @@
 .iati-account-profile--list li.iati-account-profile--list-item-complete::before {
     content: var(--icon-complete);
 }
+
+.iati-form__help {
+    position: relative;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 50%;
+    background: #155366;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.iati-form__help-tooltip {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 200px;
+    max-width: 320px;
+    padding: 6px 10px;
+    background: #121212;
+    color: #fff;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    border-radius: 4px;
+    z-index: 10;
+    text-align: left;
+    font-weight: 400;
+}
+
+.iati-form__help-tooltip a {
+    color: #7bedf2;
+    text-decoration: underline;
+    line-height: 1.4;
+}
+
+.iati-form__help-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #121212;
+}
+
+.iati-form__help:hover .iati-form__help-tooltip,
+.iati-form__help:focus .iati-form__help-tooltip {
+    display: block;
+}
