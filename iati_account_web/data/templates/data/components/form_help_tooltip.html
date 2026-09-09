@@ -1,0 +1,6 @@
+{% if field.help_text %}
+<span class="iati-form__help" tabindex="0" aria-label="{{ field.help_text }}">?<span class="iati-form__help-tooltip">
+    {{ field.help_text }}
+    {% if field.help_url %}<a href="{{ field.help_url }}" target="_blank">{{ field.help_link_text }}</a>{% endif %}
+</span></span>
+{% endif %}

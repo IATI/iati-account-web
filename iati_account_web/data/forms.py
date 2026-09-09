@@ -4,7 +4,6 @@ from typing import Any
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import formset_factory
-from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from iati_account_web.constants import LICENCE_LIST_RECOMMENDED, LICENCE_LOOKUP, USER_ROLE_LOOKUP
 from iati_account_web.data.models import Dataset, ReportingOrganisation, Tool, UserAndRole
@@ -15,15 +14,9 @@ ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-z0-9-_]+$")
 class OrganisationBaseForm(forms.ModelForm):
     default_licence_id = forms.ChoiceField(
         label=_("Default licence"),
-        help_text=format_html(
-            '{} <a href="{}" target="_blank">{}</a>',
-            _(
-                "IATI is an open data standard, which requires data to be made "
-                "available under an open licence so that it can be freely used."
-            ),
-            "https://iatistandard.org/en/guidance/standard-overview/"
-            "preparing-your-organisation-data-publication/how-to-license-your-data/",
-            _("Learn more about licenses"),
+        help_text=_(
+            "IATI is an open data standard, which requires data to be made "
+            "available under an open licence so that it can be freely used."
         ),
         widget=forms.Select(attrs={"class": "iati-select__control"}),
     )
@@ -183,16 +176,9 @@ class CreateOrganisationForm(OrganisationBaseForm):
             ),
             "human_readable_name": _("The full name of the organisation."),
             "organisation_type": _("Select the type that best describes the organisation."),
-            "organisation_identifier": format_html(
-                '{} <a href="{}" target="_blank">{}</a>',
-                _(
-                    "A unique identifier combining the code of an agency with which "
-                    "your organisation is legally registered and your registration number."
-                ),
-                "https://iatistandard.org/en/guidance/publishing-data/"
-                "registering-and-managing-your-organisation-account/"
-                "how-to-create-your-iati-organisation-identifier",
-                _("Learn more about organisation identifiers in IATI"),
+            "organisation_identifier": _(
+                "A unique identifier combining the code of an agency with which "
+                "your organisation is legally registered and your registration number."
             ),
             "phone": _("A telephone number to contact about the organisation's IATI data."),
             "region": _("If your organisation operates in a particular region, you can " "specify it here."),
@@ -207,6 +193,19 @@ class CreateOrganisationForm(OrganisationBaseForm):
                 "among all IATI reporting organisations."
             ),
             "website": _("If the organisation has its own website, you can include a link here."),
+        }
+        help_links = {
+            "default_licence_id": (
+                "https://iatistandard.org/en/guidance/standard-overview/"
+                "preparing-your-organisation-data-publication/how-to-license-your-data/",
+                _("Learn more about licenses"),
+            ),
+            "organisation_identifier": (
+                "https://iatistandard.org/en/guidance/publishing-data/"
+                "registering-and-managing-your-organisation-account/"
+                "how-to-create-your-iati-organisation-identifier",
+                _("Learn more about organisation identifiers in IATI"),
+            ),
         }
         error_messages = {}
         widgets = {
@@ -238,6 +237,9 @@ class CreateOrganisationForm(OrganisationBaseForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["default_licence_id"].choices = LICENCE_LIST_RECOMMENDED  # type: ignore
+        for field_name, (url, link_text) in self.Meta.help_links.items():
+            self.fields[field_name].help_url = url
+            self.fields[field_name].help_link_text = link_text
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
