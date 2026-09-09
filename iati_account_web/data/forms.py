@@ -239,6 +239,9 @@ class CreateOrganisationForm(OrganisationBaseForm):
         super().__init__(*args, **kwargs)
         self.fields["default_licence_id"].choices = LICENCE_LIST_RECOMMENDED  # type: ignore
 
+        if not self.initial.get("reporting_source_type"):
+            self.fields["reporting_source_type"].initial = "primary_source"
+
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
         if not ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX.match(short_name):
