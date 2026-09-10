@@ -71,9 +71,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.human_readable_name.id_for_label }}" class="iati-form__label">
                             {{ form.human_readable_name.label }}{% if form.human_readable_name.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.human_readable_name %}
                         </label>
                         {{ form.human_readable_name }}
+                        {% include "data/components/form_help_inline.html" with field=form.human_readable_name %}
                         <div>
                             {% if form.human_readable_name.errors %} {% for error in form.human_readable_name.errors %}
                                 <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -83,9 +83,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.organisation_type.id_for_label }}" class="iati-form__label">
                             {{ form.organisation_type.label }}{% if form.organisation_type.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.organisation_type %}
                         </label>
                         {{ form.organisation_type }}
+                        {% include "data/components/form_help_inline.html" with field=form.organisation_type %}
                         <div>
                             {% if form.organisation_type.errors %} {% for error in form.organisation_type.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -95,9 +95,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.hq_country.id_for_label }}" class="iati-form__label">
                             {{ form.hq_country.label }}{% if form.hq_country.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.hq_country %}
                         </label>
                         {{ form.hq_country }}
+                        {% include "data/components/form_help_inline.html" with field=form.hq_country %}
                         <div>
                             {% if form.hq_country.errors %} {% for error in form.hq_country.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -107,9 +107,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.region.id_for_label }}" class="iati-form__label">
                             {{ form.region.label }}{% if form.region.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.region %}
                         </label>
                         {{ form.region }}
+                        {% include "data/components/form_help_inline.html" with field=form.region %}
                         <div>
                             {% if form.region.errors %} {% for error in form.region.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -125,9 +125,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.contact_email.id_for_label }}" class="iati-form__label">
                             {{ form.contact_email.label }}{% if form.contact_email.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.contact_email %}
                         </label>
                         {{ form.contact_email }}
+                        {% include "data/components/form_help_inline.html" with field=form.contact_email %}
                         <div>
                             {% if form.contact_email.errors %} {% for error in form.contact_email.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -137,9 +137,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.phone.id_for_label }}" class="iati-form__label">
                             {{ form.phone.label }}{% if form.phone.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.phone %}
                         </label>
                         {{ form.phone }}
+                        {% include "data/components/form_help_inline.html" with field=form.phone %}
                         <div>
                             {% if form.phone.errors %} {% for error in form.phone.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -149,9 +149,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.address.id_for_label }}" class="iati-form__label">
                             {{ form.address.label }}{% if form.address.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.address %}
                         </label>
                         {{ form.address }}
+                        {% include "data/components/form_help_inline.html" with field=form.address %}
                         <div>
                             {% if form.address.errors %} {% for error in form.address.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -166,9 +166,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.description.id_for_label }}" class="iati-form__label">
                             {{ form.description.label }}{% if form.description.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.description %}
                         </label>
                         {{ form.description }}
+                        {% include "data/components/form_help_inline.html" with field=form.description %}
                         <div>
                             {% if form.description.errors %} {% for error in form.description.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -178,9 +178,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.data_portal_url.id_for_label }}" class="iati-form__label">
                             {{ form.data_portal_url.label }}{% if form.data_portal_url.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.data_portal_url %}
                         </label>
                         {{ form.data_portal_url }}
+                        {% include "data/components/form_help_inline.html" with field=form.data_portal_url %}
                         <div>
                             {% if form.data_portal_url.errors %} {% for error in form.data_portal_url.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -190,8 +190,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.website.id_for_label }}" class="iati-form__label">
                             {{ form.website.label }}{% if form.website.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.website %}</label>
+                        </label>
                         {{ form.website }}
+                        {% include "data/components/form_help_inline.html" with field=form.website %}
                         <div>
                             {% if form.website.errors %} {% for error in form.website.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -206,9 +207,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.short_name.id_for_label }}" class="iati-form__label">
                             {{ form.short_name.label }}{% if form.short_name.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.short_name %}
                         </label>
                         {{ form.short_name }}
+                        {% include "data/components/form_help_inline.html" with field=form.short_name %}
                         <div>
                             {% if form.short_name.errors %} {% for error in form.short_name.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -218,9 +219,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.exclusions_policy_url.id_for_label }}" class="iati-form__label">
                             {{ form.exclusions_policy_url.label }}{% if form.exclusions_policy_url.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.exclusions_policy_url %}
                         </label>
                         {{ form.exclusions_policy_url }}
+                        {% include "data/components/form_help_inline.html" with field=form.exclusions_policy_url %}
                         <div>
                             {% if form.exclusions_policy_url.errors %} {% for error in form.exclusions_policy_url.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -230,9 +231,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.default_licence_id.id_for_label }}" class="iati-form__label">
                             {{  form.default_licence_id.label }}{% if form.default_licence_id.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.default_licence_id %}
                         </label>
                         {{ form.default_licence_id }}
+                        {% include "data/components/form_help_inline.html" with field=form.default_licence_id %}
                         <div>
                             {% if form.default_licence_id.errors %} {% for error in form.default_licence_id.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -242,9 +243,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.reporting_source_type.id_for_label }}" class="iati-form__label">
                             {{ form.reporting_source_type.label }}{% if form.reporting_source_type.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.reporting_source_type %}
                         </label>
                         {{ form.reporting_source_type }}
+                        {% include "data/components/form_help_inline.html" with field=form.reporting_source_type %}
                         <div>
                             {% if form.reporting_source_type.errors %} {% for error in form.reporting_source_type.errors %}
                                     <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>
@@ -254,9 +255,9 @@ IATI Account: My Data
                     <div class="iati-form__item">
                         <label for="{{ form.organisation_identifier.id_for_label }}" class="iati-form__label">
                             {{ form.organisation_identifier.label }}{% if form.organisation_identifier.field.required %} <strong>(*)</strong>{% endif %}:
-                            {% include "data/components/form_help_tooltip.html" with field=form.fields.organisation_identifier %}
                         </label>
                         {{ form.organisation_identifier }}
+                        {% include "data/components/form_help_inline.html" with field=form.organisation_identifier %}
                         <div>
                             {% if form.human_readable_name.errors %} {% for error in form.human_readable_name.errors %}
                                 <span class="iati-account-lozenge iati-account-lozenge-red-90">{{ error }}</span>

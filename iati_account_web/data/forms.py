@@ -240,6 +240,9 @@ class CreateOrganisationForm(OrganisationBaseForm):
         for field_name, (url, link_text) in self.Meta.help_links.items():
             self.fields[field_name].help_url = url
             self.fields[field_name].help_link_text = link_text
+        for field_name, field in self.fields.items():
+            if field.help_text:
+                field.widget.attrs.setdefault("aria-describedby", f"{field_name}-help")
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
