@@ -216,4 +216,4 @@ class CreateOrganisationFormReportingSourceTypeTests(TestCase):
 
     def test_reporting_source_type_preserves_explicit_value(self):
         form = CreateOrganisationForm(data={"reporting_source_type": "secondary_source"})
-        self.assertNotIn("secondary_source", form.fields["reporting_source_type"].initial)
+        self.assertEqual("secondary_source", form["reporting_source_type"].value())
