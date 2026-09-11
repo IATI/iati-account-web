@@ -243,9 +243,6 @@ class CreateOrganisationForm(OrganisationBaseForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["default_licence_id"].choices = LICENCE_LIST_RECOMMENDED  # type: ignore
-        for field_name, field in self.fields.items():
-            if field.help_text:
-                field.widget.attrs.setdefault("aria-describedby", f"{field_name}-help")
 
     def clean_short_name(self):
         short_name = self.cleaned_data["short_name"]
