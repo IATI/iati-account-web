@@ -1,0 +1,6 @@
+{% if field.help_text %}
+<span class="iati-form__help-text" id="{{ field.auto_id }}_helptext">
+    {{ field.help_text }}
+    {% if field.field.help_url %}<a href="{{ field.field.help_url }}" target="_blank" rel="noopener noreferrer">{{ field.field.help_link_text }}</a>.{% endif %}
+</span>
+{% endif %}
