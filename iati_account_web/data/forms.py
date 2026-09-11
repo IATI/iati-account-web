@@ -21,6 +21,12 @@ class OrganisationBaseForm(forms.ModelForm):
         widget=forms.Select(attrs={"class": "iati-select__control"}),
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, (url, link_text) in getattr(self.Meta, "help_links", {}).items():
+            self.fields[field_name].help_url = url
+            self.fields[field_name].help_link_text = link_text
+
     def clean_data_portal_url(self):
         data_portal_url = self.cleaned_data["data_portal_url"]
         if (
@@ -237,9 +243,6 @@ class CreateOrganisationForm(OrganisationBaseForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["default_licence_id"].choices = LICENCE_LIST_RECOMMENDED  # type: ignore
-        for field_name, (url, link_text) in self.Meta.help_links.items():
-            self.fields[field_name].help_url = url
-            self.fields[field_name].help_link_text = link_text
         for field_name, field in self.fields.items():
             if field.help_text:
                 field.widget.attrs.setdefault("aria-describedby", f"{field_name}-help")
