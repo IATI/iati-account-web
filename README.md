@@ -38,7 +38,7 @@ ENV_FILE=.env.dev python manage.py migrate
 IATI Account can also be run and tested locally using PostgreSQL running in a container.  For example, start a container
 
 ```bash
-docker run --name iatiaccountdb -e POSTGRES_PASSWORD=password -e POSTGRES_USER=iatiaccount -e POSTGRES_DB=iatiaccount -p 5432:5432 postgres -d
+docker run --name iatiaccountdb -e POSTGRES_PASSWORD=password -e POSTGRES_USER=iatiaccount -e POSTGRES_DB=iatiaccount -p 5432:5432 -d postgres
 ```
 
 Then add the connection string to your `.env.dev` file:
@@ -63,7 +63,7 @@ deo.io"
 Now the Django app can be run over HTTPS using
 
 ```
-python manage.py runserver_plus "127.0.0.1:8443" --cert-file local-certificate.pem --key-file local-private-key.pem
+ENV_FILE=.env.dev python manage.py runserver_plus "127.0.0.1:8443" --cert-file local-certificate.pem --key-file local-private-key.pem
 ```
 
 It will be accessible on: [https://localhost:8443](https://localhost:8443)
