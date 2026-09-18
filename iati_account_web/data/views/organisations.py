@@ -138,6 +138,13 @@ def _build_org_detail_context(  # noqa: C901
     reporting_org = data.reporting_org
     this_user = data.current_user
 
+    for x in data.users_and_roles.values():
+        if x.role == "super_admin":
+            app_logger.warning(
+                f"Organisation {reporting_org.oid} has user {x.uid} with role 'super_admin', which should "
+                "not be possible.  This user is excluded from the user-management form."
+            )
+
     # Build any unbound forms (the ones the caller did not supply) for display
 
     if org_form is None:
@@ -149,7 +156,7 @@ def _build_org_detail_context(  # noqa: C901
             initial=[
                 {"uid": x.uid, "name": x.name, "email": x.email, "role": x.role, "oid": reporting_org.oid}
                 for x in data.users_and_roles.values()
-                if x.role != "provider_admin"
+                if x.role not in ("provider_admin", "super_admin")
             ],
         )
 
@@ -270,7 +277,7 @@ def organisation_detail(request: AuthedHttpRequest, oid: str) -> HttpResponse:  
                         "oid": org_data.reporting_org.oid,
                     }
                     for x in org_data.users_and_roles.values()
-                    if x.role != "provider_admin"
+                    if x.role not in ("provider_admin", "super_admin")
                 ],
             )
 
