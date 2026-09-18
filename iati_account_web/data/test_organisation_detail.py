@@ -18,6 +18,7 @@ RYD = settings.REGISTER_YOUR_DATA_BASE_URL
 
 ORG_ID = "abcd1234-ab4e-4667-a6b6-a8424b8fd38d"
 USER_ID = "abcd1234-cffd-419f-942f-e6e0aa902230"
+SUPERADMIN_ID = "abcd1234-9999-4b1a-9c11-000000000099"
 TOOL_A_ID = "abcd1234-1111-4b1a-9c11-000000000001"  # authorised for the org
 TOOL_B_ID = "abcd1234-2222-4b2a-9c22-000000000002"  # in the /tools catalogue, not yet authorised
 
@@ -146,6 +147,53 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "errors/unknown.html")
+
+    @responses.activate
+    def test_removing_a_user_succeeds_even_when_org_has_a_superadmin_member(self):
+        # A superadmin's row is excluded from the user-management form entirely (same as
+        # provider_admin), since the role dropdown never offers "super_admin" as a
+        # selectable option. Before this exclusion existed, the page would still render a
+        # row for the superadmin with no valid role selected, and submitting the form to
+        # remove any other user would fail formset validation because of that row.
+        org_users = ORG_USERS + [
+            {"id": SUPERADMIN_ID, "name": "Sam Super", "email": "super@example.org", "role": "super_admin"}
+        ]
+        responses.add(responses.GET, f"{RYD}/reporting-orgs/{ORG_ID}", json=_wrap_in_ryd_envelope(REPORTING_ORG))
+        responses.add(responses.GET, f"{RYD}/reporting-orgs/{ORG_ID}/users", json=_wrap_in_ryd_envelope(org_users))
+        responses.add(responses.GET, f"{RYD}/reporting-orgs/{ORG_ID}/tools", json=_wrap_in_ryd_envelope(ORG_TOOLS))
+        responses.add(responses.GET, f"{RYD}/tools", json=_wrap_in_ryd_envelope(ALL_TOOLS))
+        responses.add(responses.DELETE, f"{RYD}/users/{USER_ID}/reporting-org/{ORG_ID}", json=_wrap_in_ryd_envelope({}))
+        self.force_oidc_login()
+
+        # The superadmin is excluded from the form entirely, so a real browser only ever
+        # submits the one remaining (non-excluded) row.
+        payload = {
+            "saveUserChanges": "",
+            "users-TOTAL_FORMS": "1",
+            "users-INITIAL_FORMS": "1",
+            "users-MIN_NUM_FORMS": "0",
+            "users-MAX_NUM_FORMS": "1000",
+            "users-0-uid": USER_ID,
+            "users-0-oid": ORG_ID,
+            "users-0-name": "Person One",
+            "users-0-email": "one@example.org",
+            "users-0-role": "admin",
+            "users-0-DELETE": "on",
+        }
+
+        with self.assertLogs("iati_account", level="WARNING") as log_ctx:
+            response = self.client.post(self.url, payload, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateNotUsed(response, "errors/unknown.html")
+        self.assertTrue(any("successfully removed" in str(m).lower() for m in response.context["messages"]))
+
+        # The superadmin's presence should still be surfaced somewhere (a log warning),
+        # rather than disappearing without a trace now that it no longer crashes the page.
+        self.assertTrue(
+            any(SUPERADMIN_ID in message and "super_admin" in message for message in log_ctx.output),
+            f"Expected a warning naming the superadmin user, got: {log_ctx.output}",
+        )
 
     @responses.activate
     def test_unrecognised_post_to_edit_organisation_is_rejected(self):
