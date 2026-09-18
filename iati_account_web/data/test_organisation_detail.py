@@ -162,7 +162,9 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
         responses.add(responses.GET, f"{RYD}/reporting-orgs/{ORG_ID}/users", json=_wrap_in_ryd_envelope(org_users))
         responses.add(responses.GET, f"{RYD}/reporting-orgs/{ORG_ID}/tools", json=_wrap_in_ryd_envelope(ORG_TOOLS))
         responses.add(responses.GET, f"{RYD}/tools", json=_wrap_in_ryd_envelope(ALL_TOOLS))
-        responses.add(responses.DELETE, f"{RYD}/users/{USER_ID}/reporting-org/{ORG_ID}", json=_wrap_in_ryd_envelope({}))
+        responses.add(
+            responses.DELETE, f"{RYD}/users/{USER_ID}/reporting-org/{ORG_ID}", json=_wrap_in_ryd_envelope({})
+        )
         self.force_oidc_login()
 
         # The superadmin is excluded from the form entirely, so a real browser only ever
