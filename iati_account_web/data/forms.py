@@ -4,7 +4,6 @@ from typing import Any
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import formset_factory
-from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from iati_account_web.constants import LICENCE_LIST_RECOMMENDED, LICENCE_LOOKUP, USER_ROLE_LOOKUP
 from iati_account_web.data.models import Dataset, ReportingOrganisation, Tool, UserAndRole
@@ -15,18 +14,71 @@ ALPHA_LOWERCASE_NUMERIC_HYPHEN_REGEX = re.compile(r"^[a-z0-9-_]+$")
 class OrganisationBaseForm(forms.ModelForm):
     default_licence_id = forms.ChoiceField(
         label=_("Default licence"),
-        help_text=format_html(
-            '{} <a href="{}" target="_blank">{}</a>',
-            _(
-                "IATI is an open data standard, which requires data to be made "
-                "available under an open licence so that it can be freely used."
-            ),
-            "https://iatistandard.org/en/guidance/standard-overview/"
-            "preparing-your-organisation-data-publication/how-to-license-your-data/",
-            _("Learn more about licenses"),
+        help_text=_(
+            "IATI is an open data standard, which requires data to be made "
+            "available under an open licence so that it can be freely used."
         ),
         widget=forms.Select(attrs={"class": "iati-select__control"}),
     )
+
+    class Meta:
+        labels = {
+            "address": _("Postal address"),
+            "contact_email": _("Organisation contact email address"),
+            "data_portal_url": _("Data portal"),
+            "description": _("Description"),
+            "exclusions_policy_url": _("Link to exclusions policy"),
+            "fax": _("Fax number"),
+            "hq_country": _("Country"),
+            "human_readable_name": _("Organisation name"),
+            "organisation_type": _("Organisation type"),
+            "phone": _("Telephone number"),
+            "region": _("Operating region"),
+            "reporting_source_type": _("Reporting source type"),
+            "website": _("Website"),
+        }
+        help_texts = {
+            "address": _("The postal address for your organisation, including postcode and country."),
+            "contact_email": _("An email address to contact about the organisation's IATI data."),
+            "data_portal_url": _(
+                "If the organisation publishes data on its development or "
+                "humanitarian activities on a website, you can include a link here."
+            ),
+            "description": _(
+                "Additional information on the organisation and its development " "or humanitarian activities."
+            ),
+            "exclusions_policy_url": _(
+                "A link to a policy on what data is excluded from this "
+                "organisation's IATI reporting, if applicable."
+            ),
+            "hq_country": _(
+                "The country where the organisation is registered. Leave this "
+                "blank if the organisation is not registered in a particular country."
+            ),
+            "human_readable_name": _("The full name of the organisation."),
+            "organisation_type": _("Select the type that best describes the organisation."),
+            "phone": _("A telephone number to contact about the organisation's IATI data."),
+            "region": _("If your organisation operates in a particular region, you can " "specify it here."),
+            "reporting_source_type": _(
+                "'Primary Source' means that this organisation is publishing its own "
+                "data. Select 'Secondary Source' only if this organisation is "
+                "delegating IATI reporting to another organisation."
+            ),
+            "website": _("If the organisation has its own website, you can include a link here."),
+        }
+        help_links = {
+            "default_licence_id": (
+                "https://iatistandard.org/en/guidance/standard-overview/"
+                "preparing-your-organisation-data-publication/how-to-license-your-data/",
+                _("Learn more about licenses"),
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, (url, link_text) in getattr(self.Meta, "help_links", {}).items():
+            self.fields[field_name].help_url = url
+            self.fields[field_name].help_link_text = link_text
 
     def clean_data_portal_url(self):
         data_portal_url = self.cleaned_data["data_portal_url"]
@@ -50,7 +102,7 @@ class OrganisationBaseForm(forms.ModelForm):
 class OrganisationDetailsForm(OrganisationBaseForm):
     """Form for users to view/edit details of a reporting organisation"""
 
-    class Meta:
+    class Meta(OrganisationBaseForm.Meta):
         model = ReportingOrganisation
         fields = "__all__"
         exclude = [
@@ -62,23 +114,6 @@ class OrganisationDetailsForm(OrganisationBaseForm):
             "registry_approved",
             "short_name",
         ]
-        labels = {
-            "address": _("Postal address"),
-            "contact_email": _("Contact email address"),
-            "data_portal_url": _("Data portal"),
-            "description": _("Description"),
-            "exclusions_policy_url": _("Exclusions policy website/document"),
-            "fax": _("Fax number"),
-            "hq_country": _("Country"),
-            "human_readable_name": _("Organisation name"),
-            "organisation_type": _("Organisation type"),
-            "organisation_identifier": _("Organisation identifier"),
-            "phone": _("Telephone number"),
-            "region": _("Operating region"),
-            "reporting_source_type": _("Reporting source type"),
-            "short_name": _("Organisation short name"),
-            "website": _("Website"),
-        }
         error_messages = {}
         widgets = {
             "address": forms.TextInput(attrs={"class": "iati-form__input iati-account-input"}),
@@ -136,7 +171,7 @@ class JoinOrganisationForm(forms.Form):
 
 
 class CreateOrganisationForm(OrganisationBaseForm):
-    class Meta:
+    class Meta(OrganisationBaseForm.Meta):
         model = ReportingOrganisation
         fields = "__all__"
         exclude = [
@@ -147,66 +182,30 @@ class CreateOrganisationForm(OrganisationBaseForm):
             "registry_approved",
         ]
         labels = {
-            "address": _("Postal address"),
-            "contact_email": _("Organisation contact email address"),
-            "data_portal_url": _("Data portal"),
-            "description": _("Description"),
-            "exclusions_policy_url": _("Link to exclusions policy"),
-            "fax": _("Fax number"),
-            "hq_country": _("Country"),
-            "human_readable_name": _("Organisation name"),
-            "organisation_type": _("Organisation type"),
+            **OrganisationBaseForm.Meta.labels,
             "organisation_identifier": _("Organisation identifier"),
-            "phone": _("Telephone number"),
-            "region": _("Operating region"),
-            "reporting_source_type": _("Reporting source type"),
             "short_name": _("Organisation short name"),
-            "website": _("Website"),
         }
         help_texts = {
-            "address": _("The postal address for your organisation, including postcode and country."),
-            "contact_email": _("An email address to contact about the organisation's IATI data."),
-            "data_portal_url": _(
-                "If the organisation publishes data on its development or "
-                "humanitarian activities on a website, you can include a link here."
-            ),
-            "description": _(
-                "Additional information on the organisation and its development " "or humanitarian activities."
-            ),
-            "exclusions_policy_url": _(
-                "A link to a policy on what data is excluded from this "
-                "organisation's IATI reporting, if applicable."
-            ),
-            "hq_country": _(
-                "The country where the organisation is registered. Leave this "
-                "blank if the organisation is not registered in a particular country."
-            ),
-            "human_readable_name": _("The full name of the organisation."),
-            "organisation_type": _("Select the type that best describes the organisation."),
-            "organisation_identifier": format_html(
-                '{} <a href="{}" target="_blank">{}</a>',
-                _(
-                    "A unique identifier combining the code of an agency with which "
-                    "your organisation is legally registered and your registration number."
-                ),
-                "https://iatistandard.org/en/guidance/publishing-data/"
-                "registering-and-managing-your-organisation-account/"
-                "how-to-create-your-iati-organisation-identifier",
-                _("Learn more about organisation identifiers in IATI"),
-            ),
-            "phone": _("A telephone number to contact about the organisation's IATI data."),
-            "region": _("If your organisation operates in a particular region, you can " "specify it here."),
-            "reporting_source_type": _(
-                "'Primary Source' means that this organisation is publishing its own "
-                "data. Select 'Secondary Source' only if this organisation is "
-                "delegating IATI reporting to another organisation."
+            **OrganisationBaseForm.Meta.help_texts,
+            "organisation_identifier": _(
+                "A unique identifier combining the code of an agency with which "
+                "your organisation is legally registered and your registration number."
             ),
             "short_name": _(
                 "A short abbreviation of the organisation's name, using lowercase "
                 "letters, numbers, dashes (-), or underscores (_). It must be unique "
                 "among all IATI reporting organisations."
             ),
-            "website": _("If the organisation has its own website, you can include a link here."),
+        }
+        help_links = {
+            **OrganisationBaseForm.Meta.help_links,
+            "organisation_identifier": (
+                "https://iatistandard.org/en/guidance/publishing-data/"
+                "registering-and-managing-your-organisation-account/"
+                "how-to-create-your-iati-organisation-identifier",
+                _("Learn more about organisation identifiers in IATI"),
+            ),
         }
         error_messages = {}
         widgets = {
