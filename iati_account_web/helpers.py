@@ -1,9 +1,11 @@
 import functools
 import logging
 from collections import namedtuple
+from urllib.parse import urlencode
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
+from django.urls import reverse
 
 app_logger = logging.getLogger("iati_account")
 
@@ -29,9 +31,8 @@ def preflight_checks(request: HttpRequest, check_onboarding: bool = True) -> Pre
     logging.getLogger("iati_account").debug(f"Preflight checks for {request.path}")
     if not request.user.is_authenticated:
         logging.getLogger("iati_account").debug(f"Preflight checks for {request.path}: not authenticated")
-        return PreFlightStatus(
-            not_okay_to_continue=True, okay_to_continue=False, redirect=redirect("oidc_authentication_init")
-        )
+        login_url = reverse("oidc_authentication_init") + "?" + urlencode({"next": request.get_full_path()})
+        return PreFlightStatus(not_okay_to_continue=True, okay_to_continue=False, redirect=redirect(login_url))
 
     if not request.user.has_been_provisioned:
         logging.getLogger("iati_account").debug(f"Preflight checks for {request.path}: not provisioned")
