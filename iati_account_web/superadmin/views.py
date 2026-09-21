@@ -4,7 +4,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest, HttpResponse
 from django.template import loader
 from iati_account_web.constants import COUNTRY_LIST
-from iati_account_web.helpers import preflight_checks
+from iati_account_web.helpers import require_preflight
 from iati_account_web.ryd_handling import RegisterYourDataSession
 from iati_account_web.ryd_handling.reporting_orgs import (
     get_all_discoverable_reporting_orgs,
@@ -14,6 +14,7 @@ audit_logger = logging.getLogger("audit")
 app_logger = logging.getLogger("iati_account")
 
 
+@require_preflight
 def home(request: HttpRequest) -> HttpResponse:
     """Generates the main landing page for superadmin
 
@@ -25,10 +26,6 @@ def home(request: HttpRequest) -> HttpResponse:
     -------
     HttpResponse
     """
-    preflight = preflight_checks(request)
-    if not preflight.okay_to_continue:
-        return preflight.redirect
-
     if not request.user.is_iati_superadmin:
         audit_logger.critical(
             f"User {request.user.log_label} attempted to access a "
