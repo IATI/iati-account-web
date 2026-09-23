@@ -26,6 +26,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Help text for a form field is now shown before the field itself, in line
   with WCAG 2.2 Technique G13.
 
+## 0.4.22 - 2026-09-03
+
+### Changed
+
+- Altered the licence handling code so that the display names can be altered;
+  this allowed removing the common OKD prefix from all the licences that are
+  actually used.
+
 ## 0.4.21 - 2026-07-29
 
 ### Changed
