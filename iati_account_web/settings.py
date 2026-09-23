@@ -15,7 +15,6 @@ import secrets
 from pathlib import Path
 
 import environ
-from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -136,7 +135,7 @@ OIDC_RP_SCOPES = (
 )
 OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_VERIFY_SSL = True
-LOGIN_REDIRECT_URL = reverse_lazy("post-login")
+OIDC_CALLBACK_CLASS = "iati_account_web.views.PostLoginOIDCAuthenticationCallbackView"
 LOGOUT_REDIRECT_URL = "/"
 OIDC_OP_LOGOUT_URL_METHOD = "iati_account_web.oidc.logout_uri"
 AUTHENTICATION_BACKENDS = ("iati_account_web.oidc.IATIAccountOIDCAuthBackend",)

@@ -13,32 +13,29 @@ from iati_account_web.metrics import (
     PROM_USER_PROVISIONING_GAUGE,
 )
 from libsuitecrm import SuiteCRM
+from mozilla_django_oidc.views import OIDCAuthenticationCallbackView
 
 app_logger = logging.getLogger("iati_account")
 audit_logger = logging.getLogger("audit")
 
 
-def post_login(request: HttpRequest) -> HttpResponseRedirect:
-    """Simple view that we call on login so we can log/count OIDC logins
+class PostLoginOIDCAuthenticationCallbackView(OIDCAuthenticationCallbackView):  # type: ignore[misc]
+    """OIDC login callback that logs/counts the login and runs preflight checks before
+    redirecting the user to whatever page they originally wanted (or Home if none)."""
 
-    Parameters
-    ----------
-    request : HttpRequest
+    @property
+    def success_url(self) -> str:
+        audit_logger.info(f"User {self.request.user.log_label} logged in")
+        PROM_OIDC_POSTLOGIN_COUNTER.inc()
 
-    Returns
-    -------
-    HttpResponseRedirect
-    """
-    audit_logger.info(f"User {request.user.log_label} logged in")
-    PROM_OIDC_POSTLOGIN_COUNTER.inc()
+        # At this point the user is logged in but might not be onboarded or provisioned.  Let's
+        # redirect as appropriate.
+        preflight = preflight_checks(self.request)
+        if not preflight.okay_to_continue:
+            return preflight.redirect.url
 
-    # At this point the user is logged in but might not be onboarded or provisioned.  Let's
-    # redirect as appropriate.
-    preflight = preflight_checks(request)
-    if not preflight.okay_to_continue:
-        return preflight.redirect
-
-    return redirect("welcome:home")
+        next_url = self.request.session.get("oidc_login_next", None)
+        return next_url or redirect("welcome:home").url
 
 
 def logout(request: HttpRequest) -> HttpResponseRedirect:

@@ -4,13 +4,14 @@ import logging
 
 from django.http import HttpRequest, HttpResponse
 from django.template import loader
-from iati_account_web.helpers import preflight_checks
+from iati_account_web.helpers import require_preflight
 from iati_account_web.ryd_handling import RegisterYourDataSession
 from iati_account_web.ryd_handling.reporting_orgs import parse_org_list_to_objects
 
 audit_logger = logging.getLogger("audit")
 
 
+@require_preflight
 def home(request: HttpRequest) -> HttpResponse:
     """Generates the main landing page for organistions and data.
 
@@ -22,10 +23,6 @@ def home(request: HttpRequest) -> HttpResponse:
     -------
     HttpResponse
     """
-    preflight = preflight_checks(request)
-    if not preflight.okay_to_continue:
-        return preflight.redirect
-
     session = RegisterYourDataSession(request.session["oidc_access_token"], allow_redirects=True)
     try:
         response_json = session.get("/reporting-orgs")
