@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.23 - 2026-09-21
+
+### Added
+
+- Help text for fields on the create and view/edit reporting organisation
+  forms, and introductory copy explaining that the organisation's profile
+  may be made public.
+
+### Changed
+
+- Renamed the "Contact Information" and "How you publish" sections on the
+  view/edit reporting organisation page to "Public Contact Information" and
+  "Data publishing", to match the create reporting organisation page.
+- Defaulted the "Reporting Source Type" field to "Primary Source" on the
+  create reporting organisation form.
+
+### Fixed
+
+- Help text for a form field is now shown before the field itself, in line
+  with WCAG 2.2 Technique G13.
+
 ## 0.4.21 - 2026-07-29
 
 ### Changed
