@@ -4,7 +4,7 @@ import uuid
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from iati_account_web.constants import LICENCE_LIST, LICENCE_LIST_RECOMMENDED, LICENCE_LOOKUP
-from iati_account_web.data.forms import DatasetDetailsForm
+from iati_account_web.data.forms import CreateOrganisationForm, DatasetDetailsForm
 from iati_account_web.data.models import Dataset, Tool
 from iati_account_web.exceptions import RegisterYourDataResponseParsingIssue
 from iati_account_web.ryd_handling.reporting_orgs import (
@@ -207,3 +207,13 @@ class DatasetDetailsFormLicenceTests(TestCase):
         choices = list(self._edit_form(current).fields["licence_id"].choices)  # type: ignore[attr-defined]
 
         self.assertEqual(len(choices), len(LICENCE_LIST_RECOMMENDED))
+
+
+class CreateOrganisationFormReportingSourceTypeTests(TestCase):
+    def test_reporting_source_type_defaults_to_primary_source(self):
+        form = CreateOrganisationForm()
+        self.assertEqual(form.fields["reporting_source_type"].initial, "primary_source")
+
+    def test_reporting_source_type_preserves_explicit_value(self):
+        form = CreateOrganisationForm(data={"reporting_source_type": "secondary_source"})
+        self.assertEqual("secondary_source", form["reporting_source_type"].value())
