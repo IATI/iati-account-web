@@ -80,8 +80,10 @@ IATI Account: Home
 
 <h3>Your organisations</h3>
 {% if not orgs %}
-  <p>It looks like you're not associated with any organisations.  To start, you can 
-      <a href="{% url 'data:join-reporting-org' %}">search for your organisation</a>, or you can <a href="{% url 'data:create-reporting-org' %}">create a new reporting organisation</a> if your organisation is starting its publishing journey with IATI.
+  <p>You're not yet associated with an organisation for IATI data publication.</p>
+  <p>If your organisation is already registered with IATI, you can <a href="{% url 'data:join-reporting-org' %}">search for it here</a>
+      and request to join. If your organisation is not already registered, you can
+      <a href="{% url 'data:create-reporting-org' %}">create a new reporting organisation</a>.
   </p>
 {% else %}
   <div class="iati-table" style="width:100%;">
