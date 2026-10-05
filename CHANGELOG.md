@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.24 - 2026-10-05
+
+### Added
+
+- Fixes sign-in always redirecting to the Home page instead of the page a user originally tried to reach. Visiting a protected page while signed out, then signing in via Asgardeo, dropped users on Home with no way back to where they started.
+
 ## 0.4.23 - 2026-09-21
 
 ### Added
