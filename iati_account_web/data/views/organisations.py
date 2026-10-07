@@ -140,7 +140,7 @@ def _build_org_detail_context(  # noqa: C901
 
     for x in data.users_and_roles.values():
         if x.role == "super_admin":
-            app_logger.warning(
+            app_logger.error(
                 f"Organisation {reporting_org.oid} has user {x.uid} with role 'super_admin', which should "
                 "not be possible.  This user is excluded from the user-management form."
             )
