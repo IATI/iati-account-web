@@ -188,18 +188,18 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
             "users-0-DELETE": "on",
         }
 
-        with self.assertLogs("iati_account", level="WARNING") as log_ctx:
+        with self.assertLogs("iati_account", level="ERROR") as log_ctx:
             response = self.client.post(self.url, payload, follow=True)
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateNotUsed(response, "errors/unknown.html")
         self.assertTrue(any("successfully removed" in str(m).lower() for m in response.context["messages"]))
 
-        # The superadmin's presence should still be surfaced somewhere (a log warning),
+        # The superadmin's presence should still be surfaced somewhere (a log error),
         # rather than disappearing without a trace now that it no longer crashes the page.
         self.assertTrue(
             any(SUPERADMIN_ID in message and "super_admin" in message for message in log_ctx.output),
-            f"Expected a warning naming the superadmin user, got: {log_ctx.output}",
+            f"Expected an error naming the superadmin user, got: {log_ctx.output}",
         )
 
     @responses.activate
