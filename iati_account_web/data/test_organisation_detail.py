@@ -4,6 +4,8 @@ Basic tests for page authentication, and tests to cover the add/revoke tool
 functionality.
 """
 
+from urllib.parse import urlencode
+
 import responses
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -76,15 +78,18 @@ class OrganisationDetailViewTests(ForceIatiLoginMixin, TestCase):
 
     def test_organisation_detail_view_redirects_to_login_when_unauthenticated(self):
         response = self.client.get(self.url)
-        self.assertRedirects(response, reverse("oidc_authentication_init"), fetch_redirect_response=False)
+        expected_url = reverse("oidc_authentication_init") + "?" + urlencode({"next": self.url})
+        self.assertRedirects(response, expected_url, fetch_redirect_response=False)
 
     def test_authorise_tool_redirects_to_login_when_unauthenticated(self):
         response = self.client.get(self.authorise_tool_url)
-        self.assertRedirects(response, reverse("oidc_authentication_init"), fetch_redirect_response=False)
+        expected_url = reverse("oidc_authentication_init") + "?" + urlencode({"next": self.authorise_tool_url})
+        self.assertRedirects(response, expected_url, fetch_redirect_response=False)
 
     def test_revoke_tool_redirects_to_login_when_unauthenticated(self):
         response = self.client.get(self.revoke_tool_url)
-        self.assertRedirects(response, reverse("oidc_authentication_init"), fetch_redirect_response=False)
+        expected_url = reverse("oidc_authentication_init") + "?" + urlencode({"next": self.revoke_tool_url})
+        self.assertRedirects(response, expected_url, fetch_redirect_response=False)
 
     @responses.activate
     def test_renders_page_for_authenticated_user(self):

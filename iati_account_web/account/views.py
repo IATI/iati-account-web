@@ -5,12 +5,13 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.template import loader
 from iati_account_web.account.forms import AccountOnboardingForm, AccountSelfServiceForm
-from iati_account_web.helpers import preflight_checks
+from iati_account_web.helpers import require_preflight
 
 app_logger = logging.getLogger("iati_account")
 audit_logger = logging.getLogger("audit")
 
 
+@require_preflight
 def self_service(request: HttpRequest) -> HttpResponse:
     """Generate self-service Account page view where users can self-service their account.
 
@@ -22,10 +23,6 @@ def self_service(request: HttpRequest) -> HttpResponse:
     -------
     HttpResponse
     """
-
-    preflight = preflight_checks(request)
-    if not preflight.okay_to_continue:
-        return preflight.redirect
 
     if request.method == "POST":
         form = AccountSelfServiceForm(request.POST, instance=request.user)
@@ -63,6 +60,7 @@ def self_service(request: HttpRequest) -> HttpResponse:
     return HttpResponse(template.render(context, request))
 
 
+@require_preflight(check_onboarding=False)
 def onboarding(request: HttpRequest) -> HttpResponse:
     """Generate onboarding page to let users complete their information.
 
@@ -74,10 +72,6 @@ def onboarding(request: HttpRequest) -> HttpResponse:
     -------
     HttpResponse
     """
-
-    preflight = preflight_checks(request, check_onboarding=False)
-    if not preflight.okay_to_continue:
-        return preflight.redirect
 
     if request.method == "POST":
         form = AccountOnboardingForm(request.POST, instance=request.user)

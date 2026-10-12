@@ -1,7 +1,9 @@
 import logging
+from urllib.parse import urlencode
 
 import responses
 from django.test import TestCase
+from django.urls import reverse
 from iati_account_web.tests.iati_mock import ForceIatiLoginMixin, IatiInfrastructureMock
 
 
@@ -13,7 +15,8 @@ class TestNoSuperadminAccessForRegularUsers(TestCase, ForceIatiLoginMixin):
         # Test that the user is correctly not authenticated before we force login.
         with self.assertLogs("iati_account", level="DEBUG") as cm_log_app:
             response = self.client.get("/superadmin", follow=True)
-            self.assertEqual(response.redirect_chain[1], ("/identity/oidc/authenticate/", 302))
+            expected_url = reverse("oidc_authentication_init") + "?" + urlencode({"next": "/en/superadmin/"})
+            self.assertEqual(response.redirect_chain[1], (expected_url, 302))
             self.assertEqual(cm_log_app.records[1].levelno, logging.DEBUG)
             self.assertIn("not authenticated", cm_log_app.records[1].msg)
 
@@ -49,7 +52,8 @@ class TestSuperadminAccessForSuperadminUsers(TestCase, ForceIatiLoginMixin):
         # Test that the user is correctly not authenticated before we force login.
         with self.assertLogs("iati_account", level="DEBUG") as cm_log_app:
             response = self.client.get("/superadmin", follow=True)
-            self.assertEqual(response.redirect_chain[1], ("/identity/oidc/authenticate/", 302))
+            expected_url = reverse("oidc_authentication_init") + "?" + urlencode({"next": "/en/superadmin/"})
+            self.assertEqual(response.redirect_chain[1], (expected_url, 302))
             self.assertEqual(cm_log_app.records[1].levelno, logging.DEBUG)
             self.assertIn("not authenticated", cm_log_app.records[1].msg)
 
