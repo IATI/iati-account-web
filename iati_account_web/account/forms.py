@@ -21,7 +21,7 @@ class AccountSelfServiceForm(forms.ModelForm):
 
         labels = {
             "unformatted_name": _("Full name"),
-            "online_name": _("How do you want to be called?"),
+            "online_name": _("What do you prefer to be called?"),
             "mailinglist_subscriber": _(
                 "IATI newsletter (monthly updates about IATI, our work, and community events)"
             ),
@@ -69,7 +69,7 @@ class AccountOnboardingForm(forms.ModelForm):
 
         labels = {
             "unformatted_name": _("Name"),
-            "online_name": _("How do you want to be called online?"),
+            "online_name": _("What do you prefer to be called?"),
             "inperson_name": _("How do you want to be called in-person, for example at an IATI event?"),
             "mailinglist_subscriber": _(
                 "IATI newsletter (monthly updates about IATI, out work, and community events)"
