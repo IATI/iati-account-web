@@ -53,7 +53,6 @@ class AccountOnboardingForm(forms.ModelForm):
 
         fields = [
             "unformatted_name",
-            "inperson_name",
             "online_name",
             "mailinglist_subscriber",
             "language_en",
@@ -70,7 +69,6 @@ class AccountOnboardingForm(forms.ModelForm):
         labels = {
             "unformatted_name": _("Name"),
             "online_name": _("What do you prefer to be called?"),
-            "inperson_name": _("How do you want to be called in-person, for example at an IATI event?"),
             "mailinglist_subscriber": _(
                 "IATI newsletter (monthly updates about IATI, out work, and community events)"
             ),
@@ -88,7 +86,6 @@ class AccountOnboardingForm(forms.ModelForm):
         widgets = {
             "unformatted_name": forms.TextInput(attrs={"class": "iati-form__input"}),
             "online_name": forms.TextInput(attrs={"class": "iati-form__input"}),
-            "inperson_name": forms.TextInput(attrs={"class": "iati-form__input"}),
             "mailinglist_subscriber": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
             "language_en": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
             "language_fr": forms.CheckboxInput(attrs={"class": "iati-form__input"}),
