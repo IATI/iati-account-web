@@ -18,9 +18,8 @@ dependencies = [
     "mozilla-django-oidc",
     "oauthlib",
     "pytz",
-    "requests==2.32.4",
+    "requests>=2.34",
     "requests_oauthlib",
-    "types-requests==2.32.4.20250611",
     "psycopg[binary]"
 ]
 

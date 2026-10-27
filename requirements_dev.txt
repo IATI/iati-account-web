@@ -12,7 +12,7 @@ black==25.1.0
     # via iati-account-web (pyproject.toml)
 build==1.2.2.post1
     # via pip-tools
-certifi==2025.7.14
+certifi==2026.10.23
     # via requests
 cffi==1.17.1
     # via cryptography
@@ -136,7 +136,7 @@ pyyaml==6.0.2
     # via
     #   bandit
     #   responses
-requests==2.32.4
+requests==2.34.2
     # via
     #   iati-account-web (pyproject.toml)
     #   libsuitecrm
@@ -159,8 +159,6 @@ stevedore==5.4.1
     # via bandit
 types-pyyaml==6.0.12.20250516
     # via django-stubs
-types-requests==2.32.4.20250611
-    # via iati-account-web (pyproject.toml)
 typing-extensions==4.14.1
     # via
     #   django-stubs
@@ -172,7 +170,6 @@ urllib3==2.5.0
     # via
     #   requests
     #   responses
-    #   types-requests
 werkzeug==3.1.3
     # via iati-account-web (pyproject.toml)
 wheel==0.45.1
