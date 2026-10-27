@@ -28,22 +28,19 @@ class IATIUserModelTestCase(TestCase):
         self.assertTrue(self.user.has_complete_geolocation)
 
     def test_has_complete_names(self):
+        self.user.unformatted_name = ""
+        self.user.online_name = "Test User Online"
+        self.assertFalse(self.user.has_complete_names)
+
         self.user.unformatted_name = "Test User"
-
-        self.user.inperson_name = ""
         self.user.online_name = ""
         self.assertFalse(self.user.has_complete_names)
 
-        self.user.inperson_name = "Test User In Person"
-        self.user.online_name = ""
-        self.assertFalse(self.user.has_complete_names)
+        self.user.online_name = "Test User Online"
+        self.assertTrue(self.user.has_complete_names)
 
+        # inperson_name is no longer collected, so it doesn't affect completeness
         self.user.inperson_name = ""
-        self.user.online_name = "Test User Online"
-        self.assertFalse(self.user.has_complete_names)
-
-        self.user.inperson_name = "Test User In Person"
-        self.user.online_name = "Test User Online"
         self.assertTrue(self.user.has_complete_names)
 
     def test_has_subscribed_to_mailing_lists(self):
