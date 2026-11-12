@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.4.27 - 2026-11-02
+
+### Changed
+
+- Updated requirements file to include latest version of certifi.
+
+### Fixed
+
+- Added temporary workaround to allow GitHub Actions to run on Ubuntu 24.04.
+
+## 0.4.26 - 2026-10-19
+
+### Fixed
+
+- Fixed a crash on the organisation user-management form when an organisation
+  has a member with a superadmin role.
+
+## 0.4.25 - 2026-10-19
+
+### Changed
+
+- Removed the duplicative in-person name question from the My Account page and
+  reworded the preferred name question to "What do you prefer to be called?".
+
 ## 0.4.24 - 2026-10-05
 
 ### Added

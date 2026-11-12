@@ -40,7 +40,7 @@ class IATIUser(AbstractUser):
 
     @property
     def has_complete_names(self) -> bool:
-        return self.unformatted_name and self.inperson_name and self.online_name
+        return self.unformatted_name and self.online_name
 
     @property
     def has_subscribed_to_mailing_lists(self) -> bool:
